@@ -16,4 +16,3 @@ export const AuthStack = createNativeStackNavigator({
     Register: RegisterScreen,
   },
 });
-export const AuthNavigation = createStaticNavigation(AuthStack);

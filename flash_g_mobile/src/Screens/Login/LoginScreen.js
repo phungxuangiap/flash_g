@@ -11,10 +11,12 @@ import {
   InputTag,
   WrapContentButton,
 } from '../../appComponents/appComponents';
+import {useNavigation} from '@react-navigation/native';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigation = useNavigation();
   return (
     <View style={style.container}>
       <InputTag placeholder={'Email'} value={email} onValueChange={setEmail} />
@@ -23,10 +25,17 @@ export default function LoginScreen() {
         value={password}
         onValueChange={setPassword}
       />
-      <WrapContentButton content={'Login'} onClick={() => {}} />
+      <WrapContentButton
+        content={'Login'}
+        onClick={() => {
+          navigation.navigate('Desk');
+        }}
+      />
       <ClickableText
         content={"Haven't had account yet? Register"}
-        onClick={() => {}}
+        onClick={() => {
+          navigation.navigate('Register');
+        }}
       />
     </View>
   );

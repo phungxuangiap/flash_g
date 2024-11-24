@@ -8,6 +8,15 @@ import DeskBoardScreen from '../Screens/DeskBoard/DeskBoardScreen';
 import {AuthStack} from './authNavigation';
 //TODO: Fix it
 const Stack = createNativeStackNavigator({
-  screens: {AuthStack},
+  initialRouteName: 'Auth',
+  screens: {
+    Auth: {
+      screen: AuthStack,
+      options: {
+        headerShown: false,
+      },
+    },
+    Desk: DeskBoardScreen,
+  },
 });
-export const Navigation = createStaticNavigation(Stack);
+export const BottomBarNavigation = createStaticNavigation(Stack);
