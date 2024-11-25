@@ -4,7 +4,9 @@ const asyncHandler = require("express-async-handler");
 //@route GET /api/desk/
 //@access private
 const getAllDesks = asyncHandler(async (req, res, next) => {
-  res.json("Get all desks");
+  // res.json("Get all desks");
+  res.status(403);
+  throw new Error("Not Found");
 });
 
 //@desc Delete Desk
