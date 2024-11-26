@@ -6,6 +6,10 @@ const Status = {
   PREVIEW: "preview",
 };
 const cardSchema = mongoose.Schema({
+  id: {
+    type: mongoose.Schema.ObjectId,
+    require: [true],
+  },
   desk_id: {
     type: mongoose.Schema.ObjectId,
     require: [true],
@@ -19,7 +23,7 @@ const cardSchema = mongoose.Schema({
     require: [true],
   },
   last_preview: {
-    type: Timestamp,
+    type: String,
     require: [true],
   },
   vocab: {
@@ -35,11 +39,11 @@ const cardSchema = mongoose.Schema({
     require: [true],
   },
   vocab_audio: {
-    type: Audio,
+    type: String,
     require: [true],
   },
   sentence_audio: {
-    type: Audio,
+    type: String,
     require: [true],
   },
 });

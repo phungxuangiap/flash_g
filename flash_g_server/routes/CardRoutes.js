@@ -4,11 +4,12 @@ const {
   updateCard,
   deleteCard,
   createCard,
+  getCard,
 } = require("../controllers/CardController");
 const { route } = require("./DeskRoutes");
 const router = express.Router();
 
-router.route("/card").get(getAllCards).post(createCard);
-router.route("/card/:cardId").put(updateCard).delete(deleteCard);
+router.route("/:deskId").get(getAllCards).post(createCard);
+router.route("/:cardId").put(updateCard).delete(deleteCard);
 
 module.exports = router;

@@ -12,6 +12,7 @@ const port = process.env.PORT || 5000;
 
 app.use("/api/user", require("./routes/UserRoutes"));
 app.use("/api/desk", require("./routes/DeskRoutes"));
+app.use("/api/card", require("./routes/CardRoutes"));
 app.use(errorHandler);
 
 app.listen(port, () => {
