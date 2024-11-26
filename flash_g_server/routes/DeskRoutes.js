@@ -4,10 +4,12 @@ const {
   getAllDesks,
   updateDesk,
   createNewDesk,
+  deleteAllDesks,
 } = require("../controllers/DeskController");
+const validationHandler = require("../middlewares/validationHandler");
 const router = express();
-
-router.route("/").get(getAllDesks).post(createNewDesk);
+router.use(validationHandler);
+router.route("/").get(getAllDesks).post(createNewDesk).delete(deleteAllDesks);
 router.route("/:id").delete(deleteDesk).put(updateDesk);
 
 module.exports = router;

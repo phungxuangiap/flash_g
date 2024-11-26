@@ -1,13 +1,15 @@
-import { Constants } from "./constants";
+const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
-const validationHandler = (err, req, res, next) => {
+const { Constants } = require("../middlewares/constants");
+
+const validationHandler = asyncHandler(async (req, res, next) => {
   let accessToken;
   const authHeader = req.headers.authorization || req.headers.Authorization;
-  if (authHeader && authHeader.startWith("Bearer")) {
+  if (authHeader && authHeader.startsWith("Bearer")) {
     accessToken = authHeader.split(" ")[1];
     jwt.verify(accessToken, "ACCESS_TOKEN_SECRET", (error, decoded) => {
       if (error) {
-        res.status(401);
+        res.status(Constants.UNAUTHORIZED);
         throw new Error("Unauthorized");
       } else {
         req.user = decoded.user;
@@ -17,8 +19,8 @@ const validationHandler = (err, req, res, next) => {
   }
   if (!accessToken) {
     res.status(Constants.UNAUTHORIZED);
-    throw new Error("User is unauthorize or access token is missing");
+    throw new Error("User is unauthorized or access token is missing");
   }
-};
+});
 
 module.exports = validationHandler;

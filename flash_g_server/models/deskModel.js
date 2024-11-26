@@ -36,4 +36,4 @@ const deskSchema = mongoose.Schema({
   },
 });
 
-module.exports = mongoose.Model("Desk", deskSchema);
+module.exports = mongoose.model("Desk", deskSchema);

@@ -44,4 +44,4 @@ const cardSchema = mongoose.Schema({
   },
 });
 
-module.exports = mongoose.Model("Card", cardSchema);
+module.exports = mongoose.model("Card", cardSchema);
