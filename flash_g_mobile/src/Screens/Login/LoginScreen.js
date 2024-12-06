@@ -36,10 +36,9 @@ export default function LoginScreen() {
         content={'Login'}
         onClick={() => {
           dispatch(setLoading());
-          login(email, password, () => {
-            dispatch(setLoading());
-            navigation.navigate('BottomBar');
-          });
+          login(email, password);
+          navigation.navigate('BottomBar');
+          dispatch(setLoading());
         }}
       />
       <ClickableText

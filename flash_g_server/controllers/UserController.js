@@ -118,4 +118,12 @@ const refreshToken = (req, res, next) => {
   }
 };
 
-module.exports = { loginUser, registerUser, refreshToken };
+//@desc Logout
+//@route /api/user/logout
+//@access private
+const logout = (req, res, next) => {
+  res.clearCookie(process.env.REFRESH_TOKEN_COOKIE);
+  res.status(200).json({ title: "Logout successfully!" });
+};
+
+module.exports = { loginUser, registerUser, refreshToken, logout };

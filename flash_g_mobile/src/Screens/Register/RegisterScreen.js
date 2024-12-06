@@ -12,6 +12,7 @@ import {
   WrapContentButton,
 } from '../../appComponents/appComponents';
 import {useNavigation} from '@react-navigation/native';
+import {register} from '../../service/register';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -40,6 +41,7 @@ export default function RegisterScreen() {
       <WrapContentButton
         content={'Register'}
         onClick={() => {
+          register(email, password, userName);
           navigation.navigate('BottomBar');
         }}
       />
