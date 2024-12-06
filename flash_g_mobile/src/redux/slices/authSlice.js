@@ -12,11 +12,11 @@ const authSlice = createSlice({
     changeAuth: state => {
       state.authState = state.authState === NO_AUTH ? AUTH : NO_AUTH;
     },
-    refreshAccessToken: (state, payload) => {
-      state.accessToken = payload.accessToken;
+    refreshAccessToken: (state, action) => {
+      state.accessToken = action.payload;
     },
   },
 });
 
-export const {changeAuth} = authSlice.actions;
+export const {changeAuth, refreshAccessToken} = authSlice.actions;
 export default authSlice;

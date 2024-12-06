@@ -9,14 +9,21 @@ import React, {useState} from 'react';
 import {
   ClickableText,
   InputTag,
+  LoadingOverlay,
   WrapContentButton,
 } from '../../appComponents/appComponents';
-import {useNavigation} from '@react-navigation/native';
+import {StackActions, useNavigation} from '@react-navigation/native';
+import {login} from '../../service/login';
+import {useDispatch, useSelector} from 'react-redux';
+import {loadingSelector} from '../../redux/selectors';
+import {setLoading} from '../../redux/slices/stateSlice';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
+  const loadingState = useSelector(loadingSelector);
+  const dispatch = useDispatch();
   return (
     <View style={style.container}>
       <InputTag placeholder={'Email'} value={email} onValueChange={setEmail} />
@@ -28,7 +35,11 @@ export default function LoginScreen() {
       <WrapContentButton
         content={'Login'}
         onClick={() => {
-          navigation.navigate('BottomBar');
+          dispatch(setLoading());
+          login(email, password, () => {
+            dispatch(setLoading());
+            navigation.navigate('BottomBar');
+          });
         }}
       />
       <ClickableText
@@ -37,6 +48,7 @@ export default function LoginScreen() {
           navigation.navigate('Register');
         }}
       />
+      {loadingState ? <LoadingOverlay /> : <></>}
     </View>
   );
 }
@@ -46,5 +58,6 @@ const style = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
 });

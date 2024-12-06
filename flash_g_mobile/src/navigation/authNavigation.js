@@ -3,6 +3,7 @@ import LoginScreen from '../Screens/Login/LoginScreen';
 import RegisterScreen from '../Screens/Register/RegisterScreen';
 import {createStaticNavigation} from '@react-navigation/native';
 import React from 'react';
+import PendingScreen from '../Screens/Pending/PendingScreen';
 
 export const AuthStack = createNativeStackNavigator({
   initialRouteName: 'Login',
@@ -14,5 +15,6 @@ export const AuthStack = createNativeStackNavigator({
       },
     },
     Register: RegisterScreen,
+    Pending: PendingScreen,
   },
 });

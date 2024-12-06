@@ -1,4 +1,4 @@
-import {Text, TextInput, Touchable, TouchableOpacity} from 'react-native';
+import {Text, TextInput, Touchable, TouchableOpacity, View} from 'react-native';
 import React from 'react';
 import {ComponentStyle} from './style';
 export function InputTag({placeholder, value, onValueChange}) {
@@ -34,5 +34,13 @@ export function ClickableText({content, onClick}) {
       }}>
       <Text style={ComponentStyle.textBlack16Medium}>{content}</Text>
     </TouchableOpacity>
+  );
+}
+
+export function LoadingOverlay() {
+  return (
+    <View style={ComponentStyle.loadingOverLay}>
+      <Text style={{alignSelf: 'center', color: 'white'}}>Loading...</Text>
+    </View>
   );
 }
