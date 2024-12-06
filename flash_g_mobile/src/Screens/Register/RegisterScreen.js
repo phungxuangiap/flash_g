@@ -40,7 +40,7 @@ export default function RegisterScreen() {
       <WrapContentButton
         content={'Register'}
         onClick={() => {
-          navigation.navigate('Desk');
+          navigation.navigate('BottomBar');
         }}
       />
       <ClickableText

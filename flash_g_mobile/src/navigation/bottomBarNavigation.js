@@ -1,22 +1,13 @@
-import {
-  createStaticNavigation,
-  NavigationContainer,
-} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import React from 'react';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import DeskBoardScreen from '../Screens/DeskBoard/DeskBoardScreen';
-import {AuthStack} from './authNavigation';
-//TODO: Fix it
-const Stack = createNativeStackNavigator({
-  initialRouteName: 'Auth',
+import SummaryScreen from '../Screens/Summary/SummaryScreen';
+import ProfileScreen from '../Screens/Profile/ProfileScreen';
+
+export const BottomBarStack = createBottomTabNavigator({
+  initialRouteName: 'Desk',
   screens: {
-    Auth: {
-      screen: AuthStack,
-      options: {
-        headerShown: false,
-      },
-    },
     Desk: DeskBoardScreen,
+    Summary: SummaryScreen,
+    Profile: ProfileScreen,
   },
 });
-export const BottomBarNavigation = createStaticNavigation(Stack);

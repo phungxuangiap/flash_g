@@ -28,7 +28,7 @@ export default function LoginScreen() {
       <WrapContentButton
         content={'Login'}
         onClick={() => {
-          navigation.navigate('Desk');
+          navigation.navigate('BottomBar');
         }}
       />
       <ClickableText

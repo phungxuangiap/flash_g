@@ -27,7 +27,10 @@ import LoginScreen from './src/Screens/Login/LoginScreen';
 import RegisterScreen from './src/Screens/Register/RegisterScreen';
 import {Provider} from 'react-redux';
 import {store} from './src/redux/store';
-import {BottomBarNavigation} from './src/navigation/bottomBarNavigation';
+import {
+  BottomBarNavigation,
+  MainNavigation,
+} from './src/navigation/mainNavigation';
 
 function Section({children, title}) {
   const isDarkMode = useColorScheme() === 'dark';
@@ -64,7 +67,7 @@ function App() {
 
   return (
     <Provider store={store}>
-      <BottomBarNavigation />
+      <MainNavigation />
     </Provider>
   );
 }

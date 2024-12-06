@@ -1,12 +1,19 @@
 import {createSlice} from '@reduxjs/toolkit';
 import {AUTH, NO_AUTH} from '../../constants';
 
+const initialState = {
+  authState: NO_AUTH,
+  accessToken: null,
+};
 const authSlice = createSlice({
   name: 'auth',
-  initialState: NO_AUTH,
+  initialState: initialState,
   reducers: {
     changeAuth: state => {
-      state = state == NO_AUTH ? AUTH : NO_AUTH;
+      state.authState = state.authState === NO_AUTH ? AUTH : NO_AUTH;
+    },
+    refreshAccessToken: (state, payload) => {
+      state.accessToken = payload.accessToken;
     },
   },
 });

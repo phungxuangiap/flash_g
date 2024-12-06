@@ -6,7 +6,9 @@ const { param } = require("../routes/UserRoutes");
 //@route GET /api/desk/
 //@access private
 const getAllDesks = asyncHandler(async (req, res, next) => {
-  const allDesk = await Desk.find({ user_id: req.user._id });
+  console.log("here");
+
+  const allDesk = await Desk.find({ user_id: req._id });
   if (allDesk) {
     res.status(200).json(allDesk);
   } else {
