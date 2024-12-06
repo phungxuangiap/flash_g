@@ -1,6 +1,7 @@
 import axios from 'axios';
 import {store} from '../redux/store';
 import {useSelector} from 'react-redux';
+import {refresh} from './refreshAccessToken';
 
 const logout = accessToken => {
   axios
@@ -17,6 +18,8 @@ const logout = accessToken => {
       console.log(res.data);
     })
     .catch(err => {
+      refresh();
+      console.log('err in logout');
       console.log(err);
     });
 };
