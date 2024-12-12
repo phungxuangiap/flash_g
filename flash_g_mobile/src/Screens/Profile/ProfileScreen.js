@@ -1,24 +1,35 @@
 import {StyleSheet, Text, View} from 'react-native';
-import {WrapContentButton} from '../../appComponents/appComponents';
+import {
+  LoadingOverlay,
+  WrapContentButton,
+} from '../../appComponents/appComponents';
 import {useNavigation} from '@react-navigation/native';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {accessTokenSelector} from '../../redux/selectors';
+import {accessTokenSelector, loadingSelector} from '../../redux/selectors';
 import {logout} from '../../service/logout';
+import {store} from '../../redux/store';
+import {setLoading} from '../../redux/slices/stateSlice';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const loading = useSelector(loadingSelector);
   const accessToken = useSelector(accessTokenSelector);
   return (
     <View style={style.container}>
       <Text>Profile</Text>
       <WrapContentButton
         content={'Sign Out'}
-        onClick={() => {
-          logout(accessToken);
+        onClick={async () => {
+          dispatch(setLoading());
+
+          await logout(accessToken);
+          dispatch(setLoading());
           navigation.navigate('Auth');
         }}
       />
+      {loading ? <LoadingOverlay /> : <></>}
     </View>
   );
 }

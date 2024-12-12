@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {accessTokenSelector} from '../../redux/selectors';
 import axios from 'axios';
@@ -9,6 +9,7 @@ export default function DeskBoardScreen() {
   const dispatch = useDispatch();
   const [data, setData] = useState();
   const navigation = useNavigation();
+  const ref = useSelector(accessTokenSelector);
   function fetchData(accessToken) {
     axios
       .get('http://192.168.102.15:5001/api/desk/', {
@@ -23,6 +24,7 @@ export default function DeskBoardScreen() {
       .catch(async err => {
         console.log('Get data error with error ', err);
         await refresh();
+
         console.log(
           'Refresh Token successfully with new token: ',
           store.getState().auth.accessToken,

@@ -94,6 +94,7 @@ const refreshToken = (req, res, next) => {
   if (cookies && cookies[process.env.REFRESH_TOKEN_COOKIE]) {
     refresh_token = cookies[process.env.REFRESH_TOKEN_COOKIE];
   }
+  console.log("[REFRESH_TOKEN]", refresh_token);
   jwt.verify(
     refresh_token,
     process.env.REFRESH_TOKEN_SECRET,
@@ -121,9 +122,9 @@ const refreshToken = (req, res, next) => {
 //@desc Logout
 //@route /api/user/logout
 //@access private
-const logout = (req, res, next) => {
-  res.clearCookie(process.env.REFRESH_TOKEN_COOKIE);
-  res.status(200).json({ title: "Logout successfully!" });
+const logout = async (req, res, next) => {
+  await res.clearCookie(process.env.REFRESH_TOKEN_COOKIE);
+  await res.status(200).json({ title: "Logout successfully!" });
 };
 
 module.exports = { loginUser, registerUser, refreshToken, logout };
