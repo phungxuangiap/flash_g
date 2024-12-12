@@ -57,10 +57,21 @@ function Section({children, title}) {
     </View>
   );
 }
-
+if (__DEV__) {
+  const xhr = global.XMLHttpRequest;
+  global.XMLHttpRequest = function (...args) {
+    const xhrInstance = new xhr(...args);
+    xhrInstance._open = xhrInstance.open;
+    xhrInstance.open = function (method, url, ...rest) {
+      console.log(`[Network Request]: ${method} ${url}`);
+      return xhrInstance._open(method, url, ...rest);
+    };
+    return xhrInstance;
+  };
+}
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
-
+  // To see all the requests in the chrome Dev tools in the network tab.
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
