@@ -1,15 +1,18 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {act, useCallback, useEffect, useRef, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {accessTokenSelector} from '../../redux/selectors';
 import axios from 'axios';
 import {refresh} from '../../service/refreshAccessToken';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {store} from '../../redux/store';
+import {TouchableOpacity} from 'react-native';
+import {Text} from '@react-navigation/elements';
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
   const [data, setData] = useState();
   const navigation = useNavigation();
-  const ref = useSelector(accessTokenSelector);
+  const actk = useSelector(accessTokenSelector);
+  const [id, setId] = useState(true);
   function fetchData(accessToken) {
     axios
       .get('http://192.168.102.15:5001/api/desk/', {
@@ -22,21 +25,24 @@ export default function DeskBoardScreen() {
         setData(res.data);
       })
       .catch(async err => {
-        console.log('Get data error with error ', err);
+        console.log('Get data error with message ', err);
         await refresh();
-
-        console.log(
-          'Refresh Token successfully with new token: ',
-          store.getState().auth.accessToken,
-        );
-        fetchData(store.getState().auth.accessToken);
       });
   }
-  useEffect(() => {
-    navigation.addListener('tabPress', e => {
-      let accessToken = store.getState().auth.accessToken;
-      fetchData(accessToken);
-    });
-  }, []);
-  return <></>;
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData(actk);
+    }, [actk, navigation]),
+  );
+  return (
+    <>
+      <TouchableOpacity
+        style={{backgroundColor: 'blue'}}
+        onPress={() => {
+          setId(preState => !preState);
+        }}>
+        <Text>Click me</Text>
+      </TouchableOpacity>
+    </>
+  );
 }

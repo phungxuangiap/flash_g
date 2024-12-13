@@ -12,7 +12,6 @@ const login = (email, password, navigate) => {
     })
     .then(res => {
       if (res.data.access_token) {
-        console.log(res.data.access_token);
         store.dispatch(changeAuth());
         store.dispatch(refreshAccessToken(res.data.access_token));
         store.dispatch(setLoading());
