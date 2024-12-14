@@ -35,7 +35,9 @@ export default function LoginScreen() {
       <WrapContentButton
         content={'Login'}
         onClick={() => {
-          dispatch(setLoading());
+          if (!loadingState) {
+            dispatch(setLoading(true));
+          }
           login(email, password, direction => {
             navigation.navigate(direction);
           });

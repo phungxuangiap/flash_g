@@ -10,6 +10,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import SummaryScreen from '../Screens/Summary/SummaryScreen';
 import ProfileScreen from '../Screens/Profile/ProfileScreen';
 import {BottomBarStack} from './bottomBarNavigation';
+import {DeskStack, PlaygroundStack} from './deskNavigation';
 //TODO: Fix it
 const Stack = createNativeStackNavigator({
   initialRouteName: 'Auth',
@@ -22,6 +23,12 @@ const Stack = createNativeStackNavigator({
     },
     BottomBar: {
       screen: BottomBarStack,
+      options: {
+        headerShown: false,
+      },
+    },
+    Playground: {
+      screen: PlaygroundStack,
       options: {
         headerShown: false,
       },

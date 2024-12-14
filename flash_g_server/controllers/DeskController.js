@@ -6,7 +6,7 @@ const { param } = require("../routes/UserRoutes");
 //@route GET /api/desk/
 //@access private
 const getAllDesks = asyncHandler(async (req, res, next) => {
-  const allDesk = await Desk.find({ user_id: req._id });
+  const allDesk = await Desk.find({ user_id: req.user._id });
   if (allDesk) {
     res.status(200).json(allDesk);
   } else {
@@ -57,6 +57,7 @@ const createNewDesk = asyncHandler(async (req, res, next) => {
       progress_progress_card: new Array(),
       progress_preview_card: new Array(),
     });
+
     console.log(newDesk);
     if (newDesk) {
       res.status(200).json(newDesk);

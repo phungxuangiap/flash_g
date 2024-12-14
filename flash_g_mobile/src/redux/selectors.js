@@ -4,5 +4,7 @@ const loadingSelector = state => {
 const accessTokenSelector = state => {
   return state.auth.accessToken;
 };
-
-export {loadingSelector, accessTokenSelector};
+const deskSelector = state => {
+  return state.desk.currentDesk;
+};
+export {loadingSelector, accessTokenSelector, deskSelector};

@@ -6,7 +6,6 @@ const refresh = async () => {
   await axios
     .get('http://192.168.102.15:5001/api/user/refresh')
     .then(res => {
-      // console.log('AT in refreshing', res.data.access_token);
       store.dispatch(refreshAccessToken(res.data.access_token));
     })
     .then(res => {

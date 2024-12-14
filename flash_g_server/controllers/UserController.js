@@ -19,22 +19,18 @@ const loginUser = asyncHandler(async (req, res, next) => {
       availableUser &&
       (await bcrypt.compare(password, availableUser.password))
     ) {
-      access_token = jwt.sign(
-        { user: availableUser },
-        process.env.ACCESS_TOKEN_SECRET,
-        {
-          expiresIn: "15m",
-        }
-      );
+      console.log("{user}", availableUser);
       access_token = generateAccessToken({
+        _id: availableUser._id,
         user_name: availableUser.user_name,
-        password: availableUser.password,
         email: availableUser.email,
+        password: availableUser.password,
       });
       refresh_token = generateRefreshToken({
+        _id: availableUser._id,
         user_name: availableUser.user_name,
-        password: availableUser.password,
         email: availableUser.email,
+        password: availableUser.password,
       });
       res.cookie(process.env.REFRESH_TOKEN_COOKIE, refresh_token, {
         httpOnly: true,
@@ -56,6 +52,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
   let access_token;
   let refresh_token;
   const { email, password, user_name } = req.body;
+  console.log(email, password, user_name);
   if (!email || !password || !user_name) {
     res.status(Constants.VALIDATION_ERROR);
     throw new Error("All fields are mandatory!");
@@ -72,13 +69,24 @@ const registerUser = asyncHandler(async (req, res, next) => {
         password: hashedPassword,
         user_name,
       });
-      access_token = generateAccessToken({ user_name, password, email });
-      refresh_token = generateRefreshToken({ user_name, password, email });
+      access_token = generateAccessToken({
+        _id: newUser._id,
+        user_name: newUser.user_name,
+        email: newUser.email,
+        password: newUser.password,
+      });
+      refresh_token = generateRefreshToken({
+        _id: newUser._id,
+        user_name: newUser.user_name,
+        email: newUser.email,
+        password: newUser.password,
+      });
       res.cookie(process.env.REFRESH_TOKEN_COOKIE, refresh_token, {
         httpOnly: true,
         secure: false,
         sameSite: "none",
       });
+      console.log(newUser);
       res.status(200).json({ access_token });
     }
   }
@@ -104,6 +112,7 @@ const refreshToken = (req, res, next) => {
         throw new Error("Unauthorized !");
       } else {
         access_token = generateAccessToken({
+          _id: decoded._id,
           user_name: decoded.user_name,
           email: decoded.email,
           password: decoded.password,

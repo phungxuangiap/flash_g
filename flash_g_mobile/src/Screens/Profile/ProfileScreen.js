@@ -22,10 +22,10 @@ export default function ProfileScreen() {
       <WrapContentButton
         content={'Sign Out'}
         onClick={async () => {
-          dispatch(setLoading());
+          dispatch(setLoading(true));
 
           await logout(accessToken);
-          dispatch(setLoading());
+          dispatch(setLoading(false));
           navigation.navigate('Auth');
         }}
       />

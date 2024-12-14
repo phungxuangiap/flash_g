@@ -35,4 +35,19 @@ export const ComponentStyle = StyleSheet.create({
     backgroundColor: '#333',
     opacity: 0.7,
   },
+  deskContainer: {
+    // flex: 1,
+    justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: 24,
+    borderWidth: 1,
+    margin: 24,
+    marginBottom: 0,
+    borderColor: 'black',
+  },
+  largeWhiteTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: 'white',
+  },
 });

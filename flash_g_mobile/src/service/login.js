@@ -14,7 +14,9 @@ const login = (email, password, navigate) => {
       if (res.data.access_token) {
         store.dispatch(changeAuth());
         store.dispatch(refreshAccessToken(res.data.access_token));
-        store.dispatch(setLoading());
+        if (store.getState().state.loading) {
+          store.dispatch(setLoading(false));
+        }
         navigate('BottomBar');
         return true;
       }
@@ -22,7 +24,9 @@ const login = (email, password, navigate) => {
     .catch(err => {
       Alert.alert('Email or Password is invalid', '');
       console.log(err);
-      store.dispatch(setLoading());
+      if (store.getState().state.loading) {
+        store.dispatch(setLoading(false));
+      }
       return false;
     });
   return false;
