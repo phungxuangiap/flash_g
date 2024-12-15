@@ -1,13 +1,41 @@
 const asyncHandler = require("express-async-handler");
 const { Constants } = require("../middlewares/constants");
 const Card = require("../models/cardModel");
+const { DistanceFromDateToDate } = require("../helper");
 //@desc Get All Cards
 //@route api/card/:deskId
 //@access private
 const getAllCards = asyncHandler(async (req, res, next) => {
   const allCards = await Card.find({ desk_id: req.params.deskId });
   if (allCards) {
-    res.status(200).json(allCards);
+    if (req.query.current) {
+      //get current date
+      utcDate = new Date();
+      const vietnamTime = new Date(utcDate.getTime() + 7 * 60 * 60 * 1000);
+      let currentCards = allCards.filter((item) => {
+        // get last preview and convert it to vietnam time
+        const lastPreview = Date.parse(item.last_preview);
+        const lastPreviewDate = new Date(lastPreview);
+        const lastPreviewVietNamDate = new Date(
+          lastPreviewDate.getTime() + 7 * 60 * 60 * 1000
+        );
+        // return only cards need to preview (match expired time)
+        return (
+          Math.pow(2, item.level) <=
+          DistanceFromDateToDate(
+            lastPreviewVietNamDate.getDate(),
+            lastPreviewVietNamDate.getMonth(),
+            lastPreviewVietNamDate.getFullYear(),
+            vietnamTime.getDate(),
+            vietnamTime.getMonth(),
+            vietnamTime.getFullYear()
+          )
+        );
+      });
+      res.json(currentCards);
+    } else {
+      res.status(200).json(allCards);
+    }
   } else {
     res.status(Constants.NOT_FOUND);
     throw new Error("Not found");
@@ -24,7 +52,7 @@ const createCard = asyncHandler(async (req, res, next) => {
     desk_id: req.params.deskId,
     status: "NEW",
     level: 0,
-    last_preview: "17:30",
+    last_preview: new Date(),
     vocab,
     description,
     sentence,
@@ -59,4 +87,9 @@ const deleteCard = asyncHandler(async (req, res, next) => {
     throw new Error("Not Found");
   }
 });
-module.exports = { getAllCards, updateCard, deleteCard, createCard };
+module.exports = {
+  getAllCards,
+  updateCard,
+  deleteCard,
+  createCard,
+};
