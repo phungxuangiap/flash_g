@@ -45,6 +45,34 @@ const loginUser = asyncHandler(async (req, res, next) => {
   }
 });
 
+//@desc Get current User
+//@route GET /api/user/current
+//@route private
+const getCurrentUser = asyncHandler(async (req, res, next) => {
+  const header = req.headers.authorization || req.headers.Authorization;
+  let accessToken;
+  if (header) {
+    accessToken = header.split(" ")[1];
+  }
+  if (accessToken) {
+    jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        res.status(Constants.NOT_FOUND);
+        throw new Error("Unauthorized !");
+      } else {
+        res.status(200).json({
+          _id: decoded._id,
+          user_name: decoded.user_name,
+          email: decoded.email,
+        });
+      }
+    });
+  } else {
+    res.status(Constants.NOT_FOUND);
+    throw new Error("Missing access token");
+  }
+});
+
 //@desc Register User
 //@route POST /api/user/register
 //@access public
@@ -136,4 +164,10 @@ const logout = async (req, res, next) => {
   await res.status(200).json({ title: "Logout successfully!" });
 };
 
-module.exports = { loginUser, registerUser, refreshToken, logout };
+module.exports = {
+  loginUser,
+  registerUser,
+  refreshToken,
+  logout,
+  getCurrentUser,
+};

@@ -4,6 +4,7 @@ const {
   loginUser,
   refreshToken,
   logout,
+  getCurrentUser,
 } = require("../controllers/UserController");
 const validationHandler = require("../middlewares/validationHandler");
 const router = express.Router();
@@ -13,5 +14,6 @@ router.route("/login").post(loginUser);
 router.route("/refresh").get(refreshToken);
 router.use(validationHandler);
 router.route("/logout").post(logout);
+router.route("/current").get(getCurrentUser);
 
 module.exports = router;

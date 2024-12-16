@@ -4,6 +4,7 @@ import {AUTH, NO_AUTH} from '../../constants';
 const initialState = {
   authState: NO_AUTH,
   accessToken: null,
+  user: {},
 };
 const authSlice = createSlice({
   name: 'auth',
@@ -15,8 +16,11 @@ const authSlice = createSlice({
     refreshAccessToken: (state, action) => {
       state.accessToken = action.payload;
     },
+    setUser: (state, action) => {
+      state.user = action.payload;
+    },
   },
 });
 
-export const {changeAuth, refreshAccessToken} = authSlice.actions;
+export const {changeAuth, refreshAccessToken, setUser} = authSlice.actions;
 export default authSlice;

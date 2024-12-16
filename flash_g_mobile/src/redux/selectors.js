@@ -4,6 +4,9 @@ const loadingSelector = state => {
 const accessTokenSelector = state => {
   return state.auth.accessToken;
 };
+const userSelector = state => {
+  return state.auth.user;
+};
 const gameSelector = state => {
   return state.game.currentDesk;
 };
@@ -15,4 +18,5 @@ export {
   accessTokenSelector,
   gameSelector,
   currentCardsSelector,
+  userSelector,
 };

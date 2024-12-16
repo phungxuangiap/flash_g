@@ -8,7 +8,11 @@ import React, {
   useState,
 } from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {accessTokenSelector, loadingSelector} from '../../redux/selectors';
+import {
+  accessTokenSelector,
+  loadingSelector,
+  userSelector,
+} from '../../redux/selectors';
 import axios from 'axios';
 import {refresh} from '../../service/refreshAccessToken';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
@@ -26,6 +30,7 @@ import {
 } from '../../appComponents/appComponents';
 import createDesk from '../../service/createDesk';
 import {updateCurrentDesk} from '../../redux/slices/gameSlice';
+import {setUser} from '../../redux/slices/authSlice';
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
   const [data, setData] = useState([]);
@@ -34,9 +39,26 @@ export default function DeskBoardScreen() {
   const loading = useSelector(loadingSelector);
   const [inputCreateDesk, setInputCreateDesk] = useState('');
   const [showCreateDesk, setShowCreateDesk] = useState(false);
-  function fetchData(accessToken) {
+  const currentUser = useSelector(userSelector);
+
+  async function fetchCurrentUser(accessToken) {
+    await axios
+      .get('http://192.168.102.15:5001/api/user/current', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+      .then(res => {
+        dispatch(setUser(res.data));
+        console.log('[USER]', store.getState().auth.user);
+      })
+      .catch(err => {
+        console.log('Get user error with message:', err);
+      });
+  }
+  async function fetchAllDesks(accessToken) {
     dispatch(setLoading(true));
-    axios
+    await axios
       .get('http://192.168.102.15:5001/api/desk/', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -53,11 +75,19 @@ export default function DeskBoardScreen() {
       .finally(() => {
         dispatch(setLoading(false));
       });
+    fetchCurrentUser(accessToken);
   }
+  function fetchAllCurrentCard() {}
+  // This call each time move to bottom bar navigation: Fetch remote data, store data in local storage
+  useEffect(() => {
+    fetchAllDesks(actk);
+    console.log('fetch remote');
+  }, []);
+  // This call each time navigate from another bottombar navigation item to desk screen: Fetch local data, update redux state
   useFocusEffect(
     React.useCallback(() => {
-      fetchData(actk);
-    }, [actk, navigation]),
+      console.log('fetch local');
+    }, []),
   );
   return loading ? (
     <LoadingOverlay />
