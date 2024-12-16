@@ -1,12 +1,12 @@
 import {configureStore} from '@reduxjs/toolkit';
 import authSlice from './slices/authSlice';
 import stateSlice from './slices/stateSlice';
-import deskSlice from './slices/deskSlice';
+import gameSlice from './slices/gameSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authSlice.reducer,
     state: stateSlice.reducer,
-    desk: deskSlice.reducer,
+    game: gameSlice.reducer,
   },
 });

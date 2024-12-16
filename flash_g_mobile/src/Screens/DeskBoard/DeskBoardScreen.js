@@ -25,7 +25,7 @@ import {
   OverLay,
 } from '../../appComponents/appComponents';
 import createDesk from '../../service/createDesk';
-import {updateCurrentDesk} from '../../redux/slices/deskSlice';
+import {updateCurrentDesk} from '../../redux/slices/gameSlice';
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
   const [data, setData] = useState([]);
@@ -37,7 +37,7 @@ export default function DeskBoardScreen() {
   function fetchData(accessToken) {
     dispatch(setLoading(true));
     axios
-      .get('http://192.168.102.15:5001/api/desk/', {
+      .get('http://192.168.102.51:5001/api/desk/', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

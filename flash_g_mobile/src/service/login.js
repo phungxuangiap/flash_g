@@ -5,8 +5,9 @@ import {setLoading} from '../redux/slices/stateSlice';
 import {Alert} from 'react-native';
 
 const login = (email, password, navigate) => {
+  console.log(process.env.REACT_APP_URL);
   axios
-    .post('http://192.168.102.15:5001/api/user/login', {
+    .post('http://192.168.102.51:5001/api/user/login', {
       email,
       password,
     })
