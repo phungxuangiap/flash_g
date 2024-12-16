@@ -35,7 +35,7 @@ export default function CardScreen() {
   function fetchData(accessToken) {
     dispatch(setLoading(true));
     axios
-      .get(`http://192.168.102.51:5001/api/card/${desk._id}`, {
+      .get(`http://192.168.102.15:5001/api/card/${desk._id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

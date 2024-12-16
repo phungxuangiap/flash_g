@@ -6,7 +6,7 @@ import {refresh} from './refreshAccessToken';
 const logout = async accessToken => {
   await axios
     .post(
-      'http://192.168.102.51:5001/api/user/logout',
+      'http://192.168.102.15:5001/api/user/logout',
       {
         body: 'body of logout post request',
       },

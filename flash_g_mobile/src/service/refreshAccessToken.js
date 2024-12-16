@@ -4,7 +4,7 @@ import {refreshAccessToken} from '../redux/slices/authSlice';
 
 const refresh = async () => {
   await axios
-    .get('http://192.168.102.51:5001/api/user/refresh')
+    .get('http://192.168.102.15:5001/api/user/refresh')
     .then(res => {
       store.dispatch(refreshAccessToken(res.data.access_token));
     })

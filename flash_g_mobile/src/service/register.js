@@ -6,7 +6,7 @@ import {setLoading} from '../redux/slices/stateSlice';
 
 const register = (email, password, user_name, navigateToAnotherScreen) => {
   axios
-    .post('http://192.168.102.51:5001/api/user/register', {
+    .post('http://192.168.102.15:5001/api/user/register', {
       user_name,
       password,
       email,

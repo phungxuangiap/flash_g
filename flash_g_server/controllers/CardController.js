@@ -42,6 +42,24 @@ const getAllCards = asyncHandler(async (req, res, next) => {
   }
 });
 
+//@desc Update Changed Cards
+//@route api/card/:deskId
+//@access private
+const updateChangedCards = asyncHandler(async (req, res, next) => {
+  const listCardsUpdated = req.body?.cards_changed;
+  if (!listCardsUpdated) {
+    res.status(200).json({ message: "Nothing need to update" });
+  } else {
+    await listCardsUpdated.forEach(async (item) => {
+      const cardChanged = await Card.findByIdAndUpdate(item._id, item, {
+        new: true,
+      });
+      console.log("[Card]", cardChanged);
+    });
+    res.status(200).json({ message: "All changes are updated" });
+  }
+});
+
 //@desc Create New Card
 //@route api/card/:deskId
 //@access private
@@ -92,4 +110,5 @@ module.exports = {
   updateCard,
   deleteCard,
   createCard,
+  updateChangedCards,
 };
