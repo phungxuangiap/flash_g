@@ -31,6 +31,7 @@ import {
 import createDesk from '../../service/createDesk';
 import {updateCurrentDesk} from '../../redux/slices/gameSlice';
 import {setUser} from '../../redux/slices/authSlice';
+import {getData, storeData} from '../../service/asyncStorageService';
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
   const [data, setData] = useState([]);
@@ -40,23 +41,25 @@ export default function DeskBoardScreen() {
   const [inputCreateDesk, setInputCreateDesk] = useState('');
   const [showCreateDesk, setShowCreateDesk] = useState(false);
   const currentUser = useSelector(userSelector);
-
-  async function fetchCurrentUser(accessToken) {
+  // Fetch current user, store in state, store all desk receiving from getAllDesk request to local storage with key is user_id
+  async function fetchCurrentUser(accessToken, respone) {
     await axios
       .get('http://192.168.102.15:5001/api/user/current', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       })
-      .then(res => {
+      .then(async res => {
+        // Store desks to user_id key
+        await storeData(res.data._id, JSON.stringify(respone.data));
         dispatch(setUser(res.data));
-        console.log('[USER]', store.getState().auth.user);
       })
       .catch(err => {
         console.log('Get user error with message:', err);
       });
+    return respone;
   }
-  async function fetchAllDesks(accessToken) {
+  async function fetchAllInfos(accessToken) {
     dispatch(setLoading(true));
     await axios
       .get('http://192.168.102.15:5001/api/desk/', {
@@ -65,28 +68,50 @@ export default function DeskBoardScreen() {
         },
       })
       .then(res => {
-        console.log('Get data successfully');
+        // fetch current user after we fetched all desk
+        // return a promise to assure that fetchCurrentUser will be done before going down to the second .then
+        return fetchCurrentUser(accessToken, res);
+      })
+      .then(async res => {
+        console.log('Get all desks successfully');
         setData(res.data);
+        res.data.forEach(element => {
+          if (element._id) {
+            fetchAllCurrentCard(element._id);
+          } else {
+            console.log('Card is not valid');
+          }
+        });
       })
       .catch(async err => {
-        console.log('Get data error with message ', err);
+        console.log('Get all desks error with message ', err);
         await refresh();
       })
       .finally(() => {
         dispatch(setLoading(false));
       });
-    fetchCurrentUser(accessToken);
   }
-  function fetchAllCurrentCard() {}
+  async function fetchAllCurrentCard(deskId) {
+    await axios
+      .get(`http://192.168.102.15:5001/api/card/${deskId}`)
+      .then(res => {
+        console.log(`Get all current card of id ${deskId} successfully`);
+        return storeData(deskId, JSON.stringify(res.data));
+      })
+      .catch(err => {
+        console.log('Get current cards error with message:', err);
+      });
+  }
   // This call each time move to bottom bar navigation: Fetch remote data, store data in local storage
   useEffect(() => {
-    fetchAllDesks(actk);
-    console.log('fetch remote');
+    fetchAllInfos(actk);
   }, []);
   // This call each time navigate from another bottombar navigation item to desk screen: Fetch local data, update redux state
+  async function getDataLocal() {}
+  // mỗi lần về desk sẽ tính toán lại new, inprogress, preview của từng desk và cập nhật lại trong desk object
   useFocusEffect(
     React.useCallback(() => {
-      console.log('fetch local');
+      getDataLocal();
     }, []),
   );
   return loading ? (
