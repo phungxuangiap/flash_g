@@ -3,11 +3,12 @@ import {changeAuth, refreshAccessToken} from '../redux/slices/authSlice';
 import {store} from '../redux/store';
 import {setLoading} from '../redux/slices/stateSlice';
 import {Alert} from 'react-native';
+import {REACT_APP_URL} from '@env';
 
 const login = (email, password, navigate) => {
   console.log(process.env.REACT_APP_URL);
   axios
-    .post('http://192.168.102.15:5001/api/user/login', {
+    .post(`http://${REACT_APP_URL}/api/user/login`, {
       email,
       password,
     })

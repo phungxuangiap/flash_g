@@ -3,10 +3,11 @@ import {Alert} from 'react-native';
 import {store} from '../redux/store';
 import {changeAuth, refreshAccessToken} from '../redux/slices/authSlice';
 import {setLoading} from '../redux/slices/stateSlice';
+import {REACT_APP_URL} from '@env';
 
 const register = (email, password, user_name, navigateToAnotherScreen) => {
   axios
-    .post('http://192.168.102.15:5001/api/user/register', {
+    .post(`http://${REACT_APP_URL}/api/user/register`, {
       user_name,
       password,
       email,

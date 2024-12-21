@@ -25,15 +25,6 @@ const deskSchema = mongoose.Schema({
   preview_card: {
     type: Number,
   },
-  progress_new_card: {
-    type: Array,
-  },
-  progress_progress_card: {
-    type: Array,
-  },
-  progress_preview_card: {
-    type: Array,
-  },
 });
 
 module.exports = mongoose.model("Desk", deskSchema);

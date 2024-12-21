@@ -53,9 +53,6 @@ const createNewDesk = asyncHandler(async (req, res, next) => {
       new_card: 0,
       inprogress_card: 0,
       preview_card: 0,
-      progress_new_card: new Array(),
-      progress_progress_card: new Array(),
-      progress_preview_card: new Array(),
     });
 
     console.log(newDesk);

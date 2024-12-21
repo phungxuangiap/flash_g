@@ -17,7 +17,6 @@ import {login} from '../../service/login';
 import {useDispatch, useSelector} from 'react-redux';
 import {loadingSelector} from '../../redux/selectors';
 import {setLoading} from '../../redux/slices/stateSlice';
-
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

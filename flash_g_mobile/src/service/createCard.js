@@ -3,6 +3,7 @@ import {store} from '../redux/store';
 import {changeAuth, refreshAccessToken} from '../redux/slices/authSlice';
 import {setLoading} from '../redux/slices/stateSlice';
 import {refresh} from './refreshAccessToken';
+import {REACT_APP_URL} from '@env';
 
 export default async function createCard(
   accessToken,
@@ -16,7 +17,7 @@ export default async function createCard(
   console.log(desk._id);
   await axios
     .post(
-      `http://192.168.102.15:5001/api/card/${desk._id}`,
+      `http://${REACT_APP_URL}/api/card/${desk._id}`,
       {
         vocab,
         description,

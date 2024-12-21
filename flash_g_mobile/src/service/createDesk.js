@@ -3,17 +3,19 @@ import {store} from '../redux/store';
 import {changeAuth, refreshAccessToken} from '../redux/slices/authSlice';
 import {setLoading} from '../redux/slices/stateSlice';
 import {refresh} from './refreshAccessToken';
+import {REACT_APP_URL} from '@env';
+import {updateCurrentDesks} from '../redux/slices/gameSlice';
 
 export default async function createDesk(
   title,
   primary_color,
   accessToken,
   data,
-  setData,
+  dispatch,
 ) {
   await axios
     .post(
-      'http://192.168.102.15:5001/api/desk',
+      `http://${REACT_APP_URL}/api/desk`,
       {
         title,
         primary_color,
@@ -26,7 +28,7 @@ export default async function createDesk(
     )
     .then(res => {
       console.log(data, res);
-      setData([...data, res.data]);
+      dispatch(updateCurrentDesks([...data, res.data]));
       console.log('Create desk successfully');
     })
     .catch(async err => {

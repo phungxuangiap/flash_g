@@ -20,6 +20,7 @@ import {setLoading} from '../../redux/slices/stateSlice';
 import axios from 'axios';
 import {refresh} from '../../service/refreshAccessToken';
 import {useNavigation} from '@react-navigation/native';
+import {REACT_APP_URL} from '@env';
 
 export default function CardScreen() {
   const desk = useSelector(gameSelector);
@@ -32,10 +33,11 @@ export default function CardScreen() {
   const accessToken = useSelector(accessTokenSelector);
   const navigation = useNavigation();
   const [data, setData] = useState(null);
+
   function fetchData(accessToken) {
     dispatch(setLoading(true));
     axios
-      .get(`http://192.168.102.15:5001/api/card/${desk._id}`, {
+      .get(`http://${REACT_APP_URL}/api/card/${desk._id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

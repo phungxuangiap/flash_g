@@ -2,11 +2,12 @@ import axios from 'axios';
 import {store} from '../redux/store';
 import {useSelector} from 'react-redux';
 import {refresh} from './refreshAccessToken';
+import {REACT_APP_URL} from '@env';
 
 const logout = async accessToken => {
   await axios
     .post(
-      'http://192.168.102.15:5001/api/user/logout',
+      `http://${REACT_APP_URL}/api/user/logout`,
       {
         body: 'body of logout post request',
       },

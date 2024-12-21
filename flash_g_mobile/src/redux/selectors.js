@@ -13,10 +13,14 @@ const gameSelector = state => {
 const currentCardsSelector = state => {
   return state.game.currentCards;
 };
+const currentDesks = state => {
+  return state.game.currentDesks;
+};
 export {
   loadingSelector,
   accessTokenSelector,
   gameSelector,
   currentCardsSelector,
   userSelector,
+  currentDesks,
 };
