@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -31,6 +31,7 @@ import {
   BottomBarNavigation,
   MainNavigation,
 } from './src/navigation/mainNavigation';
+import {AppContainer} from './AppContainer';
 
 function Section({children, title}) {
   const isDarkMode = useColorScheme() === 'dark';
@@ -70,15 +71,18 @@ if (__DEV__) {
   };
 }
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
   // To see all the requests in the chrome Dev tools in the network tab.
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+
+  // const isDarkMode = useColorScheme() === 'dark';
+  // const backgroundStyle = {
+  //   backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  // };
 
   return (
     <Provider store={store}>
-      <MainNavigation />
+      <AppContainer>
+        <MainNavigation />
+      </AppContainer>
     </Provider>
   );
 }

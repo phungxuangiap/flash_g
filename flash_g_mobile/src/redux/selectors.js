@@ -16,6 +16,9 @@ const currentCardsSelector = state => {
 const currentDesks = state => {
   return state.game.currentDesks;
 };
+const getLocalDatabaseSelector = state => {
+  return state.state.db;
+};
 export {
   loadingSelector,
   accessTokenSelector,
@@ -23,4 +26,5 @@ export {
   currentCardsSelector,
   userSelector,
   currentDesks,
+  getLocalDatabaseSelector,
 };

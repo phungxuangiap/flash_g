@@ -5,6 +5,7 @@ import React, {useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {
   accessTokenSelector,
+  currentDesks,
   gameSelector,
   loadingSelector,
 } from '../../redux/selectors';
@@ -21,6 +22,7 @@ import axios from 'axios';
 import {refresh} from '../../service/refreshAccessToken';
 import {useNavigation} from '@react-navigation/native';
 import {REACT_APP_URL} from '@env';
+import {updateCurrentDesks} from '../../redux/slices/gameSlice';
 
 export default function CardScreen() {
   const desk = useSelector(gameSelector);
@@ -30,10 +32,26 @@ export default function CardScreen() {
   const [description, setDescription] = useState('');
   const [sentence, setSentence] = useState('');
   const dispatch = useDispatch();
+  const listCurrentDesks = useSelector(currentDesks);
   const accessToken = useSelector(accessTokenSelector);
   const navigation = useNavigation();
   const [data, setData] = useState(null);
-
+  function updateDesk() {
+    let news = 0;
+    let in_progress = 0;
+    let preview = 0;
+    data &&
+      data.forEach(item => {
+        if (item.status === 'new') {
+          news++;
+        } else if (item.status === 'in_progress') {
+          in_progress++;
+        } else {
+          preview++;
+        }
+      });
+    console.log(news, in_progress, preview);
+  }
   function fetchData(accessToken) {
     dispatch(setLoading(true));
     axios
@@ -56,7 +74,7 @@ export default function CardScreen() {
   }
   useEffect(() => {
     fetchData(accessToken);
-  }, [accessToken]);
+  }, []);
   return (
     <View style={{flex: 1}}>
       <View

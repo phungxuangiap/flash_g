@@ -68,13 +68,9 @@ export async function fetchAllCurrentCard(deskId) {
       });
       return storeData(deskId, JSON.stringify(mapCurrentCards));
     })
-    .then(res => {
-      console.log('after get card');
-    })
     .catch(err => {
       console.log('Get current cards error with message:', err);
     });
-  console.log('end');
   return status;
 }
 export async function FetchAllCards(listDesks) {

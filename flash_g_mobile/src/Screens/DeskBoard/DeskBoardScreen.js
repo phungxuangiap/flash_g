@@ -42,7 +42,6 @@ import {
   fetchCurrentDesks,
   fetchCurrentUser,
 } from '../../service/fetchRemoteData';
-import Desk from '../../models/desk';
 // Flow ở đây sẽ là:
 // ++++Khi đăng nhập+++++++
 // Khi Login/Register thành công:
@@ -67,48 +66,21 @@ export default function DeskBoardScreen() {
   const [inputCreateDesk, setInputCreateDesk] = useState('');
   const [showCreateDesk, setShowCreateDesk] = useState(false);
   const currentUser = useSelector(userSelector);
-  console.log(data);
-  // Fetch current user, store in state, store all desk receiving from getAllDesk request to local storage with key is user_id
 
-  // async function fetchAllInfo(accessToken) {
-  //   dispatch(setLoading(true));
-  //   await axios
-  //     .get(`http://${REACT_APP_URL}/api/desk/`, {
-  //       headers: {
-  //         Authorization: `Bearer ${accessToken}`,
-  //       },
-  //     })
-  //     .then(res => {
-  //       // fetch current user after we fetched all desk
-  //       // return a promise to assure that fetchCurrentUser will be done before going down to the second .then
-  //       return fetchCurrentUser(accessToken, res);
-  //     })
-  //     .then(async res => {
-  //       console.log('Get all desks successfully');
-  //       setData(res.data);
-  //       return await FetchAllCards(res.data);
-  //     })
-  //     .catch(async err => {
-  //       console.log('Get all desks error with message ', err);
-  //       return await refresh();
-  //     })
-  //     .finally(() => {
-  //       console.log('END');
-  //       dispatch(setLoading(false));
-  //     });
-  // }
   async function fetchAllInfo() {
+    dispatch(setLoading(true));
+
     // Fetch current user and store in local storage, update redux state
-    const currentDesks = {};
+    const objectCurrentDesks = {};
     const listCurrentDesks = [];
     await fetchCurrentUser(actk, dispatch);
     console.log('after get user');
-    // Fetch tất cả current desk của user, khởi tạo current desk ở local user_id = {}
+    // Fetch all current desk of user, init current desks in local with user_id = {}
     const mapDesks = await fetchCurrentDesks(
       actk,
       store.getState().auth.user._id,
     );
-    // Duyệt từng desk và fetch tất cả các current cards của desk đó
+    // Go through each desk and fetch all current cards of this desk
     await Promise.all(
       mapDesks.map(async element => {
         if (element._id) {
@@ -123,7 +95,7 @@ export default function DeskBoardScreen() {
             inprogress_card: status.in_progress,
             preview_card: status.preview,
           };
-          currentDesks[element._id] = newDesk;
+          objectCurrentDesks[element._id] = newDesk;
           listCurrentDesks.push(newDesk);
         }
       }),
@@ -131,7 +103,7 @@ export default function DeskBoardScreen() {
     // Store list current desks updated in local storage
     await storeData(
       store.getState().auth.user._id,
-      JSON.stringify(currentDesks),
+      JSON.stringify(objectCurrentDesks),
     );
     // Store list current desks updated in redux
 
@@ -140,7 +112,6 @@ export default function DeskBoardScreen() {
   }
   // This call each time move to bottom bar navigation: Fetch remote data, store data in local storage and update redux state
   useEffect(() => {
-    dispatch(setLoading(true));
     fetchAllInfo(actk);
   }, []);
   // This call each time navigate from another bottombar navigation item to desk screen: Fetch local data, update redux state
@@ -148,6 +119,9 @@ export default function DeskBoardScreen() {
   useFocusEffect(
     React.useCallback(() => {
       // getDataLocal();
+      return () => {
+        console.log('unmount');
+      };
     }, []),
   );
   return loading ? (
