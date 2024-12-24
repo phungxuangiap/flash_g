@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, {useCallback, useEffect} from 'react';
+import React, {createContext, useCallback, useEffect} from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -32,6 +32,13 @@ import {
   MainNavigation,
 } from './src/navigation/mainNavigation';
 import {AppContainer} from './AppContainer';
+import {Desk, User} from './src/LocalDatabase/model';
+import {createNewDesk} from './src/LocalDatabase/database';
+import {databaseInitialization} from './src/LocalDatabase/databaseInitialization';
+import {
+  createNewDeskQuery,
+  updateDeskQuery,
+} from './src/LocalDatabase/dbQueries';
 
 function Section({children, title}) {
   const isDarkMode = useColorScheme() === 'dark';
@@ -70,6 +77,7 @@ if (__DEV__) {
     return xhrInstance;
   };
 }
+
 function App() {
   // To see all the requests in the chrome Dev tools in the network tab.
 
@@ -77,7 +85,36 @@ function App() {
   // const backgroundStyle = {
   //   backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   // };
-
+  useEffect(() => {
+    // Init local database.
+    databaseInitialization();
+    // .then(async db => {
+    //   await db.executeSql(updateDeskQuery, [
+    //     'new new new new desk',
+    //     'blue',
+    //     0,
+    //     0,
+    //     0,
+    //     '4',
+    //   ]);
+    //   return db;
+    // })
+    // .then(async db => {
+    //   const results = await db.executeSql('SELECT * FROM Desk');
+    //   const listUser: {
+    //     id: string,
+    //     email: string,
+    //     password: string,
+    //     user_name: string,
+    //   }[] = [];
+    //   results?.forEach(result => {
+    //     for (let index = 0; index < result.rows.length; index++) {
+    //       listUser.push(result.rows.item(index));
+    //     }
+    //   });
+    //   console.log(listUser);
+    // });
+  }, []);
   return (
     <Provider store={store}>
       <AppContainer>
