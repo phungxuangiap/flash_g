@@ -60,7 +60,7 @@ export async function getListCurrentDesks(): Promise<any> {
 export async function createNewCard(card: Card): Promise<any> {
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      await db.executeSql(createNewCardQuery, [card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type]);
+      await db.executeSql(createNewCardQuery, [card.id, card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type]);
     })
     .catch((error) => {
       console.log(error);
@@ -71,7 +71,8 @@ export async function getListCurrentCards(deskId:string): Promise<any> {
   const currentDate = new Date();
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      await db.executeSql(getListCurrentCardsQuery, [deskId, currentDate]);
+      return await db.executeSql(getListCurrentCardsQuery, [deskId, JSON.stringify(currentDate)]);
+      
     })
     .catch((error) => {
       console.log(error);
