@@ -27,10 +27,11 @@ const desk = `
 `;
 const card = `
    CREATE TABLE IF NOT EXISTS Card (
+        id TEXT PRIMARY KEY,
         desk_id TEXT,
         status TEXT,
         level INTEGER,
-        last_preview DATE,
+        last_preview TEXT,
         vocab TEXT,
         description TEXT,
         sentence TEXT,
@@ -54,7 +55,7 @@ const createNewUserQuery = `
         id, 
         email,
         password, 
-        user_name,) VALUES (?, ?, ?, ?, ?, ?, ?)
+        user_name) VALUES (?, ?, ?, ?)
 `;
 
 const updateDeskQuery = `
@@ -82,18 +83,17 @@ const getAllCardsQuery = `
 `;
 const createNewCardQuery = `
     INSERT INTO Card (
-        id = ?,
-        desk_id = ?,
-        status = ?,
-        level = ?,
-        last_preview = ?,
-        vocab = ?,
-        description = ?,
-        sentence = ?,
-        vocab_audio = ?,
-        sentence_audio = ?,
-        type = ?
-    ) VALUE (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id,
+        desk_id,
+        status,
+        level,
+        last_preview,
+        vocab,
+        description,
+        sentence,
+        vocab_audio,
+        sentence_audio,
+        type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 const updateCardQuery = `
     UPDATE Card SET 

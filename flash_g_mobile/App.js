@@ -32,11 +32,25 @@ import {
   MainNavigation,
 } from './src/navigation/mainNavigation';
 import {AppContainer} from './AppContainer';
-import {Desk, User} from './src/LocalDatabase/model';
-import {createNewDesk} from './src/LocalDatabase/database';
+import {Card, Desk, User} from './src/LocalDatabase/model';
+import {
+  createNewCard,
+  createNewDesk,
+  createNewUser,
+  deleteCard,
+  deleteDesk,
+  getAllCards,
+  getListCurrentDesks,
+  updateCard,
+  updateDesk,
+} from './src/LocalDatabase/database';
 import {databaseInitialization} from './src/LocalDatabase/databaseInitialization';
 import {
+  createNewCardQuery,
   createNewDeskQuery,
+  deleteDeskQuery,
+  getAllCardsQuery,
+  getListCurrentDesksQuery,
   updateDeskQuery,
 } from './src/LocalDatabase/dbQueries';
 
@@ -87,34 +101,48 @@ function App() {
   // };
   useEffect(() => {
     // Init local database.
-    databaseInitialization();
-    // .then(async db => {
-    //   await db.executeSql(updateDeskQuery, [
-    //     'new new new new desk',
-    //     'blue',
-    //     0,
-    //     0,
-    //     0,
-    //     '4',
-    //   ]);
-    //   return db;
-    // })
-    // .then(async db => {
-    //   const results = await db.executeSql('SELECT * FROM Desk');
-    //   const listUser: {
-    //     id: string,
-    //     email: string,
-    //     password: string,
-    //     user_name: string,
-    //   }[] = [];
-    //   results?.forEach(result => {
-    //     for (let index = 0; index < result.rows.length; index++) {
-    //       listUser.push(result.rows.item(index));
-    //     }
-    //   });
-    //   console.log(listUser);
-    // });
+    databaseInitialization()
+      .then(async db => {
+        await createNewCard(
+          new Card(
+            '1',
+            '1',
+            'DONE',
+            0,
+            JSON.stringify(new Date()),
+            'vocab1',
+            'desc1',
+            'sentence1',
+            'null',
+            'null',
+            'null',
+          ),
+        );
+        return db;
+      })
+      .then(async db => {
+        const data = await getAllCards();
+        let listCards = [];
+        data?.forEach(result => {
+          for (let index = 0; index < result.rows.length; index++) {
+            listCards.push(result.rows.item(index));
+          }
+        });
+        console.log('[DATA]', listCards);
+        return db;
+      })
+      .then(async db => {
+        const results = await getListCurrentDesks();
+        const listUser = [];
+        results?.forEach(result => {
+          for (let index = 0; index < result.rows.length; index++) {
+            listUser.push(result.rows.item(index));
+          }
+        });
+        console.log(listUser);
+      });
   }, []);
+
   return (
     <Provider store={store}>
       <AppContainer>

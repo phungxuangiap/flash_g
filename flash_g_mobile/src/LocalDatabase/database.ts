@@ -2,7 +2,7 @@ import {enablePromise, openDatabase} from 'react-native-sqlite-storage';
 import SQLite from "react-native-sqlite-storage";
 import { Desk, Card, User } from './model';
 import { getLocalDatabase } from './databaseInitialization';
-import { createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsQuery, getListCurrentCardsQuery, getListCurrentDesksQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
+import { createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsQuery, getListCurrentCardsQuery, getListCurrentDesksQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
 
 // This file contains all services interacting with data in the local database
 export interface Database {
@@ -26,7 +26,7 @@ export async function createNewDesk(desk: Desk): Promise<any> {
     .catch((error) => {
       console.log(error);
     });
-}
+} //OK
 export async function updateDesk(desk: Desk): Promise<any> {
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
@@ -35,8 +35,7 @@ export async function updateDesk(desk: Desk): Promise<any> {
     .catch((error) => {
       console.log(error);
     });
-
-}
+} //OK
 
 export async function deleteDesk(deskId: string): Promise<any> {
   return getLocalDatabase()
@@ -46,19 +45,28 @@ export async function deleteDesk(deskId: string): Promise<any> {
     .catch((error) => {
       console.log(error);
     });
-
-}
+} //OK
 
 export async function getListCurrentDesks(): Promise<any> {
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      await db.executeSql(getListCurrentDesksQuery);
+      return await db.executeSql(getListCurrentDesksQuery);
     })
     .catch((error) => {
       console.log(error);
     });
+} //OK
 
-}
+export async function createNewCard(card: Card): Promise<any> {
+  return getLocalDatabase()
+    .then(async (db: SQLite.SQLiteDatabase) => {
+      await db.executeSql(createNewCardQuery, [card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type]);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+} //OK
+
 export async function getListCurrentCards(deskId:string): Promise<any> {
   const currentDate = new Date();
   return getLocalDatabase()
@@ -68,27 +76,17 @@ export async function getListCurrentCards(deskId:string): Promise<any> {
     .catch((error) => {
       console.log(error);
     });
-}
+} 
 
 export async function getAllCards(): Promise<any>{
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase)=>{
-      await db.executeSql(getAllCardsQuery);
+      return await db.executeSql(getAllCardsQuery);
     })
     .catch((error) => {
       console.log(error);
     });
-}
-
-export async function createNewCard(card: Card): Promise<any> {
-  return getLocalDatabase()
-    .then(async (db: SQLite.SQLiteDatabase) => {
-      await db.executeSql(createNewUserQuery, [card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type]);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-}
+} // OK
 
 export async function updateCard(card: Card): Promise<any> {
   return getLocalDatabase()
@@ -98,7 +96,7 @@ export async function updateCard(card: Card): Promise<any> {
     .catch((error) => {
       console.log(error);
     });
-}
+} //OK
 
 export async function deleteCard(cardId: string): Promise<any> {
   return getLocalDatabase()
@@ -108,7 +106,7 @@ export async function deleteCard(cardId: string): Promise<any> {
     .catch(error=>{
       console.log(error);
     });
-}
+} //OK
 
 export async function createNewUser(user: User): Promise<any> {
   return getLocalDatabase()
@@ -118,7 +116,7 @@ export async function createNewUser(user: User): Promise<any> {
     .catch((error) => {
       console.log(error);
     });
-}
+} //OK
 
 export const database: Database = {
   createNewDesk,
