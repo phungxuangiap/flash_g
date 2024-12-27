@@ -23,7 +23,7 @@ export async function fetchCurrentUser(accessToken, dispatch) {
     });
 }
 // Fetch current desks, set initial value of current desks in local: user_id = {}
-export async function fetchCurrentDesks(accessToken, userId) {
+export async function fetchListDesks(accessToken, userId) {
   let mapDesks = [];
   await axios
     .get(`http://${REACT_APP_URL}/api/desk/`, {
@@ -45,7 +45,7 @@ export async function fetchCurrentDesks(accessToken, userId) {
 }
 
 // Fetch all current cards of a desk, store in local storage with format desk_id = {card_id: card}, return object containing 3 status of card
-export async function fetchAllCurrentCard(deskId) {
+export async function fetchAllCurrentCardOfDesk(deskId) {
   let mapCurrentCards = {};
   let status = {
     new: 0,
@@ -73,10 +73,10 @@ export async function fetchAllCurrentCard(deskId) {
     });
   return status;
 }
-export async function FetchAllCards(listDesks) {
+export async function fetchAllCurrentCards(listDesks) {
   listDesks.forEach(element => {
     if (element._id) {
-      fetchAllCurrentCard(element._id);
+      fetchAllCurrentCardOfDesk(element._id);
     } else {
       console.log('Card is not valid');
     }

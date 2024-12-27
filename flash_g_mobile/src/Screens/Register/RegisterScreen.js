@@ -1,4 +1,5 @@
 import {
+  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -9,17 +10,24 @@ import React, {useState} from 'react';
 import {
   ClickableText,
   InputTag,
+  LoadingOverlay,
   WrapContentButton,
 } from '../../appComponents/appComponents';
 import {useNavigation} from '@react-navigation/native';
 import {register} from '../../service/register';
+import {useDispatch, useSelector} from 'react-redux';
+import {changeAuth, refreshAccessToken} from '../../redux/slices/authSlice';
+import {setLoading} from '../../redux/slices/stateSlice';
+import {loadingSelector} from '../../redux/selectors';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [userName, setUserName] = useState('');
   const [retypePassword, setRetypePassword] = useState('');
+  const loadingState = useSelector(loadingSelector);
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   return (
     <View style={style.container}>
       <InputTag placeholder={'Email'} value={email} onValueChange={setEmail} />
@@ -41,8 +49,18 @@ export default function RegisterScreen() {
       <WrapContentButton
         content={'Register'}
         onClick={() => {
-          register(email, password, userName);
-          navigation.navigate('BottomBar');
+          dispatch(setLoading(true));
+          register(email, password, userName)
+            .then(accessToken => {
+              dispatch(refreshAccessToken(accessToken));
+              dispatch(changeAuth());
+              dispatch(setLoading(false));
+              navigation.navigate('BottomBar');
+            })
+            .catch(err => {
+              Alert.alert('Email is already used!');
+              dispatch(setLoading(false));
+            });
         }}
       />
       <ClickableText
@@ -51,6 +69,7 @@ export default function RegisterScreen() {
           navigation.navigate('Login');
         }}
       />
+      {loadingState ? <LoadingOverlay /> : <></>}
     </View>
   );
 }

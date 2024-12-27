@@ -1,14 +1,14 @@
 const userPreferencesQuery = `
     CREATE TABLE IF NOT EXISTS UserPreferences (
-        id INTEGER DEFAULT 1,
+        _id INTEGER DEFAULT 1,
         colorPreference TEXT,
         languagePreference TEXT,
-        PRIMARY KEY(id)
+        PRIMARY KEY(_id)
     )
 `;
 const user = `
     CREATE TABLE IF NOT EXISTS User (
-        id TEXT PRIMARY KEY,
+        _id TEXT PRIMARY KEY,
         email TEXT,
         password TEXT,
         user_name TEXT,
@@ -17,7 +17,7 @@ const user = `
 `;
 const desk = `
    CREATE TABLE IF NOT EXISTS Desk (
-        id TEXT PRIMARY KEY,
+        _id TEXT PRIMARY KEY,
         user_id TEXT,
         title TEXT,
         primary_color TEXT,
@@ -29,7 +29,7 @@ const desk = `
 `;
 const card = `
    CREATE TABLE IF NOT EXISTS Card (
-        id TEXT PRIMARY KEY,
+        _id TEXT PRIMARY KEY,
         desk_id TEXT,
         status TEXT,
         level INTEGER,
@@ -45,7 +45,7 @@ const card = `
 `;
 const createNewDeskQuery = `
     INSERT INTO Desk (
-        id, 
+        _id, 
         user_id, 
         title, 
         primary_color, 
@@ -56,7 +56,7 @@ const createNewDeskQuery = `
 `;
 const createNewUserQuery = `
     INSERT INTO User (
-        id, 
+        _id, 
         email,
         password, 
         user_name,
@@ -71,25 +71,28 @@ const updateDeskQuery = `
         inprogress_card = ?,
         preview_card = ?,
         modified_time = ${JSON.stringify(new Date())}        
-    WHERE id = ?
+    WHERE _id = ?
 `;
 const deleteDeskQuery = `
-    DELETE FROM Desk WHERE id = ?
+    DELETE FROM Desk WHERE _id = ?
 `;
 
-const getListCurrentDesksQuery = `
+const getListDesksQuery = `
     SELECT * FROM Desk
 `;
 
-const getListCurrentCardsQuery = `
+const getListCurrentCardsOfDeskQuery = `
     SELECT * FROM Card WHERE desk_id = ? AND last_preview <= ?
+`;
+const getListCurrentCardsQuery = `
+    SELECT * FROM Card WHERE last_preview <=?
 `;
 const getAllCardsQuery = `
     SELECT * FROM Card
 `;
 const createNewCardQuery = `
     INSERT INTO Card (
-        id,
+        _id,
         desk_id,
         status,
         level,
@@ -114,17 +117,20 @@ const updateCardQuery = `
         sentence_audio = ?,
         type = ?,
         modified_time = ${JSON.stringify(new Date())}
-    WHERE id = ?
+    WHERE _id = ?
 `;
 const deleteCardQuery = `
-    DELETE FROM Card WHERE id = ?
+    DELETE FROM Card WHERE _id = ?
 `;
 
 export {
     card, desk, user, userPreferencesQuery
     , createNewDeskQuery, createNewUserQuery
     , updateDeskQuery, deleteDeskQuery
-    , getListCurrentDesksQuery, getListCurrentCardsQuery
+    , getListDesksQuery, getListCurrentCardsOfDeskQuery
     , getAllCardsQuery, createNewCardQuery
     , updateCardQuery, deleteCardQuery,
+    getListCurrentCardsQuery,
 };
+
+

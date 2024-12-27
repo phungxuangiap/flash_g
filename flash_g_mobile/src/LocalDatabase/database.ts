@@ -2,15 +2,16 @@ import {enablePromise, openDatabase} from 'react-native-sqlite-storage';
 import SQLite from "react-native-sqlite-storage";
 import { Desk, Card, User } from './model';
 import { getLocalDatabase } from './databaseInitialization';
-import { createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsQuery, getListCurrentCardsQuery, getListCurrentDesksQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
+import { createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsQuery, getListCurrentCardsOfDeskQuery, getListCurrentCardsQuery, getListDesksQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
 
 // This file contains all services interacting with data in the local database
 export interface Database {
   createNewDesk: (desk: Desk) => Promise<any>;
   updateDesk: (desk: Desk) => Promise<any>;
   deleteDesk: (deskId: string) => Promise<any>;
-  getListCurrentDesks: () => Promise<any[]>;
-  getListCurrentCards: (deskId: string) => Promise<any[]>;
+  getListDesks: () => Promise<any[]>;
+  getListCurrentCardsOfDesk: (deskId: string) => Promise<any[]>;
+  getListCurrentCards: () => Promise<any[]>;
   getAllCards: () => Promise<any[]>;
   createNewCard: (card: Card, desk_id:string) => Promise<any>;
   updateCard: (card: Card) => Promise<any>;
@@ -47,10 +48,10 @@ export async function deleteDesk(deskId: string): Promise<any> {
     });
 } //OK
 
-export async function getListCurrentDesks(): Promise<any> {
+export async function getListDesks(): Promise<any> {
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      return await db.executeSql(getListCurrentDesksQuery);
+      return await db.executeSql(getListDesksQuery);
     })
     .catch((error) => {
       console.log(error);
@@ -67,17 +68,27 @@ export async function createNewCard(card: Card): Promise<any> {
     });
 } //OK
 
-export async function getListCurrentCards(deskId:string): Promise<any> {
+export async function getListCurrentCardsOfDesk(deskId:string): Promise<any> {
   const currentDate = new Date();
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      return await db.executeSql(getListCurrentCardsQuery, [deskId, JSON.stringify(currentDate)]);
+      return await db.executeSql(getListCurrentCardsOfDeskQuery, [deskId, JSON.stringify(currentDate)]);
       
     })
     .catch((error) => {
       console.log(error);
     });
 } //OK
+
+export async function getListCurrentCards(): Promise<any[]> {
+  return getLocalDatabase()
+    .then(async (db:SQLite.SQLiteDatabase)=>{
+      return await db.executeSql(getListCurrentCardsQuery, [JSON.stringify(new Date())]);
+    })
+    .catch(err=>{
+      console.log(err);
+    });
+}
 
 export async function getAllCards(): Promise<any>{
   return getLocalDatabase()
@@ -123,7 +134,8 @@ export const database: Database = {
   createNewDesk,
   updateDesk,
   deleteDesk,
-  getListCurrentDesks,
+  getListDesks,
+  getListCurrentCardsOfDesk,
   getListCurrentCards,
   getAllCards,
   createNewCard,

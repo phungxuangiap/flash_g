@@ -1,4 +1,5 @@
 import {
+  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -17,6 +18,7 @@ import {login} from '../../service/login';
 import {useDispatch, useSelector} from 'react-redux';
 import {loadingSelector} from '../../redux/selectors';
 import {setLoading} from '../../redux/slices/stateSlice';
+import {changeAuth, refreshAccessToken} from '../../redux/slices/authSlice';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,12 +36,19 @@ export default function LoginScreen() {
       <WrapContentButton
         content={'Login'}
         onClick={() => {
-          if (!loadingState) {
-            dispatch(setLoading(true));
-          }
-          login(email, password, direction => {
-            navigation.navigate(direction);
-          });
+          dispatch(setLoading(true));
+          login(email, password)
+            .then(accessToken => {
+              dispatch(changeAuth());
+              dispatch(refreshAccessToken(accessToken));
+              dispatch(setLoading(false));
+              navigation.navigate('BottomBar');
+            })
+            .catch(err => {
+              Alert.alert('Email or Password is invalid', '');
+              console.log('Login error with message:', err);
+              dispatch(setLoading(false));
+            });
         }}
       />
       <ClickableText

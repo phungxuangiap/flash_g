@@ -54,7 +54,10 @@ import {
   getListCurrentDesksQuery,
   updateDeskQuery,
 } from './src/LocalDatabase/dbQueries';
-import {syncDesk} from './src/LocalDatabase/syncDBService';
+import {
+  mergeLocalAndRemoteData,
+  syncDesk,
+} from './src/LocalDatabase/syncDBService';
 
 function Section({children, title}) {
   const isDarkMode = useColorScheme() === 'dark';
@@ -103,72 +106,75 @@ function App() {
   // };
   useEffect(() => {
     // Init local database.
-    databaseInitialization()
-      .then(async db => {
-        await createNewCard(
-          new Card(
-            '1',
-            '1',
-            'DONE',
-            0,
-            JSON.stringify(new Date()),
-            'vocab1',
-            'desc1',
-            'sentence1',
-            'null',
-            'null',
-            'null',
-          ),
-        );
-        return db;
-      })
-      // .then(async db => {
-      //   await createNewCard(
-      //     new Card(
-      //       '2',
-      //       '1',
-      //       'DONE',
-      //       0,
-      //       JSON.stringify(new Date()),
-      //       'vocab1',
-      //       'desc1',
-      //       'sentence1',
-      //       'null',
-      //       'null',
-      //       'null',
-      //     ),
-      //   );
-      //   return db;
-      // })
-      // .then(async db => {
-      //   await createNewCard(
-      //     new Card(
-      //       '3',
-      //       '1',
-      //       'DONE',
-      //       0,
-      //       JSON.stringify(new Date()),
-      //       'vocab1',
-      //       'desc1',
-      //       'sentence1',
-      //       'null',
-      //       'null',
-      //       'null',
-      //     ),
-      //   );
-      //   return db;
-      // })
-      .then(async db => {
-        const data = await getListCurrentCards('1');
-        let listCards = [];
-        data?.forEach(result => {
-          for (let index = 0; index < result.rows.length; index++) {
-            listCards.push(result.rows.item(index));
-          }
-        });
-        console.log('[CURRENT CARDS]', listCards);
-        return db;
-      });
+    databaseInitialization();
+    // .then(async db => {
+    //   await createNewCard(
+    //     new Card(
+    //       '1',
+    //       '1',
+    //       'DONE',
+    //       0,
+    //       JSON.stringify(new Date()),
+    //       'vocab1',
+    //       'desc1',
+    //       'sentence1',
+    //       'null',
+    //       'null',
+    //       'null',
+    //     ),
+    //   );
+    //   return db;
+    // })
+    // .then(async db => {
+    //   await syncDesk({}, '1');
+    // });
+    // .then(async db => {
+    //   await createNewCard(
+    //     new Card(
+    //       '2',
+    //       '1',
+    //       'DONE',
+    //       0,
+    //       JSON.stringify(new Date()),
+    //       'vocab1',
+    //       'desc1',
+    //       'sentence1',
+    //       'null',
+    //       'null',
+    //       'null',
+    //     ),
+    //   );
+    //   return db;
+    // })
+    // .then(async db => {
+    //   await createNewCard(
+    //     new Card(
+    //       '3',
+    //       '1',
+    //       'DONE',
+    //       0,
+    //       JSON.stringify(new Date()),
+    //       'vocab1',
+    //       'desc1',
+    //       'sentence1',
+    //       'null',
+    //       'null',
+    //       'null',
+    //     ),
+    //   );
+    //   return db;
+    // })
+    // .then(async db => {
+    //   const data = await getListCurrentCards('1');
+    //   let listCards = [];
+    //   data?.forEach(result => {
+    //     for (let index = 0; index < result.rows.length; index++) {
+    //       listCards.push(result.rows.item(index));
+    //     }
+    //   });
+    //   console.log('[CURRENT CARDS]', data[0].rows.item(0));
+    //   return db;
+    // });
     // .then(async db => {
     //   const data = await getAllCards();
     //   let listCards = [];

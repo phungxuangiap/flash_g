@@ -38,8 +38,8 @@ import {setUser} from '../../redux/slices/authSlice';
 import {getData, storeData} from '../../service/asyncStorageService';
 import {REACT_APP_URL} from '@env';
 import {
-  fetchAllCurrentCard,
-  fetchCurrentDesks,
+  fetchAllCurrentCardOfDesk,
+  fetchListDesks,
   fetchCurrentUser,
 } from '../../service/fetchRemoteData';
 // Flow ở đây sẽ là:
@@ -76,15 +76,12 @@ export default function DeskBoardScreen() {
     await fetchCurrentUser(actk, dispatch);
     console.log('after get user');
     // Fetch all current desk of user, init current desks in local with user_id = {}
-    const mapDesks = await fetchCurrentDesks(
-      actk,
-      store.getState().auth.user._id,
-    );
+    const mapDesks = await fetchListDesks(actk, store.getState().auth.user._id);
     // Go through each desk and fetch all current cards of this desk
     await Promise.all(
       mapDesks.map(async element => {
         if (element._id) {
-          const status = await fetchAllCurrentCard(element._id);
+          const status = await fetchAllCurrentCardOfDesk(element._id);
           // update current desk in local storage
           const newDesk = {
             user_id: store.getState().auth.user._id,
