@@ -62,16 +62,32 @@ const createNewUserQuery = `
         user_name,
         modified_time) VALUES (?, ?, ?, ?, ${JSON.stringify(new Date())})
 `;
-
+const getUserQuery = `
+    SELECT * FROM User
+`;
+const deleteUserQuery = `
+    DELETE FROM User WHERE _id = ?
+`;
 const updateDeskQuery = `
-    UPDATE Desk SET 
-        title = ?,
-        primary_color = ?,
-        new_card = ?,
-        inprogress_card = ?,
-        preview_card = ?,
-        modified_time = ${JSON.stringify(new Date())}        
-    WHERE _id = ?
+    INSERT INTO Desk (
+        _id,
+        user_id,
+        title,
+        primary_color,
+        new_card,
+        inprogress_card,
+        preview_card,
+        modified_time
+    ) VALUES(?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
+    ON CONFLICT(_id) DO UPDATE SET 
+        _id = excluded._id,
+        user_id = excluded.user_id,
+        title = excluded.title,
+        primary_color = excluded.primary_color,
+        new_card = excluded.new_card,
+        inprogress_card = excluded.inprogress_card,
+        preview_card = excluded.preview_card,
+        modified_time = ${JSON.stringify(new Date())}    
 `;
 const deleteDeskQuery = `
     DELETE FROM Desk WHERE _id = ?
@@ -106,19 +122,35 @@ const createNewCardQuery = `
         modified_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
 `;
 const updateCardQuery = `
-    UPDATE Card SET 
-        status = ?,
-        level = ?,
-        last_preview = ?,
-        vocab = ?,
-        description = ?,
-        sentence = ?,
-        vocab_audio = ?,
-        sentence_audio = ?,
-        type = ?,
-        modified_time = ${JSON.stringify(new Date())}
-    WHERE _id = ?
+    INSERT INTO Card (
+        _id,
+        desk_id,
+        status,
+        level,
+        last_preview,
+        vocab,
+        description,
+        sentence,
+        vocab_audio,
+        sentence_audio,
+        type,
+        modified_time
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
+    ON CONFLICT(_id) DO UPDATE SET
+        _id = excluded._id,
+        desk_id = excluded.desk_id,
+        status = excluded.status,
+        level = excluded.level,
+        last_preview = excluded.last_preview,
+        vocab = excluded.vocab,
+        description = excluded.description,
+        sentence = excluded.sentence,
+        vocab_audio = excluded.vocab_audio,
+        sentence_audio = excluded.sentence_audio,
+        type = excluded.type,
+        modified_time = ${JSON.stringify(new Date())};
 `;
+
 const deleteCardQuery = `
     DELETE FROM Card WHERE _id = ?
 `;
@@ -131,6 +163,8 @@ export {
     , getAllCardsQuery, createNewCardQuery
     , updateCardQuery, deleteCardQuery,
     getListCurrentCardsQuery,
+    getUserQuery,
+    deleteUserQuery,
 };
 
 

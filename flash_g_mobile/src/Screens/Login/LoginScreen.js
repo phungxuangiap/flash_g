@@ -39,6 +39,7 @@ export default function LoginScreen() {
           dispatch(setLoading(true));
           login(email, password)
             .then(accessToken => {
+              console.log('Login successfully !');
               dispatch(changeAuth());
               dispatch(refreshAccessToken(accessToken));
               dispatch(setLoading(false));

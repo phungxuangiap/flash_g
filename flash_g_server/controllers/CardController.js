@@ -5,7 +5,7 @@ const { DistanceFromDateToDate } = require("../helper");
 //@desc Get All Cards
 //@route api/card/:deskId
 //@access private
-const getAllCards = asyncHandler(async (req, res, next) => {
+const getAllCardsOfDesk = asyncHandler(async (req, res, next) => {
   const allCards = await Card.find({ desk_id: req.params.deskId });
   if (allCards) {
     if (req.query.current) {
@@ -42,6 +42,14 @@ const getAllCards = asyncHandler(async (req, res, next) => {
   }
 });
 
+//@desc Get All Cards
+//@route api/card/
+//@access private
+const getAllCards = asyncHandler(async (req, res, next) => {
+  const allCards = await Card.find({});
+  res.json(allCards);
+});
+
 //@desc Update Changed Cards
 //@route api/card/:deskId
 //@access private
@@ -72,7 +80,7 @@ const createCard = asyncHandler(async (req, res, next) => {
     req.body;
   const newCard = await Card.create({
     desk_id: req.params.deskId,
-    status: "NEW",
+    status: "new",
     level: 0,
     last_preview: new Date(),
     vocab,
@@ -115,9 +123,10 @@ const deleteCard = asyncHandler(async (req, res, next) => {
   }
 });
 module.exports = {
-  getAllCards,
+  getAllCardsOfDesk,
   updateCard,
   deleteCard,
   createCard,
   updateChangedCards,
+  getAllCards,
 };

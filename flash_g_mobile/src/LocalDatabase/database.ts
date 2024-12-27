@@ -2,7 +2,7 @@ import {enablePromise, openDatabase} from 'react-native-sqlite-storage';
 import SQLite from "react-native-sqlite-storage";
 import { Desk, Card, User } from './model';
 import { getLocalDatabase } from './databaseInitialization';
-import { createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsQuery, getListCurrentCardsOfDeskQuery, getListCurrentCardsQuery, getListDesksQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
+import { createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsQuery, getListCurrentCardsOfDeskQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
 
 // This file contains all services interacting with data in the local database
 export interface Database {
@@ -17,12 +17,13 @@ export interface Database {
   updateCard: (card: Card) => Promise<any>;
   deleteCard: (card_id: string) => Promise<any>;
   createNewUser: (user: User) => Promise<any>;
+  getUser: ()=> Promise<any>;
 }
 
 export async function createNewDesk(desk: Desk): Promise<any> {
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      return await db.executeSql(createNewDeskQuery, [desk.id, desk.user_id, desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card]);
+      return await db.executeSql(createNewDeskQuery, [desk._id, desk.user_id, desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card]);
     })
     .catch((error) => {
       console.log(error);
@@ -31,7 +32,7 @@ export async function createNewDesk(desk: Desk): Promise<any> {
 export async function updateDesk(desk: Desk): Promise<any> {
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      await db.executeSql(updateDeskQuery, [desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card, desk.id]);
+      await db.executeSql(updateDeskQuery, [desk._id, desk.user_id, desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card]);
     })
     .catch((error) => {
       console.log(error);
@@ -61,7 +62,7 @@ export async function getListDesks(): Promise<any> {
 export async function createNewCard(card: Card): Promise<any> {
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      await db.executeSql(createNewCardQuery, [card.id, card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type]);
+      await db.executeSql(createNewCardQuery, [card._id, card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type]);
     })
     .catch((error) => {
       console.log(error);
@@ -103,7 +104,7 @@ export async function getAllCards(): Promise<any>{
 export async function updateCard(card: Card): Promise<any> {
   return getLocalDatabase()
     .then(async (db:SQLite.SQLiteDatabase) =>{
-      await db.executeSql(updateCardQuery, [card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type, card.id]);
+      await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type]);
     })
     .catch((error) => {
       console.log(error);
@@ -123,7 +124,18 @@ export async function deleteCard(cardId: string): Promise<any> {
 export async function createNewUser(user: User): Promise<any> {
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      return await db.executeSql(createNewUserQuery, [user.id, user.email, user.password, user.user_name]);
+      return await db.executeSql(createNewUserQuery, [user._id, user.email, user.password, user.user_name]);
+      
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+} //OK
+export async function getUser(): Promise<any> {
+  return getLocalDatabase()
+    .then(async (db: SQLite.SQLiteDatabase) => {
+      return await db.executeSql(getUserQuery);
+      
     })
     .catch((error) => {
       console.log(error);
@@ -142,4 +154,5 @@ export const database: Database = {
   updateCard,
   deleteCard,
   createNewUser,
+  getUser,
 };

@@ -64,6 +64,7 @@ const getCurrentUser = asyncHandler(async (req, res, next) => {
           _id: decoded._id,
           user_name: decoded.user_name,
           email: decoded.email,
+          password: decoded.password,
         });
       }
     });
