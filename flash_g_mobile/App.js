@@ -54,6 +54,7 @@ import {
   getListCurrentDesksQuery,
   updateDeskQuery,
 } from './src/LocalDatabase/dbQueries';
+import {syncDesk} from './src/LocalDatabase/syncDBService';
 
 function Section({children, title}) {
   const isDarkMode = useColorScheme() === 'dark';
@@ -121,42 +122,42 @@ function App() {
         );
         return db;
       })
-      .then(async db => {
-        await createNewCard(
-          new Card(
-            '2',
-            '1',
-            'DONE',
-            0,
-            JSON.stringify(new Date()),
-            'vocab1',
-            'desc1',
-            'sentence1',
-            'null',
-            'null',
-            'null',
-          ),
-        );
-        return db;
-      })
-      .then(async db => {
-        await createNewCard(
-          new Card(
-            '3',
-            '1',
-            'DONE',
-            0,
-            JSON.stringify(new Date()),
-            'vocab1',
-            'desc1',
-            'sentence1',
-            'null',
-            'null',
-            'null',
-          ),
-        );
-        return db;
-      })
+      // .then(async db => {
+      //   await createNewCard(
+      //     new Card(
+      //       '2',
+      //       '1',
+      //       'DONE',
+      //       0,
+      //       JSON.stringify(new Date()),
+      //       'vocab1',
+      //       'desc1',
+      //       'sentence1',
+      //       'null',
+      //       'null',
+      //       'null',
+      //     ),
+      //   );
+      //   return db;
+      // })
+      // .then(async db => {
+      //   await createNewCard(
+      //     new Card(
+      //       '3',
+      //       '1',
+      //       'DONE',
+      //       0,
+      //       JSON.stringify(new Date()),
+      //       'vocab1',
+      //       'desc1',
+      //       'sentence1',
+      //       'null',
+      //       'null',
+      //       'null',
+      //     ),
+      //   );
+      //   return db;
+      // })
       .then(async db => {
         const data = await getListCurrentCards('1');
         let listCards = [];
@@ -167,28 +168,28 @@ function App() {
         });
         console.log('[CURRENT CARDS]', listCards);
         return db;
-      })
-      .then(async db => {
-        const data = await getAllCards();
-        let listCards = [];
-        data?.forEach(result => {
-          for (let index = 0; index < result.rows.length; index++) {
-            listCards.push(result.rows.item(index));
-          }
-        });
-        console.log('[DATA]', listCards);
-        return db;
-      })
-      .then(async db => {
-        const results = await getListCurrentDesks();
-        const listUser = [];
-        results?.forEach(result => {
-          for (let index = 0; index < result.rows.length; index++) {
-            listUser.push(result.rows.item(index));
-          }
-        });
-        console.log(listUser);
       });
+    // .then(async db => {
+    //   const data = await getAllCards();
+    //   let listCards = [];
+    //   data?.forEach(result => {
+    //     for (let index = 0; index < result.rows.length; index++) {
+    //       listCards.push(result.rows.item(index));
+    //     }
+    //   });
+    //   console.log('[DATA]', listCards);
+    //   return db;
+    // })
+    // .then(async db => {
+    //   const results = await getListCurrentDesks();
+    //   const listUser = [];
+    //   results?.forEach(result => {
+    //     for (let index = 0; index < result.rows.length; index++) {
+    //       listUser.push(result.rows.item(index));
+    //     }
+    //   });
+    //   console.log(listUser);
+    // });
   }, []);
 
   return (

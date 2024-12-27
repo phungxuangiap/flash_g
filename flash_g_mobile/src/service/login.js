@@ -6,7 +6,6 @@ import {Alert} from 'react-native';
 import {REACT_APP_URL} from '@env';
 
 const login = (email, password, navigate) => {
-  console.log(process.env.REACT_APP_URL);
   axios
     .post(`http://${REACT_APP_URL}/api/user/login`, {
       email,

@@ -96,6 +96,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
         email,
         password: hashedPassword,
         user_name,
+        modified_time: JSON.stringify(new Date()),
       });
       access_token = generateAccessToken({
         _id: newUser._id,

@@ -11,7 +11,8 @@ const user = `
         id TEXT PRIMARY KEY,
         email TEXT,
         password TEXT,
-        user_name TEXT
+        user_name TEXT,
+        modified_time TEXT
     )
 `;
 const desk = `
@@ -22,7 +23,8 @@ const desk = `
         primary_color TEXT,
         new_card INTEGER,
         inprogress_card INTEGER,
-        preview_card INTEGER
+        preview_card INTEGER,
+        modified_time TEXT
    )
 `;
 const card = `
@@ -37,7 +39,8 @@ const card = `
         sentence TEXT,
         vocab_audio TEXT,
         sentence_audio TEXT,
-        type TEXT
+        type TEXT,
+        modified_time TEXT
    )
 `;
 const createNewDeskQuery = `
@@ -48,14 +51,16 @@ const createNewDeskQuery = `
         primary_color, 
         new_card, 
         inprogress_card, 
-        preview_card) VALUES (?, ?, ?, ?, ?, ?, ?)
+        preview_card,
+        modified_time) VALUES (?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
 `;
 const createNewUserQuery = `
     INSERT INTO User (
         id, 
         email,
         password, 
-        user_name) VALUES (?, ?, ?, ?)
+        user_name,
+        modified_time) VALUES (?, ?, ?, ?, ${JSON.stringify(new Date())})
 `;
 
 const updateDeskQuery = `
@@ -64,7 +69,8 @@ const updateDeskQuery = `
         primary_color = ?,
         new_card = ?,
         inprogress_card = ?,
-        preview_card = ?
+        preview_card = ?,
+        modified_time = ${JSON.stringify(new Date())}        
     WHERE id = ?
 `;
 const deleteDeskQuery = `
@@ -93,7 +99,8 @@ const createNewCardQuery = `
         sentence,
         vocab_audio,
         sentence_audio,
-        type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        type,
+        modified_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
 `;
 const updateCardQuery = `
     UPDATE Card SET 
@@ -105,7 +112,8 @@ const updateCardQuery = `
         sentence = ?,
         vocab_audio = ?,
         sentence_audio = ?,
-        type = ?
+        type = ?,
+        modified_time = ${JSON.stringify(new Date())}
     WHERE id = ?
 `;
 const deleteCardQuery = `

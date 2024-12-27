@@ -37,7 +37,7 @@ async function openLocalDatabase():Promise<SQLite.SQLiteDatabase> {
     const db = await SQLite.openDatabase({name: 'flash_g.db', location: 'default'});
     console.log('Local Database is opened successfully !');
     databaseInstance = db;
-    return db; 
+    return db;
 }
 
 // Another sync functions to update remote database

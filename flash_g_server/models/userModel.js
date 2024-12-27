@@ -17,6 +17,10 @@ const userSchema = mongoose.Schema({
     type: String,
     require: [true, "Please add your password"],
   },
+  modified_time: {
+    type: String,
+    require: [true],
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);

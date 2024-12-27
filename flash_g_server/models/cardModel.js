@@ -46,6 +46,10 @@ const cardSchema = mongoose.Schema({
     type: String,
     require: [true],
   },
+  modified_time: {
+    type: String,
+    require: [true],
+  },
 });
 
 module.exports = mongoose.model("Card", cardSchema);

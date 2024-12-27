@@ -77,7 +77,7 @@ export async function getListCurrentCards(deskId:string): Promise<any> {
     .catch((error) => {
       console.log(error);
     });
-} 
+} //OK
 
 export async function getAllCards(): Promise<any>{
   return getLocalDatabase()

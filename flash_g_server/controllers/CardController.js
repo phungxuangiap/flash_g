@@ -51,9 +51,13 @@ const updateChangedCards = asyncHandler(async (req, res, next) => {
     res.status(200).json({ message: "Nothing need to update" });
   } else {
     await listCardsUpdated.forEach(async (item) => {
-      const cardChanged = await Card.findByIdAndUpdate(item._id, item, {
-        new: true,
-      });
+      const cardChanged = await Card.findByIdAndUpdate(
+        item._id,
+        { ...item, modified_time: JSON.stringify(new Date()) },
+        {
+          new: true,
+        }
+      );
       console.log("[Card]", cardChanged);
     });
     res.status(200).json({ message: "All changes are updated" });
@@ -76,6 +80,7 @@ const createCard = asyncHandler(async (req, res, next) => {
     sentence,
     vocab_audio,
     sentence_audio,
+    modified_time: JSON.stringify(new Date()),
   });
   res.status(200).json(newCard);
 });
@@ -85,7 +90,11 @@ const createCard = asyncHandler(async (req, res, next) => {
 const updateCard = asyncHandler(async (req, res, next) => {
   const card = await Card.findById(req.params.cardId);
   if (card) {
-    await Card.findByIdAndUpdate(req.params.cardId, req.body, { new: true });
+    await Card.findByIdAndUpdate(
+      req.params.cardId,
+      { ...req.body, modified_time: JSON.stringify(new Date()) },
+      { new: true }
+    );
     res.status(200).json(card);
   } else {
     res.status(Constants.NOT_FOUND);

@@ -25,6 +25,10 @@ const deskSchema = mongoose.Schema({
   preview_card: {
     type: Number,
   },
+  modified_time: {
+    type: String,
+    require: [true],
+  },
 });
 
 module.exports = mongoose.model("Desk", deskSchema);
