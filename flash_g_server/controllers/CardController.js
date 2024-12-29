@@ -61,7 +61,7 @@ const updateChangedCards = asyncHandler(async (req, res, next) => {
     await listCardsUpdated.forEach(async (item) => {
       const cardChanged = await Card.findByIdAndUpdate(
         item._id,
-        { ...item, modified_time: JSON.stringify(new Date()) },
+        { ...item, modified_time: JSON.stringify(new Date()).slice(1, -1) },
         {
           new: true,
         }
@@ -82,13 +82,13 @@ const createCard = asyncHandler(async (req, res, next) => {
     desk_id: req.params.deskId,
     status: "new",
     level: 0,
-    last_preview: new Date(),
+    last_preview: JSON.stringify(new Date()).slice(1, -1),
     vocab,
     description,
     sentence,
     vocab_audio,
     sentence_audio,
-    modified_time: JSON.stringify(new Date()),
+    modified_time: JSON.stringify(new Date()).slice(1, -1),
   });
   res.status(200).json(newCard);
 });
@@ -100,7 +100,7 @@ const updateCard = asyncHandler(async (req, res, next) => {
   if (card) {
     await Card.findByIdAndUpdate(
       req.params.cardId,
-      { ...req.body, modified_time: JSON.stringify(new Date()) },
+      { ...req.body, modified_time: JSON.stringify(new Date()).slice(1, -1) },
       { new: true }
     );
     res.status(200).json(card);

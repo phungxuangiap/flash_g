@@ -85,153 +85,72 @@ export default function DeskBoardScreen() {
   const [inputCreateDesk, setInputCreateDesk] = useState('');
   const [showCreateDesk, setShowCreateDesk] = useState(false);
   const currentUser = useSelector(userSelector);
-  async function fetchAllCurrentCardAndCalculateNewDesk(listDesks) {
-    let listNewDesk = [];
-    listDesks.map(async desk => {
-      const listCurrentCardsOfDesk = await fetchAllCurrentCardOfDesk(desk._id);
-      let news = 0;
-      let inProgress = 0;
-      let preview = 0;
-      listCurrentCardsOfDesk.forEach(card => {
-        if (card.status === 'new') {
-          news++;
-        } else if (card.status === 'inprogress') {
-          inProgress++;
-        } else {
-          preview++;
-        }
-      });
-      listNewDesk.push(
-        new Desk(
-          desk._id,
-          desk.user_id,
-          desk.title,
-          desk.primary_color,
-          news,
-          inProgress,
-          preview,
-          new Date(),
-        ),
-      );
-    });
-  }
-  // async function fetchAllInfo() {
-  //   dispatch(setLoading(true));
 
-  //   // Fetch current user and store in local storage, update redux state
-  //   const objectCurrentDesks = {};
-  //   const listCurrentDesks = [];
-  //   await fetchCurrentUser(actk, dispatch);
-  //   console.log('after get user');
-  //   // Fetch all current desk of user, init current desks in local with user_id = {}
-  //   const mapDesks = await fetchListDesks(actk, store.getState().auth.user._id);
-  //   // Go through each desk and fetch all current cards of this desk
-  //   await Promise.all(
-  //     mapDesks.map(async element => {
-  //       if (element._id) {
-  //         const status = await fetchAllCurrentCardOfDesk(element._id);
-  //         // update current desk in local storage
-  //         const newDesk = {
-  //           user_id: store.getState().auth.user._id,
-  //           _id: element._id,
-  //           title: element.title,
-  //           primary_color: element.primary_color,
-  //           new_card: status.new,
-  //           inprogress_card: status.in_progress,
-  //           preview_card: status.preview,
-  //         };
-  //         objectCurrentDesks[element._id] = newDesk;
-  //         listCurrentDesks.push(newDesk);
-  //       }
-  //     }),
-  //   );
-  //   // Store list current desks updated in local storage
-  //   await storeData(
-  //     store.getState().auth.user._id,
-  //     JSON.stringify(objectCurrentDesks),
-  //   );
-  //   // Store list current desks updated in redux
-
-  //   dispatch(updateCurrentDesks(listCurrentDesks));
-  //   dispatch(setLoading(false));
-  // }
-  // This call each time move to bottom bar navigation: Fetch remote data, store data in local storage and update redux state
-  // useEffect(() => {
-  //   fetchAllInfo(actk);
-  // }, []);
-  // This call each time navigate from another bottombar navigation item to desk screen: Fetch local data, update redux state
-  // mỗi lần về desk sẽ tính toán lại new, inprogress, preview của từng desk và cập nhật lại trong desk object
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     // getDataLocal();
-  //     return () => {
-  //       console.log('unmount');
-  //     };
-  //   }, []),
-  // );
   async function handleData() {
+    // Fetch current user, update state, store local
     fetchCurrentUser(actk)
-      // Fetch current user => Update local database => Update redux state
       .then(async user => {
-        console.log(user);
         dispatch(setUser(user));
         await createNewUser(user);
         return user;
       })
-      // Fetch list Desks
+      // Fetch all Desks
       .then(async user => {
         const listDesk = await fetchListDesks(actk, user._id);
-        console.log('[LIST_DESK]', listDesk);
         return listDesk;
       })
-      // Fetch list current cards
+      // Fetch all Cards
+      .then(async listDesk => {
+        const listAllRemoteCards = await fetchAllCards();
+        const synchronizedListCards = await syncAllCards(listAllRemoteCards);
+        await Promise.all(
+          synchronizedListCards.map(card => {
+            return updateCard(card);
+          }),
+        );
+        return listDesk;
+      })
+      // Get all current card and calculate, return list new desks
       .then(async listDesks => {
+        console.log('[LISTALLDESK]', listDesks);
         return Promise.all(
           listDesks.map(desk => {
             let news = 0;
             let inProgress = 0;
             let preview = 0;
-            return fetchAllCurrentCardOfDesk(desk._id).then(async listCards => {
-              let updatedListCards = await syncListCardsOfDesk(listCards);
-              updatedListCards.forEach(card => {
-                if (card.status === 'new') {
-                  news++;
-                } else if (card.status === 'inprogress') {
-                  inProgress++;
-                } else {
-                  preview++;
-                }
-              });
-              return new Desk(
-                desk._id,
-                desk.user_id,
-                desk.title,
-                desk.primary_color,
-                news,
-                inProgress,
-                preview,
-                JSON.stringify(new Date()),
-              );
-            });
+            return getListCurrentCardsOfDesk(desk._id).then(
+              async listCurrentCards => {
+                console.log('[CURRENT_CARDS]', listCurrentCards);
+                listCurrentCards.forEach(card => {
+                  if (card.status === 'new') {
+                    news++;
+                  } else if (card.status === 'inprogress') {
+                    inProgress++;
+                  } else {
+                    preview++;
+                  }
+                });
+                return new Desk(
+                  desk._id,
+                  desk.user_id,
+                  desk.title,
+                  desk.primary_color,
+                  news,
+                  inProgress,
+                  preview,
+                  JSON.stringify(new Date()),
+                );
+              },
+            );
           }),
         );
       })
+      // Receive List desk with total calculated cards, update new desk into local database
       .then(listUpdatedDesks => {
+        console.log('LIST_ALL_DESK', listUpdatedDesks);
         return Promise.all(
           listUpdatedDesks.map(desk => {
             return updateDesk(desk);
-          }),
-        );
-      })
-      .then(async res => {
-        return await fetchAllCards().then(async data => {
-          return syncAllCards(data);
-        });
-      })
-      .then(async listCards => {
-        return Promise.all(
-          listCards.map(card => {
-            return updateCard(card);
           }),
         );
       })
@@ -243,7 +162,6 @@ export default function DeskBoardScreen() {
               listDesks.push(result.rows.item(index));
             }
           });
-
           dispatch(updateCurrentDesks(listDesks));
         });
       })

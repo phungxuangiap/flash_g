@@ -106,6 +106,9 @@ const getListCurrentCardsQuery = `
 const getAllCardsQuery = `
     SELECT * FROM Card
 `;
+const getAllCardsOfDeskQuery = `
+    SELECT * FROM Card WHERE desk_id = ?
+`;
 const createNewCardQuery = `
     INSERT INTO Card (
         _id,
@@ -165,6 +168,7 @@ export {
     getListCurrentCardsQuery,
     getUserQuery,
     deleteUserQuery,
+    getAllCardsOfDeskQuery,
 };
 
 

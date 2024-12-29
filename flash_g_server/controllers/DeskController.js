@@ -53,7 +53,7 @@ const createNewDesk = asyncHandler(async (req, res, next) => {
       new_card: 0,
       inprogress_card: 0,
       preview_card: 0,
-      modified_time: JSON.stringify(new Date()),
+      modified_time: JSON.stringify(new Date()).slice(1, -1),
     });
 
     console.log(newDesk);
@@ -73,7 +73,7 @@ const updateDesk = asyncHandler(async (req, res, next) => {
   if (desk) {
     await Desk.findByIdAndUpdate(
       req.params.id,
-      { ...req.body, modified_time: JSON.stringify(new Date()) },
+      { ...req.body, modified_time: JSON.stringify(new Date()).slice(1, -1) },
       { new: true }
     );
     res.status(200).json(desk);

@@ -2,7 +2,7 @@ import {enablePromise, openDatabase} from 'react-native-sqlite-storage';
 import SQLite from "react-native-sqlite-storage";
 import { Desk, Card, User } from './model';
 import { getLocalDatabase } from './databaseInitialization';
-import { createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsQuery, getListCurrentCardsOfDeskQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
+import { createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getListCurrentCardsOfDeskQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
 
 // This file contains all services interacting with data in the local database
 export interface Database {
@@ -70,10 +70,21 @@ export async function createNewCard(card: Card): Promise<any> {
 } //OK
 
 export async function getListCurrentCardsOfDesk(deskId:string): Promise<any> {
-  const currentDate = new Date();
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      return await db.executeSql(getListCurrentCardsOfDeskQuery, [deskId, JSON.stringify(currentDate)]);
+      return await db.executeSql(getAllCardsOfDeskQuery, [deskId])
+        .then((res:any[])=>{
+          let listAllCardsOfDesk: any[] = [];
+          res?.forEach((item:any) => {
+            for (let index = 0; index < item.rows.length; index++) {
+              listAllCardsOfDesk.push(item.rows.item(index));
+            }
+          });
+          listAllCardsOfDesk = listAllCardsOfDesk.filter((card:Card)=>{
+            return checkIsCurrent(card.last_preview, card.level);
+          });
+          return listAllCardsOfDesk;
+        });
       
     })
     .catch((error) => {
@@ -84,7 +95,7 @@ export async function getListCurrentCardsOfDesk(deskId:string): Promise<any> {
 export async function getListCurrentCards(): Promise<any[]> {
   return getLocalDatabase()
     .then(async (db:SQLite.SQLiteDatabase)=>{
-      return await db.executeSql(getListCurrentCardsQuery, [JSON.stringify(new Date())]);
+      return await db.executeSql(getListCurrentCardsQuery, [(JSON.stringify(new Date())).slice(1, -1)]);
     })
     .catch(err=>{
       console.log(err);
@@ -105,6 +116,7 @@ export async function updateCard(card: Card): Promise<any> {
   return getLocalDatabase()
     .then(async (db:SQLite.SQLiteDatabase) =>{
       await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type]);
+      console.log("Update card successfully")
     })
     .catch((error) => {
       console.log(error);
@@ -141,6 +153,11 @@ export async function getUser(): Promise<any> {
       console.log(error);
     });
 } //OK
+function checkIsCurrent(last_preview:string, level:number): boolean{
+  const lastPreviewDate = Date.parse(last_preview);
+  const currentDate = (new Date()).getTime();
+  return lastPreviewDate + Math.pow(2, level) * 24 * 60 * 60 * 1000 <= currentDate;
+}
 
 export const database: Database = {
   createNewDesk,

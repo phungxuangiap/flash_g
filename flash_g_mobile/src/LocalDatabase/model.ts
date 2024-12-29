@@ -40,7 +40,7 @@ export class Card {
     desk_id : string;
     status : string;
     level : number;
-    last_preview : Date;
+    last_preview : string;
     vocab : string;
     description : string;
     sentence : string;
@@ -48,7 +48,7 @@ export class Card {
     sentence_audio : string;
     type : string;
     modified_time: string;
-    constructor(_id:string, desk_id: string, status: string, level: number, last_preview: Date, vocab: string, description: string, sentence: string, vocab_audio: string, sentence_audio: string, type: string, modified_time:string){
+    constructor(_id:string, desk_id: string, status: string, level: number, last_preview: string, vocab: string, description: string, sentence: string, vocab_audio: string, sentence_audio: string, type: string, modified_time:string){
         this._id = _id;
         this.desk_id = desk_id;
         this.status = status;
