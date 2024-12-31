@@ -10,6 +10,7 @@ import {accessTokenSelector, loadingSelector} from '../../redux/selectors';
 import {logout} from '../../service/logout';
 import {store} from '../../redux/store';
 import {setLoading} from '../../redux/slices/stateSlice';
+import {Auth} from '../../constants';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -26,7 +27,7 @@ export default function ProfileScreen() {
 
           await logout(accessToken);
           dispatch(setLoading(false));
-          navigation.navigate('Auth');
+          navigation.navigate(Auth);
         }}
       />
       {loading ? <LoadingOverlay /> : <></>}

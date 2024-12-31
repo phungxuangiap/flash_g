@@ -61,23 +61,10 @@ import {
   syncListCardsOfDesk,
 } from '../../LocalDatabase/syncDBService';
 import {Desk} from '../../LocalDatabase/model';
-// Flow ở đây sẽ là:
-// ++++Khi đăng nhập+++++++
-// Khi Login/Register thành công:
-// => Navigate tới DeskBoardScreen + Set loading = true DONE
-// => Lưu current user vào redux, vào local storage DONE
-// => Fetch tất cả current desk của user, khởi tạo current desk ở local user_id = {} DONE
-// => Duyệt từng desk và fetch tất cả các current cards của desk đó
-//    lưu vào local với định dạng desk_id = {card_id: card}, tính toán số lượng card của mỗi status,
-//    Tạo instance của Desk và Lưu vào current desk user_id.desk_id = desk: user_id = {desk_id: desk};
-//    Lưu current desks vào redux (Khác với định dạng ở local, là một mảng) DONE
-// => Render list current desk ra màn hình (useEffect + deps currentDesk)
-// => Set loading = false
-// ++++++Khi navigate từ item khác của bottomNavBar hoặc GameScreen tới deskScreen (Sử dụng useEffect với deps là currentCards)++++++++
-// => Trong khi chơi game thì cập nhật state của 3 biến useState của màn hình game, khi out màn hình game thì set lại state của currentdesk và currentDesk của local storagestorage
-// => Sử dụng currentDesk state ở redux để render.
+import {Card, MainGame} from '../../constants';
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
+  const user = useSelector(userSelector);
   const data = useSelector(currentDesks);
   const navigation = useNavigation();
   const actk = useSelector(accessTokenSelector);
@@ -85,36 +72,51 @@ export default function DeskBoardScreen() {
   const [inputCreateDesk, setInputCreateDesk] = useState('');
   const [showCreateDesk, setShowCreateDesk] = useState(false);
   const currentUser = useSelector(userSelector);
-
   async function handleData() {
-    // Fetch current user, update state, store local
-    fetchCurrentUser(actk)
-      .then(async user => {
+    Promise.resolve()
+      // Fetch current user, update state, store local
+      .then(async () => {
+        const user = await fetchCurrentUser(actk);
         dispatch(setUser(user));
         await createNewUser(user);
         return user;
       })
       // Fetch all Desks
       .then(async user => {
-        const listDesk = await fetchListDesks(actk, user._id);
-        return listDesk;
+        if (user) {
+          return fetchListDesks(actk, user._id);
+        } else {
+          return false;
+        }
       })
       // Fetch all Cards
       .then(async listDesk => {
-        const listAllRemoteCards = await fetchAllCards();
-        const synchronizedListCards = await syncAllCards(listAllRemoteCards);
-        await Promise.all(
-          synchronizedListCards.map(card => {
-            return updateCard(card);
-          }),
-        );
-        return listDesk;
+        if (listDesk) {
+          const listAllRemoteCards = await fetchAllCards().catch(err => {
+            console.log('Get all remote cards error with message:', err);
+            console.log('Cannot connect to remote server!');
+            return false;
+          });
+          const synchronizedListCards = await syncAllCards(listAllRemoteCards);
+          await Promise.all(
+            synchronizedListCards.map(card => {
+              return updateCard(card);
+            }),
+          );
+          return listDesk;
+        } else {
+          console.log('Cannot connect to remote server!');
+          return false;
+        }
       })
       // Get all current card and calculate, return list new desks
       .then(async listDesks => {
-        console.log('[LISTALLDESK]', listDesks);
+        let listLocalDesk = listDesks;
+        if (!listLocalDesk) {
+          listLocalDesk = await getListDesks();
+        }
         return Promise.all(
-          listDesks.map(desk => {
+          listLocalDesk.map(desk => {
             let news = 0;
             let inProgress = 0;
             let preview = 0;
@@ -154,6 +156,7 @@ export default function DeskBoardScreen() {
           }),
         );
       })
+      // Update list updated desks in state
       .then(res => {
         return getListDesks().then(list => {
           let listDesks = [];
@@ -165,6 +168,7 @@ export default function DeskBoardScreen() {
           dispatch(updateCurrentDesks(listDesks));
         });
       })
+
       .catch(err => {
         console.log('Handle data error with message:', err);
       });
@@ -189,7 +193,7 @@ export default function DeskBoardScreen() {
                 preview={item.preview_card}
                 onClick={() => {
                   dispatch(updateCurrentDesk(item));
-                  navigation.navigate('Playground');
+                  navigation.navigate(MainGame);
                 }}
               />
             );

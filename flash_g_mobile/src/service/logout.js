@@ -7,7 +7,7 @@ import {REACT_APP_URL} from '@env';
 const logout = async accessToken => {
   await axios
     .post(
-      `http://${REACT_APP_URL}/api/user/logout`,
+      `http://${process.env.REACT_APP_URL}/api/user/logout`,
       {
         body: 'body of logout post request',
       },

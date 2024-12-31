@@ -5,59 +5,18 @@
  * @format
  */
 
-import React, {createContext, useCallback, useEffect} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import React, {useEffect} from 'react';
+import {StyleSheet, Text, useColorScheme, View} from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-import LoginScreen from './src/Screens/Login/LoginScreen';
-import RegisterScreen from './src/Screens/Register/RegisterScreen';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {Provider} from 'react-redux';
 import {store} from './src/redux/store';
-import {
-  BottomBarNavigation,
-  MainNavigation,
-} from './src/navigation/mainNavigation';
 import {AppContainer} from './AppContainer';
-import {Card, Desk, User} from './src/LocalDatabase/model';
-import {
-  createNewCard,
-  createNewDesk,
-  createNewUser,
-  deleteCard,
-  deleteDesk,
-  getAllCards,
-  getListCurrentCards,
-  getListCurrentDesks,
-  updateCard,
-  updateDesk,
-} from './src/LocalDatabase/database';
 import {databaseInitialization} from './src/LocalDatabase/databaseInitialization';
-import {
-  createNewCardQuery,
-  createNewDeskQuery,
-  deleteDeskQuery,
-  getAllCardsQuery,
-  getListCurrentDesksQuery,
-  updateDeskQuery,
-} from './src/LocalDatabase/dbQueries';
-import {
-  mergeLocalAndRemoteData,
-  syncDesk,
-} from './src/LocalDatabase/syncDBService';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {NavigationContainer} from '@react-navigation/native';
+import LoginScreen from './src/Screens/Login/LoginScreen';
+import MainNavigation from './src/navigation/mainNavigation';
 
 function Section({children, title}) {
   const isDarkMode = useColorScheme() === 'dark';
@@ -96,6 +55,7 @@ if (__DEV__) {
     return xhrInstance;
   };
 }
+const Stack = createNativeStackNavigator();
 
 function App() {
   // To see all the requests in the chrome Dev tools in the network tab.
@@ -104,98 +64,10 @@ function App() {
   // const backgroundStyle = {
   //   backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   // };
+
   useEffect(() => {
     // Init local database.
     databaseInitialization();
-    // .then(async db => {
-    //   await createNewCard(
-    //     new Card(
-    //       '1',
-    //       '1',
-    //       'DONE',
-    //       0,
-    //       JSON.stringify(new Date()),
-    //       'vocab1',
-    //       'desc1',
-    //       'sentence1',
-    //       'null',
-    //       'null',
-    //       'null',
-    //     ),
-    //   );
-    //   return db;
-    // })
-    // .then(async db => {
-    //   await syncDesk({}, '1');
-    // });
-    // .then(async db => {
-    //   await createNewCard(
-    //     new Card(
-    //       '2',
-    //       '1',
-    //       'DONE',
-    //       0,
-    //       JSON.stringify(new Date()),
-    //       'vocab1',
-    //       'desc1',
-    //       'sentence1',
-    //       'null',
-    //       'null',
-    //       'null',
-    //     ),
-    //   );
-    //   return db;
-    // })
-    // .then(async db => {
-    //   await createNewCard(
-    //     new Card(
-    //       '3',
-    //       '1',
-    //       'DONE',
-    //       0,
-    //       JSON.stringify(new Date()),
-    //       'vocab1',
-    //       'desc1',
-    //       'sentence1',
-    //       'null',
-    //       'null',
-    //       'null',
-    //     ),
-    //   );
-    //   return db;
-    // })
-    // .then(async db => {
-    //   const data = await getListCurrentCards('1');
-    //   let listCards = [];
-    //   data?.forEach(result => {
-    //     for (let index = 0; index < result.rows.length; index++) {
-    //       listCards.push(result.rows.item(index));
-    //     }
-    //   });
-    //   console.log('[CURRENT CARDS]', data[0].rows.item(0));
-    //   return db;
-    // });
-    // .then(async db => {
-    //   const data = await getAllCards();
-    //   let listCards = [];
-    //   data?.forEach(result => {
-    //     for (let index = 0; index < result.rows.length; index++) {
-    //       listCards.push(result.rows.item(index));
-    //     }
-    //   });
-    //   console.log('[DATA]', listCards);
-    //   return db;
-    // })
-    // .then(async db => {
-    //   const results = await getListCurrentDesks();
-    //   const listUser = [];
-    //   results?.forEach(result => {
-    //     for (let index = 0; index < result.rows.length; index++) {
-    //       listUser.push(result.rows.item(index));
-    //     }
-    //   });
-    //   console.log(listUser);
-    // });
   }, []);
 
   return (

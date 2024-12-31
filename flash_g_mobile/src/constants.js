@@ -1,2 +1,13 @@
 export const NO_AUTH = 'no_auth';
 export const AUTH = 'auth';
+export const Login = 'Login';
+export const Register = 'Register';
+export const Pending = 'Pending';
+export const DeskBoard = 'Deskboard';
+export const Summary = 'Summary';
+export const Profile = 'Profile';
+export const Card = 'Card';
+export const Game = 'Game';
+export const Auth = 'Auth';
+export const BottomBar = 'bottombar';
+export const MainGame = 'main_game';

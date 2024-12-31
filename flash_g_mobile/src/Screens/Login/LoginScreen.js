@@ -19,12 +19,14 @@ import {useDispatch, useSelector} from 'react-redux';
 import {loadingSelector} from '../../redux/selectors';
 import {setLoading} from '../../redux/slices/stateSlice';
 import {changeAuth, refreshAccessToken} from '../../redux/slices/authSlice';
+import {BottomBar, Register} from '../../constants';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
   const loadingState = useSelector(loadingSelector);
   const dispatch = useDispatch();
+
   return (
     <View style={style.container}>
       <InputTag placeholder={'Email'} value={email} onValueChange={setEmail} />
@@ -43,7 +45,7 @@ export default function LoginScreen() {
               dispatch(changeAuth());
               dispatch(refreshAccessToken(accessToken));
               dispatch(setLoading(false));
-              navigation.navigate('BottomBar');
+              navigation.navigate(BottomBar);
             })
             .catch(err => {
               Alert.alert('Email or Password is invalid', '');
@@ -55,7 +57,7 @@ export default function LoginScreen() {
       <ClickableText
         content={"Haven't had account yet? Register"}
         onClick={() => {
-          navigation.navigate('Register');
+          navigation.navigate(Register);
         }}
       />
       {loadingState ? <LoadingOverlay /> : <></>}

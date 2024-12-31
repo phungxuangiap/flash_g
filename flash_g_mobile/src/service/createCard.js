@@ -17,7 +17,7 @@ export default async function createCard(
   console.log(desk._id);
   await axios
     .post(
-      `http://${REACT_APP_URL}/api/card/${desk._id}`,
+      `http://${process.env.REACT_APP_URL}/api/card/${desk._id}`,
       {
         vocab,
         description,

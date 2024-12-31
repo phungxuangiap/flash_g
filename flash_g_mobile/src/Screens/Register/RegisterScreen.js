@@ -19,6 +19,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {changeAuth, refreshAccessToken} from '../../redux/slices/authSlice';
 import {setLoading} from '../../redux/slices/stateSlice';
 import {loadingSelector} from '../../redux/selectors';
+import {BottomBar, Login} from '../../constants';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -55,10 +56,11 @@ export default function RegisterScreen() {
               dispatch(refreshAccessToken(accessToken));
               dispatch(changeAuth());
               dispatch(setLoading(false));
-              navigation.navigate('BottomBar');
+              navigation.navigate(BottomBar);
             })
             .catch(err => {
               Alert.alert('Email is already used!');
+              console.log(err);
               dispatch(setLoading(false));
             });
         }}
@@ -66,7 +68,7 @@ export default function RegisterScreen() {
       <ClickableText
         content={'Already have account? Login'}
         onClick={() => {
-          navigation.navigate('Login');
+          navigation.navigate(Login);
         }}
       />
       {loadingState ? <LoadingOverlay /> : <></>}

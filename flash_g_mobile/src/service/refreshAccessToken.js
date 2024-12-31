@@ -5,7 +5,7 @@ import {REACT_APP_URL} from '@env';
 
 const refresh = async () => {
   await axios
-    .get(`http://${REACT_APP_URL}/api/user/refresh`)
+    .get(`http://${process.env.REACT_APP_URL}/api/user/refresh`)
     .then(res => {
       store.dispatch(refreshAccessToken(res.data.access_token));
     })

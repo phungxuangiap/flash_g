@@ -5,7 +5,7 @@ import {REACT_APP_URL} from '@env';
 
 export default async function getAllCurrentCards(deskId, dispatch) {
   await axios
-    .get(`http://${REACT_APP_URL}/api/card/${deskId}`, {
+    .get(`http://${process.env.REACT_APP_URL}/api/card/${deskId}`, {
       params: {current: true},
     })
     .then(res => {

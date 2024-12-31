@@ -15,7 +15,7 @@ export default async function createDesk(
 ) {
   await axios
     .post(
-      `http://${REACT_APP_URL}/api/desk`,
+      `http://${process.env.REACT_APP_URL}/api/desk`,
       {
         title,
         primary_color,
