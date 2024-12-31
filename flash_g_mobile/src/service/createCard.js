@@ -14,10 +14,9 @@ export default async function createCard(
   listCard,
   setListCard,
 ) {
-  console.log(desk._id);
   await axios
     .post(
-      `http://${process.env.REACT_APP_URL}/api/card/${desk._id}`,
+      `http://${process.env.REACT_NATIVE_APP_URL}/api/card/${desk._id}`,
       {
         vocab,
         description,

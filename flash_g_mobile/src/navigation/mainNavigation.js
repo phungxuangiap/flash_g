@@ -1,5 +1,5 @@
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import React, {useLayoutEffect, useState} from 'react';
+import React, {useCallback, useLayoutEffect, useState} from 'react';
 import DeskBoardScreen from '../Screens/DeskBoard/DeskBoardScreen';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import SummaryScreen from '../Screens/Summary/SummaryScreen';
@@ -11,7 +11,7 @@ import LoginScreen from '../Screens/Login/LoginScreen';
 import RegisterScreen from '../Screens/Register/RegisterScreen';
 import PendingScreen from '../Screens/Pending/PendingScreen';
 import CardScreen from '../Screens/Card/CardScreen';
-import {setUser} from '../redux/slices/authSlice';
+import {setUser, setUserId} from '../redux/slices/authSlice';
 import {
   Auth,
   BottomBar,
@@ -30,24 +30,18 @@ import {NavigationContainer} from '@react-navigation/native';
 import AuthNavigator from './authNavigation';
 import GameNavigator from './gameNavigation';
 import BottomBarNavigator from './bottomBarNavigation';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 const Stack = createNativeStackNavigator();
 const BottomTab = createBottomTabNavigator();
-export default function MainNavigation() {
+export default function MainNavigation({initialRoute}) {
   const user = useSelector(userSelector);
+  const [state, setState] = useState(false);
   const dispatch = useDispatch();
-  useLayoutEffect(() => {
-    getUser().then(userRes => {
-      if (userRes) {
-        dispatch(setUser(JSON.parse(JSON.stringify(userRes).slice(1, -1))));
-      } else {
-        dispatch(setUser(undefined));
-      }
-    });
-  }, []);
+
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={Auth}>
+      <Stack.Navigator initialRouteName={initialRoute}>
         <Stack.Screen
           name={Auth}
           component={AuthNavigator}

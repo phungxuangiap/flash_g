@@ -12,8 +12,8 @@ const router = express.Router();
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
 router.route("/refresh").get(refreshToken);
-router.use(validationHandler);
 router.route("/logout").post(logout);
+router.use(validationHandler);
 router.route("/current").get(getCurrentUser);
 
 module.exports = router;

@@ -10,6 +10,10 @@ const cardSchema = mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     require: [true],
   },
+  user_id: {
+    type: mongoose.Schema.ObjectId,
+    require: [true],
+  },
   desk_id: {
     type: mongoose.Schema.ObjectId,
     require: [true],

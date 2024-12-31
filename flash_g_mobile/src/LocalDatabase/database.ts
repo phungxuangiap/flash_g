@@ -2,7 +2,8 @@ import {enablePromise, openDatabase} from 'react-native-sqlite-storage';
 import SQLite from "react-native-sqlite-storage";
 import { Desk, Card, User } from './model';
 import { getLocalDatabase } from './databaseInitialization';
-import { createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getListCurrentCardsOfDeskQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
+import { cleanAllCardQuery, cleanAllDeskQuery, cleanAllUserQuery, cleanUpQuery, createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getListCurrentCardsOfDeskQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
+import { store } from '../redux/store';
 
 // This file contains all services interacting with data in the local database
 export interface Database {
@@ -18,6 +19,7 @@ export interface Database {
   deleteCard: (card_id: string) => Promise<any>;
   createNewUser: (user: User) => Promise<any>;
   getUser: ()=> Promise<any>;
+  cleanUp: ()=> Promise<any>;
 }
 
 export async function createNewDesk(desk: Desk): Promise<any> {
@@ -55,7 +57,7 @@ export async function getListDesks(): Promise<any> {
       return await db.executeSql(getListDesksQuery);
     })
     .catch((error) => {
-      console.log(error);
+      console.log("Get list desk in local got error with message:", error);
     });
 } //OK
 
@@ -103,9 +105,10 @@ export async function getListCurrentCards(): Promise<any[]> {
 }
 
 export async function getAllCards(): Promise<any>{
+  console.log(store.getState().auth.user._id);
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase)=>{
-      return await db.executeSql(getAllCardsQuery);
+      return await db.executeSql(getAllCardsQuery, [store.getState().auth.user._id]);
     })
     .catch((error) => {
       console.log(error);
@@ -137,10 +140,9 @@ export async function createNewUser(user: User): Promise<any> {
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
       return await db.executeSql(createNewUserQuery, [user._id, user.email, user.password, user.user_name]);
-      
     })
     .catch((error) => {
-      console.log(error);
+      console.log('Create user in local error with message:', error, user);
     });
 } //OK
 export async function getUser(): Promise<any> {
@@ -159,6 +161,24 @@ function checkIsCurrent(last_preview:string, level:number): boolean{
   return lastPreviewDate + Math.pow(2, level) * 24 * 60 * 60 * 1000 <= currentDate;
 }
 
+export function cleanUp():Promise<any>{
+  return getLocalDatabase()
+    .then(async (db:SQLite.SQLiteDatabase)=>{
+      await db.executeSql(cleanAllDeskQuery);
+      return db;
+    })
+    .then(async (db:SQLite.SQLiteDatabase)=>{
+      await db.executeSql(cleanAllUserQuery);
+      return db;
+    })
+    .then(async (db:SQLite.SQLiteDatabase)=>{
+      return await db.executeSql(cleanAllCardQuery);
+    })
+    .catch(err=>{
+      console.log("Clean up local database error with message:", err)
+    });
+}
+
 export const database: Database = {
   createNewDesk,
   updateDesk,
@@ -172,4 +192,5 @@ export const database: Database = {
   deleteCard,
   createNewUser,
   getUser,
+  cleanUp,
 };

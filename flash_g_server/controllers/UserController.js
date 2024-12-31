@@ -132,7 +132,6 @@ const refreshToken = (req, res, next) => {
   if (cookies && cookies[process.env.REFRESH_TOKEN_COOKIE]) {
     refresh_token = cookies[process.env.REFRESH_TOKEN_COOKIE];
   }
-  console.log("[REFRESH_TOKEN]", refresh_token);
   jwt.verify(
     refresh_token,
     process.env.REFRESH_TOKEN_SECRET,

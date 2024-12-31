@@ -1,12 +1,13 @@
 import axios from 'axios';
-import {REACT_APP_URL} from '@env';
+import {REACT_NATIVE_APP_URL} from '@env';
 import {storeData} from './asyncStorageService';
 import {setUser} from '../redux/slices/authSlice';
+import {refresh} from './refreshAccessToken';
 
 // Fetch current user and store in local storage, update redux state
-export async function fetchCurrentUser(accessToken) {
-  return await axios
-    .get(`http://${process.env.REACT_APP_URL}/api/user/current`, {
+export function fetchCurrentUser(accessToken, dispatch) {
+  return axios
+    .get(`http://${REACT_NATIVE_APP_URL}/api/user/current`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -14,16 +15,23 @@ export async function fetchCurrentUser(accessToken) {
     .then(res => {
       return res.data;
     })
-    .catch(err => {
-      console.log('Get user error with message:', err);
+    .catch(async err => {
+      console.log(
+        'Fetch user error with message',
+        err,
+        'and refresh to get a new token...',
+      );
+      await refresh(dispatch).catch(err => {
+        console.log('Get user error with message:', err);
+      });
     });
 }
 
 // Fetch current desks, set initial value of current desks in local: user_id = {}
-export async function fetchListDesks(accessToken, userId) {
+export async function fetchListDesks(accessToken, userId, dispatch) {
   let mapDesks = [];
   return await axios
-    .get(`http://${process.env.REACT_APP_URL}/api/desk/`, {
+    .get(`http://${REACT_NATIVE_APP_URL}/api/desk/`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -34,9 +42,15 @@ export async function fetchListDesks(accessToken, userId) {
       });
       return mapDesks;
     })
-    .catch(err => {
-      console.log('Get all desk error with message:', err);
-      console.log('Cannot connect to remote server!');
+    .catch(async err => {
+      console.log(
+        'Fetch all desks error with message',
+        err,
+        'refresh to get a new token...',
+      );
+      await refresh(dispatch).catch(err => {
+        console.log('Get all desk error with message:', err);
+      });
 
       return false;
     });
@@ -45,7 +59,7 @@ export async function fetchListDesks(accessToken, userId) {
 // Fetch all current cards of a desk, store in local storage with format desk_id = {card_id: card}, return object containing 3 status of card
 export async function fetchAllCurrentCardOfDesk(deskId) {
   return await axios
-    .get(`http://${process.env.REACT_APP_URL}/api/card/${deskId}`)
+    .get(`http://${REACT_NATIVE_APP_URL}/api/card/${deskId}`)
     .then(res => {
       console.log(`Get all current card of id ${deskId} successfully`);
       return res.data;
@@ -64,8 +78,27 @@ export async function fetchAllCurrentCards(listDesks) {
   });
 }
 
-export async function fetchAllCards() {
-  return axios.get(`http://${process.env.REACT_APP_URL}/api/card`).then(res => {
-    return res.data;
-  });
+export async function fetchAllCards(dispatch, accessToken) {
+  return axios
+    .get(`http://${REACT_NATIVE_APP_URL}/api/card`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then(res => {
+      return res.data;
+    })
+    .catch(async err => {
+      console.log(
+        'Fetch all cards met error',
+        err,
+        'and refresh a new token...',
+      );
+      await refresh(dispatch).catch(error => {
+        console.log(
+          'Fetch all cards after refreshing error with message:',
+          error,
+        );
+      });
+    });
 }

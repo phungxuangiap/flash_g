@@ -14,7 +14,7 @@ const validationHandler = asyncHandler(async (req, res, next) => {
       (error, decoded) => {
         if (error) {
           res.status(Constants.UNAUTHORIZED);
-          throw new Error("Unauthorized");
+          throw new Error("Unauthorized !");
         } else {
           req.user = decoded;
           console.log("[USER]", req.user);

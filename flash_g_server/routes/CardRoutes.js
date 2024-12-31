@@ -8,7 +8,9 @@ const {
   getAllCards,
 } = require("../controllers/CardController");
 const { route } = require("./DeskRoutes");
+const validationHandler = require("../middlewares/validationHandler");
 const router = express.Router();
+router.use(validationHandler);
 router.route("/").get(getAllCards);
 router
   .route("/:deskId")

@@ -26,7 +26,6 @@ export default function LoginScreen() {
   const navigation = useNavigation();
   const loadingState = useSelector(loadingSelector);
   const dispatch = useDispatch();
-
   return (
     <View style={style.container}>
       <InputTag placeholder={'Email'} value={email} onValueChange={setEmail} />

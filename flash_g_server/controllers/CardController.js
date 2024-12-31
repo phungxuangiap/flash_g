@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const { Constants } = require("../middlewares/constants");
 const Card = require("../models/cardModel");
 const { DistanceFromDateToDate } = require("../helper");
+const { getAllDesks } = require("./DeskController");
 //@desc Get All Cards
 //@route api/card/:deskId
 //@access private
@@ -46,7 +47,7 @@ const getAllCardsOfDesk = asyncHandler(async (req, res, next) => {
 //@route api/card/
 //@access private
 const getAllCards = asyncHandler(async (req, res, next) => {
-  const allCards = await Card.find({});
+  const allCards = await Card.find({ user_id: req.user._id });
   res.json(allCards);
 });
 
@@ -80,6 +81,7 @@ const createCard = asyncHandler(async (req, res, next) => {
     req.body;
   const newCard = await Card.create({
     desk_id: req.params.deskId,
+    user_id: req.user._id,
     status: "new",
     level: 0,
     last_preview: JSON.stringify(new Date()).slice(1, -1),

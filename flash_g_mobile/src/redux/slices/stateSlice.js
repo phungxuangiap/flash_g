@@ -3,6 +3,7 @@ import {createSlice} from '@reduxjs/toolkit';
 const initialState = {
   loading: false,
   db: null,
+  online: true,
 };
 
 const stateSlice = createSlice({
@@ -15,7 +16,10 @@ const stateSlice = createSlice({
     setDatabase: (state, actions) => {
       state.db = actions.payload;
     },
+    setOnline: (state, actions) => {
+      state.online = actions.payload;
+    },
   },
 });
 export default stateSlice;
-export const {setLoading, setDatabase} = stateSlice.actions;
+export const {setLoading, setDatabase, setOnline} = stateSlice.actions;

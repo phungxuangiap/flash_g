@@ -4,7 +4,7 @@ import {AUTH, NO_AUTH} from '../../constants';
 const initialState = {
   authState: NO_AUTH,
   accessToken: null,
-  user: {},
+  user: undefined,
 };
 const authSlice = createSlice({
   name: 'auth',

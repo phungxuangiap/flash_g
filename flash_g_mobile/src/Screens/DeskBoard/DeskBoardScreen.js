@@ -13,6 +13,7 @@ import {
   accessTokenSelector,
   currentDesks,
   loadingSelector,
+  onlineStateSelector,
   userSelector,
 } from '../../redux/selectors';
 import axios from 'axios';
@@ -35,7 +36,6 @@ import {
   updateCurrentDesk,
   updateCurrentDesks,
 } from '../../redux/slices/gameSlice';
-import {setUser} from '../../redux/slices/authSlice';
 import {getData, storeData} from '../../service/asyncStorageService';
 import {REACT_APP_URL} from '@env';
 import {
@@ -62,6 +62,7 @@ import {
 } from '../../LocalDatabase/syncDBService';
 import {Desk} from '../../LocalDatabase/model';
 import {Card, MainGame} from '../../constants';
+import {setUser} from '../../redux/slices/authSlice';
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
   const user = useSelector(userSelector);
@@ -72,27 +73,47 @@ export default function DeskBoardScreen() {
   const [inputCreateDesk, setInputCreateDesk] = useState('');
   const [showCreateDesk, setShowCreateDesk] = useState(false);
   const currentUser = useSelector(userSelector);
-  async function handleData() {
+  const online = useSelector(onlineStateSelector);
+  async function handleData(onlineState, accessToken) {
+    console.log('RECOMPOSE');
     Promise.resolve()
       // Fetch current user, update state, store local
       .then(async () => {
-        const user = await fetchCurrentUser(actk);
-        dispatch(setUser(user));
-        await createNewUser(user);
-        return user;
+        console.log('.then first');
+        console.log('[ACCESS TOKEN]', accessToken);
+        if (onlineState) {
+          console.log('ahihi');
+          const user = await fetchCurrentUser(accessToken, dispatch);
+          dispatch(setUser(user));
+          console.log('[USER]', user);
+          await createNewUser(user);
+          return user;
+        } else {
+          return undefined;
+        }
       })
       // Fetch all Desks
       .then(async user => {
+        console.log('.then second');
+        console.log('[ACCESS TOKEN]', accessToken);
+
         if (user) {
-          return fetchListDesks(actk, user._id);
+          console.log(user, user._id);
+          return fetchListDesks(accessToken, user._id, dispatch);
         } else {
           return false;
         }
       })
       // Fetch all Cards
       .then(async listDesk => {
+        console.log('.then third');
+        console.log('[ACCESS TOKEN]', accessToken);
+
         if (listDesk) {
-          const listAllRemoteCards = await fetchAllCards().catch(err => {
+          const listAllRemoteCards = await fetchAllCards(
+            dispatch,
+            accessToken,
+          ).catch(err => {
             console.log('Get all remote cards error with message:', err);
             console.log('Cannot connect to remote server!');
             return false;
@@ -105,16 +126,24 @@ export default function DeskBoardScreen() {
           );
           return listDesk;
         } else {
-          console.log('Cannot connect to remote server!');
+          console.log("Cannot connect to remote server! Let's use local");
           return false;
         }
       })
       // Get all current card and calculate, return list new desks
       .then(async listDesks => {
-        let listLocalDesk = listDesks;
-        if (!listLocalDesk) {
-          listLocalDesk = await getListDesks();
+        let listLocalDesk = !listDesks ? [] : listDesks;
+        // userRes[0].rows.item(0)
+        if (listLocalDesk.length === 0) {
+          const respone = await getListDesks();
+          respone.forEach(item => {
+            for (let i = 0; i < item.rows.length; i++) {
+              listLocalDesk.push(item.rows.item(i));
+            }
+          });
         }
+
+        console.log('[LIST LOCAL DESK]', listLocalDesk);
         return Promise.all(
           listLocalDesk.map(desk => {
             let news = 0;
@@ -148,34 +177,26 @@ export default function DeskBoardScreen() {
         );
       })
       // Receive List desk with total calculated cards, update new desk into local database
-      .then(listUpdatedDesks => {
+      .then(async listUpdatedDesks => {
         console.log('LIST_ALL_DESK', listUpdatedDesks);
-        return Promise.all(
+        await Promise.all(
           listUpdatedDesks.map(desk => {
             return updateDesk(desk);
           }),
         );
+        return listUpdatedDesks;
       })
       // Update list updated desks in state
-      .then(res => {
-        return getListDesks().then(list => {
-          let listDesks = [];
-          list?.forEach(result => {
-            for (let index = 0; index < result.rows.length; index++) {
-              listDesks.push(result.rows.item(index));
-            }
-          });
-          dispatch(updateCurrentDesks(listDesks));
-        });
+      .then(listDesks => {
+        dispatch(updateCurrentDesks(JSON.parse(JSON.stringify(listDesks))));
       })
-
       .catch(err => {
         console.log('Handle data error with message:', err);
       });
   }
   useEffect(() => {
-    handleData();
-  }, []);
+    handleData(online, actk);
+  }, [actk]);
   return loading ? (
     <LoadingOverlay />
   ) : (

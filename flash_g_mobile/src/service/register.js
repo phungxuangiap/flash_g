@@ -7,7 +7,7 @@ import {REACT_APP_URL} from '@env';
 
 const register = async (email, password, user_name) => {
   return await axios
-    .post(`http://${process.env.REACT_APP_URL}/api/user/register`, {
+    .post(`http://${process.env.REACT_NATIVE_APP_URL}/api/user/register`, {
       user_name,
       password,
       email,

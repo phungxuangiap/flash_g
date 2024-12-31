@@ -6,10 +6,17 @@
  */
 
 import React, {useEffect} from 'react';
-import {StyleSheet, Text, useColorScheme, View} from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+  Alert,
+} from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {Provider} from 'react-redux';
+import {Provider, useDispatch, useSelector} from 'react-redux';
 import {store} from './src/redux/store';
 import {AppContainer} from './AppContainer';
 import {databaseInitialization} from './src/LocalDatabase/databaseInitialization';
@@ -17,7 +24,8 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {NavigationContainer} from '@react-navigation/native';
 import LoginScreen from './src/Screens/Login/LoginScreen';
 import MainNavigation from './src/navigation/mainNavigation';
-
+import stateSlice, {setOnline} from './src/redux/slices/stateSlice';
+import {onlineStateSelector} from './src/redux/selectors';
 function Section({children, title}) {
   const isDarkMode = useColorScheme() === 'dark';
   return (
@@ -58,23 +66,13 @@ if (__DEV__) {
 const Stack = createNativeStackNavigator();
 
 function App() {
-  // To see all the requests in the chrome Dev tools in the network tab.
-
-  // const isDarkMode = useColorScheme() === 'dark';
-  // const backgroundStyle = {
-  //   backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  // };
-
   useEffect(() => {
     // Init local database.
     databaseInitialization();
   }, []);
-
   return (
     <Provider store={store}>
-      <AppContainer>
-        <MainNavigation />
-      </AppContainer>
+      <AppContainer />
     </Provider>
   );
 }

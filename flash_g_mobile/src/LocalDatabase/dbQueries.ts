@@ -104,7 +104,7 @@ const getListCurrentCardsQuery = `
     SELECT * FROM Card WHERE last_preview <=?
 `;
 const getAllCardsQuery = `
-    SELECT * FROM Card
+    SELECT * FROM Card WHERE user_id = ?
 `;
 const getAllCardsOfDeskQuery = `
     SELECT * FROM Card WHERE desk_id = ?
@@ -158,6 +158,16 @@ const deleteCardQuery = `
     DELETE FROM Card WHERE _id = ?
 `;
 
+const cleanAllDeskQuery = `
+    DELETE FROM Desk
+`;
+
+const cleanAllCardQuery = `
+    DELETE FROM Card
+`;
+const cleanAllUserQuery = `
+    DELETE FROM User
+`;
 export {
     card, desk, user, userPreferencesQuery
     , createNewDeskQuery, createNewUserQuery
@@ -169,6 +179,9 @@ export {
     getUserQuery,
     deleteUserQuery,
     getAllCardsOfDeskQuery,
+    cleanAllDeskQuery,
+    cleanAllCardQuery,
+    cleanAllUserQuery,
 };
 
 

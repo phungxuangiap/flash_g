@@ -3,11 +3,11 @@ import {store} from '../redux/store';
 import {refreshAccessToken} from '../redux/slices/authSlice';
 import {REACT_APP_URL} from '@env';
 
-const refresh = async () => {
+const refresh = async dispatch => {
   await axios
-    .get(`http://${process.env.REACT_APP_URL}/api/user/refresh`)
+    .get(`http://${process.env.REACT_NATIVE_APP_URL}/api/user/refresh`)
     .then(res => {
-      store.dispatch(refreshAccessToken(res.data.access_token));
+      dispatch(refreshAccessToken(res.data.access_token));
     })
     .then(res => {
       console.log('refresh successfully ');
