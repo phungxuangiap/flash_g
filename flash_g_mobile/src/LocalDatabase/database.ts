@@ -137,6 +137,7 @@ export async function deleteCard(cardId: string): Promise<any> {
 } //OK
 
 export async function createNewUser(user: User): Promise<any> {
+  console.log("store user in local");
   return getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
       return await db.executeSql(createNewUserQuery, [user._id, user.email, user.password, user.user_name]);

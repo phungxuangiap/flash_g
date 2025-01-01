@@ -6,6 +6,7 @@ import {refresh} from './refreshAccessToken';
 
 // Fetch current user and store in local storage, update redux state
 export function fetchCurrentUser(accessToken, dispatch) {
+  console.log('fetch current user');
   return axios
     .get(`http://${REACT_NATIVE_APP_URL}/api/user/current`, {
       headers: {

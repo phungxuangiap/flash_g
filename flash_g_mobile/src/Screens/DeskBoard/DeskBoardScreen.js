@@ -75,40 +75,34 @@ export default function DeskBoardScreen() {
   const currentUser = useSelector(userSelector);
   const online = useSelector(onlineStateSelector);
   async function handleData(onlineState, accessToken) {
-    console.log('RECOMPOSE');
+    console.log('[ACCESS TOKEN', accessToken);
     Promise.resolve()
       // Fetch current user, update state, store local
       .then(async () => {
-        console.log('.then first');
-        console.log('[ACCESS TOKEN]', accessToken);
         if (onlineState) {
-          console.log('ahihi');
           const user = await fetchCurrentUser(accessToken, dispatch);
-          dispatch(setUser(user));
-          console.log('[USER]', user);
-          await createNewUser(user);
-          return user;
+          if (user) {
+            dispatch(setUser(user));
+            await createNewUser(user);
+            return user;
+          } else {
+            return undefined;
+          }
         } else {
           return undefined;
         }
       })
       // Fetch all Desks
       .then(async user => {
-        console.log('.then second');
-        console.log('[ACCESS TOKEN]', accessToken);
-
         if (user) {
           console.log(user, user._id);
-          return fetchListDesks(accessToken, user._id, dispatch);
+          return await fetchListDesks(accessToken, user._id, dispatch);
         } else {
           return false;
         }
       })
       // Fetch all Cards
       .then(async listDesk => {
-        console.log('.then third');
-        console.log('[ACCESS TOKEN]', accessToken);
-
         if (listDesk) {
           const listAllRemoteCards = await fetchAllCards(
             dispatch,
@@ -133,7 +127,6 @@ export default function DeskBoardScreen() {
       // Get all current card and calculate, return list new desks
       .then(async listDesks => {
         let listLocalDesk = !listDesks ? [] : listDesks;
-        // userRes[0].rows.item(0)
         if (listLocalDesk.length === 0) {
           const respone = await getListDesks();
           respone.forEach(item => {
@@ -142,16 +135,13 @@ export default function DeskBoardScreen() {
             }
           });
         }
-
-        console.log('[LIST LOCAL DESK]', listLocalDesk);
-        return Promise.all(
+        return await Promise.all(
           listLocalDesk.map(desk => {
             let news = 0;
             let inProgress = 0;
             let preview = 0;
             return getListCurrentCardsOfDesk(desk._id).then(
               async listCurrentCards => {
-                console.log('[CURRENT_CARDS]', listCurrentCards);
                 listCurrentCards.forEach(card => {
                   if (card.status === 'new') {
                     news++;
@@ -178,7 +168,6 @@ export default function DeskBoardScreen() {
       })
       // Receive List desk with total calculated cards, update new desk into local database
       .then(async listUpdatedDesks => {
-        console.log('LIST_ALL_DESK', listUpdatedDesks);
         await Promise.all(
           listUpdatedDesks.map(desk => {
             return updateDesk(desk);
