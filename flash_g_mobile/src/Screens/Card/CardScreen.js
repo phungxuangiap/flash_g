@@ -1,15 +1,17 @@
 import {Text} from '@react-navigation/elements';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {ComponentStyle} from '../../appComponents/style';
 import React, {useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {
   accessTokenSelector,
+  currentCardsSelector,
   currentDesks,
   gameSelector,
   loadingSelector,
 } from '../../redux/selectors';
 import {
+  CardComponent,
   CreateNewCardPopUp,
   CreateNewDeskPopUp,
   LoadingOverlay,
@@ -21,8 +23,18 @@ import {setLoading} from '../../redux/slices/stateSlice';
 import axios from 'axios';
 import {refresh} from '../../service/refreshAccessToken';
 import {useNavigation} from '@react-navigation/native';
+import uuid from 'react-native-uuid';
+
 import {REACT_APP_URL} from '@env';
-import {updateCurrentDesks} from '../../redux/slices/gameSlice';
+import {
+  updateCurrentCards,
+  updateCurrentDesks,
+} from '../../redux/slices/gameSlice';
+import {
+  getListCurrentCardsOfDesk,
+  updateCard,
+} from '../../LocalDatabase/database';
+import {Card} from '../../LocalDatabase/model';
 
 export default function CardScreen() {
   const desk = useSelector(gameSelector);
@@ -36,6 +48,13 @@ export default function CardScreen() {
   const accessToken = useSelector(accessTokenSelector);
   const navigation = useNavigation();
   const [data, setData] = useState(null);
+  const listAllCardsOfDesk = useSelector(currentCardsSelector);
+
+  const [listNewCards, updateListNewCards] = useState([]);
+  const [listInprogressCards, updateListInprogressCards] = useState([]);
+  const [listPreviewCards, updateListPreviewCards] = useState([]);
+
+  // const []
   function updateDesk() {
     let news = 0;
     let in_progress = 0;
@@ -73,7 +92,24 @@ export default function CardScreen() {
       });
   }
   useEffect(() => {
-    fetchData(accessToken);
+    // fetchData(accessToken);
+    getListCurrentCardsOfDesk(desk._id)
+      .then(listCards => {
+        dispatch(updateCurrentCards(listCards));
+        listCards.forEach(card => {
+          if (card.status === 'new') {
+            updateListNewCards(preState => [...preState, card]);
+          } else if (card.status === 'inprogress') {
+            updateListInprogressCards(preState => [...preState, card]);
+          } else {
+            updateListPreviewCards(preState => [...preState, card]);
+          }
+        });
+        return 0;
+      })
+      .catch(err => {
+        console.log('Get current cards error with message:', err);
+      });
   }, []);
   return (
     <View style={{flex: 1}}>
@@ -93,6 +129,19 @@ export default function CardScreen() {
         />
       </View>
       <View>
+        <View>
+          <Text>{listNewCards.length}</Text>
+          <Text>{listInprogressCards.length}</Text>
+          <Text>{listPreviewCards.length}</Text>
+        </View>
+        {/* <View
+          style={{flex: 1, backgroundColor: 'blue', width: 100, height: 100}}>
+          <Text>Ahih</Text>
+          {listAllCardsOfDesk.map(card => {
+            <CardComponent vocab={card.vocab} description={card.description} />;
+          })}
+        </View> */}
+
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('MainGame');
@@ -105,6 +154,26 @@ export default function CardScreen() {
           }}>
           <Text style={{color: 'white'}}>Play</Text>
         </TouchableOpacity>
+        <ScrollView
+          style={{
+            backgroundColor: 'white',
+            height: 100,
+            paddingLeft: 20,
+            paddingRight: 20,
+            borderWidth: 1,
+            borderColor: 'black',
+            borderRadius: 20,
+          }}>
+          {listAllCardsOfDesk.map(card => {
+            return (
+              <CardComponent
+                key={uuid.v4()}
+                vocab={card.vocab}
+                description={card.description}
+              />
+            );
+          })}
+        </ScrollView>
       </View>
       {showPopUp ? (
         <>
@@ -121,14 +190,42 @@ export default function CardScreen() {
             }}
             create={async () => {
               dispatch(setLoading(true));
-              await createCard(
-                accessToken,
-                desk,
+              // await createCard(
+              //   accessToken,
+              //   desk,
+              //   vocab,
+              //   sentence,
+              //   description,
+              //   data,
+              //   setData,
+              // );
+              const newCard = new Card(
+                uuid.v4(),
+                desk._id,
+                'new',
+                0,
+                JSON.stringify(new Date()).slice(1, -1),
                 vocab,
-                sentence,
                 description,
-                data,
-                setData,
+                sentence,
+                '',
+                '',
+                'verb',
+                JSON.stringify(new Date()).slice(1, -1),
+              );
+              await updateCard(newCard)
+                .then(res => {
+                  console.log('[NEW CARD]', res);
+                })
+                .catch(err => {
+                  console.log('Create new card error with message:', err);
+                });
+              updateListNewCards(preState => [...preState, newCard]);
+              dispatch(
+                updateCurrentCards([
+                  ...listAllCardsOfDesk,
+                  JSON.parse(JSON.stringify(newCard)),
+                ]),
               );
               setShowPopUp(false);
               dispatch(setLoading(false));

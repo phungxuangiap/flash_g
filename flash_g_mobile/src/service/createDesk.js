@@ -3,7 +3,6 @@ import {store} from '../redux/store';
 import {changeAuth, refreshAccessToken} from '../redux/slices/authSlice';
 import {setLoading} from '../redux/slices/stateSlice';
 import {refresh} from './refreshAccessToken';
-import {REACT_APP_URL} from '@env';
 import {updateCurrentDesks} from '../redux/slices/gameSlice';
 
 export default async function createDesk(
@@ -15,7 +14,7 @@ export default async function createDesk(
 ) {
   await axios
     .post(
-      `http://${process.env.REACT_NATIVE_APP_URL}/api/desk`,
+      `http://${process.env.REACT_APP_URL}/api/desk`,
       {
         title,
         primary_color,

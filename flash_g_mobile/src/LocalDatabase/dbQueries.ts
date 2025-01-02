@@ -168,6 +168,7 @@ const cleanAllCardQuery = `
 const cleanAllUserQuery = `
     DELETE FROM User
 `;
+
 export {
     card, desk, user, userPreferencesQuery
     , createNewDeskQuery, createNewUserQuery

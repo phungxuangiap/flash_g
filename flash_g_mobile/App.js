@@ -21,11 +21,6 @@ import {store} from './src/redux/store';
 import {AppContainer} from './AppContainer';
 import {databaseInitialization} from './src/LocalDatabase/databaseInitialization';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {NavigationContainer} from '@react-navigation/native';
-import LoginScreen from './src/Screens/Login/LoginScreen';
-import MainNavigation from './src/navigation/mainNavigation';
-import stateSlice, {setOnline} from './src/redux/slices/stateSlice';
-import {onlineStateSelector} from './src/redux/selectors';
 function Section({children, title}) {
   const isDarkMode = useColorScheme() === 'dark';
   return (

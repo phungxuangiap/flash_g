@@ -23,7 +23,8 @@ export interface Database {
 }
 
 export async function createNewDesk(desk: Desk): Promise<any> {
-  return getLocalDatabase()
+  console.log("CREATE NEW DESK IN LOCAL")
+  return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
       return await db.executeSql(createNewDeskQuery, [desk._id, desk.user_id, desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card]);
     })
@@ -32,7 +33,7 @@ export async function createNewDesk(desk: Desk): Promise<any> {
     });
 } //OK
 export async function updateDesk(desk: Desk): Promise<any> {
-  return getLocalDatabase()
+  return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
       await db.executeSql(updateDeskQuery, [desk._id, desk.user_id, desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card]);
     })
@@ -42,7 +43,7 @@ export async function updateDesk(desk: Desk): Promise<any> {
 } //OK
 
 export async function deleteDesk(deskId: string): Promise<any> {
-  return getLocalDatabase()
+  return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
       await db.executeSql(deleteDeskQuery, [deskId]);
     })
@@ -52,7 +53,7 @@ export async function deleteDesk(deskId: string): Promise<any> {
 } //OK
 
 export async function getListDesks(): Promise<any> {
-  return getLocalDatabase()
+  return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
       return await db.executeSql(getListDesksQuery);
     })
@@ -62,7 +63,7 @@ export async function getListDesks(): Promise<any> {
 } //OK
 
 export async function createNewCard(card: Card): Promise<any> {
-  return getLocalDatabase()
+  return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
       await db.executeSql(createNewCardQuery, [card._id, card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type]);
     })
@@ -72,7 +73,7 @@ export async function createNewCard(card: Card): Promise<any> {
 } //OK
 
 export async function getListCurrentCardsOfDesk(deskId:string): Promise<any> {
-  return getLocalDatabase()
+  return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
       return await db.executeSql(getAllCardsOfDeskQuery, [deskId])
         .then((res:any[])=>{
@@ -94,8 +95,10 @@ export async function getListCurrentCardsOfDesk(deskId:string): Promise<any> {
     });
 } //OK
 
+
+
 export async function getListCurrentCards(): Promise<any[]> {
-  return getLocalDatabase()
+  return await getLocalDatabase()
     .then(async (db:SQLite.SQLiteDatabase)=>{
       return await db.executeSql(getListCurrentCardsQuery, [(JSON.stringify(new Date())).slice(1, -1)]);
     })
@@ -105,8 +108,7 @@ export async function getListCurrentCards(): Promise<any[]> {
 }
 
 export async function getAllCards(): Promise<any>{
-  console.log(store.getState().auth.user._id);
-  return getLocalDatabase()
+  return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase)=>{
       return await db.executeSql(getAllCardsQuery, [store.getState().auth.user._id]);
     })
@@ -116,7 +118,7 @@ export async function getAllCards(): Promise<any>{
 } // OK
 
 export async function updateCard(card: Card): Promise<any> {
-  return getLocalDatabase()
+  return await getLocalDatabase()
     .then(async (db:SQLite.SQLiteDatabase) =>{
       await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type]);
       console.log("Update card successfully")
@@ -127,7 +129,7 @@ export async function updateCard(card: Card): Promise<any> {
 } //OK
 
 export async function deleteCard(cardId: string): Promise<any> {
-  return getLocalDatabase()
+  return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase)=>{
       await db.executeSql(deleteCardQuery, [cardId]);
     })
@@ -138,7 +140,7 @@ export async function deleteCard(cardId: string): Promise<any> {
 
 export async function createNewUser(user: User): Promise<any> {
   console.log("store user in local");
-  return getLocalDatabase()
+  return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
       return await db.executeSql(createNewUserQuery, [user._id, user.email, user.password, user.user_name]);
     })
@@ -147,7 +149,7 @@ export async function createNewUser(user: User): Promise<any> {
     });
 } //OK
 export async function getUser(): Promise<any> {
-  return getLocalDatabase()
+  return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
       return await db.executeSql(getUserQuery);
       
@@ -159,7 +161,7 @@ export async function getUser(): Promise<any> {
 function checkIsCurrent(last_preview:string, level:number): boolean{
   const lastPreviewDate = Date.parse(last_preview);
   const currentDate = (new Date()).getTime();
-  return lastPreviewDate + Math.pow(2, level) * 24 * 60 * 60 * 1000 <= currentDate;
+  return lastPreviewDate + (Math.pow(2, level)-1) * 24 * 60 * 60 * 1000 <= currentDate;
 }
 
 export function cleanUp():Promise<any>{

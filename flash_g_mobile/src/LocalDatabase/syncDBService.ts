@@ -75,7 +75,11 @@ function mergeLocalAndRemoteData(remoteList:any[], localList:any[]):any[]{
 
         mergedList = remoteList.concat(localList);
         mergedList.sort((itemA, itemB)=>{
-            return itemA._id - itemB._id;
+            if (itemA._id < itemB._id){
+                return -1;
+            }else{
+                return 1;
+            }
         });
         for (let i = 0; i < mergedList.length - 1; i++){
             if ((mergedList[i]._id === mergedList[i + 1]._id)){

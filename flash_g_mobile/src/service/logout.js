@@ -2,15 +2,13 @@ import axios from 'axios';
 import {store} from '../redux/store';
 import {useSelector} from 'react-redux';
 import {refresh} from './refreshAccessToken';
-import {REACT_APP_URL} from '@env';
 import {getLocalDatabase} from '../LocalDatabase/databaseInitialization';
 import {cleanUp} from '../LocalDatabase/database';
 import {cleanUpStateAfterLoggingOut} from './cleanUpState';
-import {REACT_NATIVE_APP_URL} from '@env';
 
 const logout = async accessToken => {
   await axios
-    .post(`http://${REACT_NATIVE_APP_URL}/api/user/logout`, {
+    .post(`http://${process.env.REACT_APP_URL}/api/user/logout`, {
       body: 'body of logout post request',
     })
     .then(async res => {

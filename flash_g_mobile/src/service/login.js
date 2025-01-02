@@ -6,7 +6,7 @@ import {Alert} from 'react-native';
 
 const login = async (email, password) => {
   return await axios
-    .post(`http://${process.env.REACT_NATIVE_APP_URL}/api/user/login`, {
+    .post(`http://${process.env.REACT_APP_URL}/api/user/login`, {
       email,
       password,
     })

@@ -30,6 +30,7 @@ import {
   DeskComponent,
   LoadingOverlay,
   OverLay,
+  UpdateDeskPopUp,
 } from '../../appComponents/appComponents';
 import createDesk from '../../service/createDesk';
 import {
@@ -55,6 +56,7 @@ import {
   updateDesk,
 } from '../../LocalDatabase/database';
 import {
+  mergeLocalAndRemoteData,
   syncAllCards,
   syncAllDesks,
   syncCurrentCards,
@@ -68,14 +70,17 @@ export default function DeskBoardScreen() {
   const user = useSelector(userSelector);
   const data = useSelector(currentDesks);
   const navigation = useNavigation();
+  const listCurrentDesks = useSelector(currentDesks);
   const actk = useSelector(accessTokenSelector);
   const loading = useSelector(loadingSelector);
   const [inputCreateDesk, setInputCreateDesk] = useState('');
+  const [inputUpdateDesk, setInputUpdateDesk] = useState('');
   const [showCreateDesk, setShowCreateDesk] = useState(false);
+  // Hold index of updated desk
+  const [indexUpdatedDesk, setindexUpdatedDesk] = useState(undefined);
   const currentUser = useSelector(userSelector);
   const online = useSelector(onlineStateSelector);
   async function handleData(onlineState, accessToken) {
-    console.log('[ACCESS TOKEN', accessToken);
     Promise.resolve()
       // Fetch current user, update state, store local
       .then(async () => {
@@ -126,17 +131,10 @@ export default function DeskBoardScreen() {
       })
       // Get all current card and calculate, return list new desks
       .then(async listDesks => {
-        let listLocalDesk = !listDesks ? [] : listDesks;
-        if (listLocalDesk.length === 0) {
-          const respone = await getListDesks();
-          respone.forEach(item => {
-            for (let i = 0; i < item.rows.length; i++) {
-              listLocalDesk.push(item.rows.item(i));
-            }
-          });
-        }
+        let listMergedDesk = [];
+        listMergedDesk = await syncAllDesks(listDesks);
         return await Promise.all(
-          listLocalDesk.map(desk => {
+          listMergedDesk.map(desk => {
             let news = 0;
             let inProgress = 0;
             let preview = 0;
@@ -183,6 +181,7 @@ export default function DeskBoardScreen() {
         console.log('Handle data error with message:', err);
       });
   }
+  console.log(data);
   useEffect(() => {
     handleData(online, actk);
   }, [actk]);
@@ -196,14 +195,28 @@ export default function DeskBoardScreen() {
             return (
               <DeskComponent
                 key={uuid.v4()}
+                id={item._id}
                 title={item.title}
                 primaryColor={item.primary_color}
                 news={item.new_card}
                 progress={item.inprogress_card}
                 preview={item.preview_card}
+                dispatch={() => {
+                  dispatch(
+                    updateCurrentDesks(
+                      data.filter(deskDeleted => {
+                        return deskDeleted._id != item._id;
+                      }),
+                    ),
+                  );
+                }}
                 onClick={() => {
                   dispatch(updateCurrentDesk(item));
                   navigation.navigate(MainGame);
+                }}
+                onEdit={() => {
+                  console.log(index);
+                  setindexUpdatedDesk(index);
                 }}
               />
             );
@@ -227,10 +240,71 @@ export default function DeskBoardScreen() {
             }}
             create={async () => {
               dispatch(setLoading(true));
-              await createDesk(inputCreateDesk, 'black', actk, data, dispatch);
+              const newDesk = new Desk(
+                uuid.v4(),
+                user._id,
+                inputCreateDesk,
+                'black',
+                0,
+                0,
+                0,
+                JSON.stringify(new Date()).slice(1, -1),
+              );
+              await createNewDesk(newDesk);
+              dispatch(
+                updateCurrentDesks([
+                  ...listCurrentDesks,
+                  JSON.parse(JSON.stringify(newDesk)),
+                ]),
+              );
+              // await createDesk(inputCreateDesk, 'black', actk, data, dispatch);
               dispatch(setLoading(false));
               setShowCreateDesk(false);
             }}
+          />
+        </>
+      ) : (
+        <></>
+      )}
+
+      {indexUpdatedDesk === 0 || indexUpdatedDesk ? (
+        <>
+          <OverLay />
+          <UpdateDeskPopUp
+            input={inputUpdateDesk}
+            setInput={setInputUpdateDesk}
+            close={() => {
+              setindexUpdatedDesk(undefined);
+            }}
+            update={async () => {
+              console.log('update');
+              dispatch(setLoading(true));
+              const updatedDesk = new Desk(
+                data[indexUpdatedDesk]._id,
+                user._id,
+                inputUpdateDesk,
+                data[indexUpdatedDesk].primary_color,
+                data[indexUpdatedDesk].new_card,
+                data[indexUpdatedDesk].inprogress_card,
+                data[indexUpdatedDesk].preview_card,
+                JSON.stringify(new Date()).slice(1, -1),
+              );
+              await updateDesk(updatedDesk);
+              console.log('Update');
+              dispatch(
+                updateCurrentDesks(
+                  data.map(desk => {
+                    return desk._id !== updatedDesk._id
+                      ? desk
+                      : JSON.parse(JSON.stringify(updatedDesk));
+                  }),
+                ),
+              );
+              // await createDesk(inputCreateDesk, 'black', actk, data, dispatch);
+              dispatch(setLoading(false));
+              setindexUpdatedDesk(undefined);
+            }}
+            desk={listCurrentDesks[indexUpdatedDesk]}
           />
         </>
       ) : (

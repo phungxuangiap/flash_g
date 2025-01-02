@@ -8,6 +8,9 @@ import {
 } from 'react-native';
 import React from 'react';
 import {ComponentStyle} from './style';
+import {deleteDesk} from '../LocalDatabase/database';
+import {updateCurrentDesks} from '../redux/slices/gameSlice';
+import {desk} from '../LocalDatabase/dbQueries';
 export function InputTag({placeholder, value, onValueChange}) {
   return (
     <TextInput
@@ -52,13 +55,25 @@ export function LoadingOverlay() {
   );
 }
 
+export function CardComponent({vocab, description}) {
+  return (
+    <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
+      <Text style={{color: 'black'}}>{vocab}</Text>
+      <Text style={{color: 'black'}}>{description}</Text>
+    </View>
+  );
+}
+
 export function DeskComponent({
+  id,
   title,
   primaryColor,
   news,
   progress,
   preview,
+  dispatch,
   onClick,
+  onEdit,
 }) {
   return (
     <TouchableOpacity
@@ -66,7 +81,42 @@ export function DeskComponent({
         onClick();
       }}
       style={{...ComponentStyle.deskContainer, backgroundColor: primaryColor}}>
-      <Text style={{...ComponentStyle.largeWhiteTitle}}>{title}</Text>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+        }}>
+        <Text style={{...ComponentStyle.largeWhiteTitle}}>{title}</Text>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <TouchableOpacity
+            style={{
+              padding: 10,
+              borderWidth: 1,
+              borderRadius: 20,
+              borderColor: 'yellow',
+            }}
+            onPress={async () => {
+              await deleteDesk(id);
+              dispatch();
+              console.log('delete desk');
+            }}>
+            <Text style={{color: 'white'}}>x</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              padding: 10,
+              borderWidth: 1,
+              borderRadius: 20,
+              borderColor: 'yellow',
+            }}
+            onPress={() => {
+              onEdit();
+            }}>
+            <Text style={{color: 'white'}}>Edit</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
       <View style={{flexDirection: 'row', justifyContent: 'center'}}>
         <TextCircleBorder content={`${news} New`} color={'#C12450'} />
         <TextCircleBorder
@@ -174,6 +224,60 @@ export function CreateNewDeskPopUp({input, setInput, close, create}) {
                 create();
               }}>
               <Text>Create</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <CircleButton
+          style={{position: 'absolute', bottom: -60}}
+          content={'x'}
+          onClick={() => {
+            close();
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+export function UpdateDeskPopUp({input, setInput, close, update, desk}) {
+  console.log(desk);
+  return (
+    <View
+      style={{
+        flex: 1,
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+      }}>
+      <View style={{margin: 'auto'}}>
+        <View
+          style={{
+            backgroundColor: '#6CDDAB',
+            borderRadius: 24,
+            padding: 24,
+            marginBottom: 12,
+          }}>
+          <Text style={{...ComponentStyle.largeWhiteTitle}}>Update Desk</Text>
+          <InputTag
+            placeholder={'Your Desk'}
+            content={input}
+            onValueChange={value => {
+              setInput(value);
+            }}
+          />
+          <View style={{flexDirection: 'row-reverse'}}>
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#444',
+                padding: 12,
+                borderRadius: 24,
+                margin: 4,
+              }}
+              onPress={() => {
+                update();
+              }}>
+              <Text>Update</Text>
             </TouchableOpacity>
           </View>
         </View>
