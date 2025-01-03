@@ -1,3 +1,4 @@
+import { ActiveStatus } from "../constants";
 
 export class User {
     _id : string;
@@ -23,7 +24,8 @@ export class Desk {
     inprogress_card : number;
     preview_card : number;
     modified_time: string;
-    constructor(_id: string, user_id: string, title: string, primary_color: string, new_card: number, inprogress_card: number, preview_card: number, modified_time:string){
+    active_status: string;
+    constructor(_id: string, user_id: string, title: string, primary_color: string, new_card: number, inprogress_card: number, preview_card: number, modified_time:string, active_status: string = ActiveStatus){
         this._id = _id;
         this.user_id = user_id;
         this.title = title;
@@ -32,6 +34,7 @@ export class Desk {
         this.inprogress_card = inprogress_card;
         this.preview_card = preview_card;
         this.modified_time = modified_time;
+        this.active_status = active_status;
     }
 }
 
@@ -48,7 +51,8 @@ export class Card {
     sentence_audio : string;
     type : string;
     modified_time: string;
-    constructor(_id:string, desk_id: string, status: string, level: number, last_preview: string, vocab: string, description: string, sentence: string, vocab_audio: string, sentence_audio: string, type: string, modified_time:string){
+    active_status:string;
+    constructor(_id:string, desk_id: string, status: string, level: number, last_preview: string, vocab: string, description: string, sentence: string, vocab_audio: string, sentence_audio: string, type: string, modified_time:string, active_status:string = 'active'){
         this._id = _id;
         this.desk_id = desk_id;
         this.status = status;
@@ -61,6 +65,7 @@ export class Card {
         this.sentence_audio = sentence_audio;
         this.type = type;
         this.modified_time = modified_time;
+        this.active_status = active_status;
     }
 }
 

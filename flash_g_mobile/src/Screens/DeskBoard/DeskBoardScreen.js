@@ -82,6 +82,9 @@ export default function DeskBoardScreen() {
   const online = useSelector(onlineStateSelector);
   async function handleData(onlineState, accessToken) {
     Promise.resolve()
+      .then(() => {
+        dispatch(setLoading(true));
+      })
       // Fetch current user, update state, store local
       .then(async () => {
         if (onlineState) {
@@ -100,7 +103,6 @@ export default function DeskBoardScreen() {
       // Fetch all Desks
       .then(async user => {
         if (user) {
-          console.log(user, user._id);
           return await fetchListDesks(accessToken, user._id, dispatch);
         } else {
           return false;
@@ -115,7 +117,7 @@ export default function DeskBoardScreen() {
           ).catch(err => {
             console.log('Get all remote cards error with message:', err);
             console.log('Cannot connect to remote server!');
-            return false;
+            return [];
           });
           const synchronizedListCards = await syncAllCards(listAllRemoteCards);
           await Promise.all(
@@ -126,7 +128,7 @@ export default function DeskBoardScreen() {
           return listDesk;
         } else {
           console.log("Cannot connect to remote server! Let's use local");
-          return false;
+          return [];
         }
       })
       // Get all current card and calculate, return list new desks
@@ -177,11 +179,13 @@ export default function DeskBoardScreen() {
       .then(listDesks => {
         dispatch(updateCurrentDesks(JSON.parse(JSON.stringify(listDesks))));
       })
+      .then(() => {
+        dispatch(setLoading(false));
+      })
       .catch(err => {
         console.log('Handle data error with message:', err);
       });
   }
-  console.log(data);
   useEffect(() => {
     handleData(online, actk);
   }, [actk]);
@@ -215,7 +219,6 @@ export default function DeskBoardScreen() {
                   navigation.navigate(MainGame);
                 }}
                 onEdit={() => {
-                  console.log(index);
                   setindexUpdatedDesk(index);
                 }}
               />
@@ -249,8 +252,10 @@ export default function DeskBoardScreen() {
                 0,
                 0,
                 JSON.stringify(new Date()).slice(1, -1),
+                'active',
               );
               await createNewDesk(newDesk);
+              console.log('NEW DESK', newDesk);
               dispatch(
                 updateCurrentDesks([
                   ...listCurrentDesks,
@@ -277,7 +282,6 @@ export default function DeskBoardScreen() {
               setindexUpdatedDesk(undefined);
             }}
             update={async () => {
-              console.log('update');
               dispatch(setLoading(true));
               const updatedDesk = new Desk(
                 data[indexUpdatedDesk]._id,
@@ -290,7 +294,6 @@ export default function DeskBoardScreen() {
                 JSON.stringify(new Date()).slice(1, -1),
               );
               await updateDesk(updatedDesk);
-              console.log('Update');
               dispatch(
                 updateCurrentDesks(
                   data.map(desk => {

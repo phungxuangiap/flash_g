@@ -1,4 +1,5 @@
 
+import { ActiveStatus } from "../constants";
 import { getAllCards, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks } from "./database";
 
 
@@ -81,16 +82,34 @@ function mergeLocalAndRemoteData(remoteList:any[], localList:any[]):any[]{
                 return 1;
             }
         });
-        for (let i = 0; i < mergedList.length - 1; i++){
+        let i = 0;
+        while(i<mergedList.length-1){
+            console.log(mergedList[i], mergedList[i].active_status, !mergedList[i].active_status);
+            if (!mergedList[i].active_status){
+                mergedList.splice(i, 1);
+                continue;
+            };
             if ((mergedList[i]._id === mergedList[i + 1]._id)){
-                if ((Date.parse(mergedList[i].modified_time) < Date.parse(mergedList[i + 1].modified_time))){
+                if (mergedList[i].active_status === 'active' && mergedList[i+1].active_status === 'deleted'){
                     mergedList.splice(i, 1);
-                }else {
+                } else
+                if (mergedList[i].active_status === 'deleted' && mergedList[i+1].active_status === 'active'){
                     mergedList.splice(i + 1, 1);
+                } else{
+                    if ((Date.parse(mergedList[i].modified_time) < Date.parse(mergedList[i + 1].modified_time))){
+                        mergedList.splice(i, 1);
+                    }else {
+                        mergedList.splice(i + 1, 1);
+                    }
                 }
+                continue;
             }
+            i++;
         }
-        console.log(mergedList);
+        mergedList = mergedList.filter((item, index)=>{
+            return item.active_status === 'active';
+        });
+        console.log('[MERGE LIST]', mergedList);
     }else {
         mergedList = remoteList ? remoteList : localList;
     }

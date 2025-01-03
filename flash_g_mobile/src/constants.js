@@ -11,3 +11,5 @@ export const Game = 'Game';
 export const Auth = 'Auth';
 export const BottomBar = 'bottombar';
 export const MainGame = 'main_game';
+export const ActiveStatus = 'active';
+export const DeletedStatus = 'deleted';

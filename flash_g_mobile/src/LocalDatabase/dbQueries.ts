@@ -24,7 +24,8 @@ const desk = `
         new_card INTEGER,
         inprogress_card INTEGER,
         preview_card INTEGER,
-        modified_time TEXT
+        modified_time TEXT,
+        active_status TEXT DEFAULT 'active'
    )
 `;
 const card = `
@@ -40,7 +41,8 @@ const card = `
         vocab_audio TEXT,
         sentence_audio TEXT,
         type TEXT,
-        modified_time TEXT
+        modified_time TEXT,
+        active_status TEXT DEFAULT 'active'
    )
 `;
 const createNewDeskQuery = `
@@ -90,7 +92,9 @@ const updateDeskQuery = `
         modified_time = ${JSON.stringify(new Date())}    
 `;
 const deleteDeskQuery = `
-    DELETE FROM Desk WHERE _id = ?
+    UPDATE Desk
+    SET active_status = 'deleted'
+    WHERE _id = ?
 `;
 
 const getListDesksQuery = `

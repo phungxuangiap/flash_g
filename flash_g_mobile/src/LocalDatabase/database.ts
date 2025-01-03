@@ -42,10 +42,10 @@ export async function updateDesk(desk: Desk): Promise<any> {
     });
 } //OK
 
-export async function deleteDesk(deskId: string): Promise<any> {
+export async function deleteDesk(id: string): Promise<any> {
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      await db.executeSql(deleteDeskQuery, [deskId]);
+      await db.executeSql(deleteDeskQuery, [id]);
     })
     .catch((error) => {
       console.log(error);
