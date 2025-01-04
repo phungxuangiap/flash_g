@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -63,7 +64,7 @@ import {
   syncListCardsOfDesk,
 } from '../../LocalDatabase/syncDBService';
 import {Desk} from '../../LocalDatabase/model';
-import {Card, MainGame} from '../../constants';
+import {ActiveStatus, Card, MainGame} from '../../constants';
 import {setUser} from '../../redux/slices/authSlice';
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
@@ -80,6 +81,7 @@ export default function DeskBoardScreen() {
   const [indexUpdatedDesk, setindexUpdatedDesk] = useState(undefined);
   const currentUser = useSelector(userSelector);
   const online = useSelector(onlineStateSelector);
+
   async function handleData(onlineState, accessToken) {
     Promise.resolve()
       .then(() => {
@@ -143,12 +145,14 @@ export default function DeskBoardScreen() {
             return getListCurrentCardsOfDesk(desk._id).then(
               async listCurrentCards => {
                 listCurrentCards.forEach(card => {
-                  if (card.status === 'new') {
-                    news++;
-                  } else if (card.status === 'inprogress') {
-                    inProgress++;
-                  } else {
-                    preview++;
+                  if (card.active_status === ActiveStatus) {
+                    if (card.status === 'new') {
+                      news++;
+                    } else if (card.status === 'inprogress') {
+                      inProgress++;
+                    } else {
+                      preview++;
+                    }
                   }
                 });
                 return new Desk(
@@ -186,7 +190,7 @@ export default function DeskBoardScreen() {
         console.log('Handle data error with message:', err);
       });
   }
-  useEffect(() => {
+  useLayoutEffect(() => {
     handleData(online, actk);
   }, [actk]);
   return loading ? (
@@ -255,7 +259,6 @@ export default function DeskBoardScreen() {
                 'active',
               );
               await createNewDesk(newDesk);
-              console.log('NEW DESK', newDesk);
               dispatch(
                 updateCurrentDesks([
                   ...listCurrentDesks,

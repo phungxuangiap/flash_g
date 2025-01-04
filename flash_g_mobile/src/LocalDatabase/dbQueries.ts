@@ -32,6 +32,7 @@ const card = `
    CREATE TABLE IF NOT EXISTS Card (
         _id TEXT PRIMARY KEY,
         desk_id TEXT,
+        user_id TEXT,
         status TEXT,
         level INTEGER,
         last_preview TEXT,
@@ -117,6 +118,7 @@ const createNewCardQuery = `
     INSERT INTO Card (
         _id,
         desk_id,
+        user_id,
         status,
         level,
         last_preview,
@@ -126,12 +128,13 @@ const createNewCardQuery = `
         vocab_audio,
         sentence_audio,
         type,
-        modified_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
+        modified_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
 `;
 const updateCardQuery = `
     INSERT INTO Card (
         _id,
         desk_id,
+        user_id,
         status,
         level,
         last_preview,
@@ -142,10 +145,11 @@ const updateCardQuery = `
         sentence_audio,
         type,
         modified_time
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
     ON CONFLICT(_id) DO UPDATE SET
         _id = excluded._id,
         desk_id = excluded.desk_id,
+        user_id = excluded.user_id,
         status = excluded.status,
         level = excluded.level,
         last_preview = excluded.last_preview,
@@ -159,7 +163,9 @@ const updateCardQuery = `
 `;
 
 const deleteCardQuery = `
-    DELETE FROM Card WHERE _id = ?
+    UPDATE Card
+    SET active_status = 'deleted'
+    WHERE _id = ?
 `;
 
 const cleanAllDeskQuery = `

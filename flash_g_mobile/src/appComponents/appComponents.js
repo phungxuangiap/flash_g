@@ -8,9 +8,13 @@ import {
 } from 'react-native';
 import React from 'react';
 import {ComponentStyle} from './style';
-import {deleteDesk} from '../LocalDatabase/database';
-import {updateCurrentDesks} from '../redux/slices/gameSlice';
+import {deleteCard, deleteDesk, updateCard} from '../LocalDatabase/database';
+import {
+  updateCurrentCards,
+  updateCurrentDesks,
+} from '../redux/slices/gameSlice';
 import {desk} from '../LocalDatabase/dbQueries';
+import {DeletedStatus} from '../constants';
 export function InputTag({placeholder, value, onValueChange}) {
   return (
     <TextInput
@@ -55,11 +59,57 @@ export function LoadingOverlay() {
   );
 }
 
-export function CardComponent({vocab, description}) {
+export function CardComponent({
+  card,
+  dispatch,
+  listAllCurrentCard,
+  setShowUpdatePopUp,
+  showUpdatePopUp,
+}) {
   return (
-    <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
-      <Text style={{color: 'black'}}>{vocab}</Text>
-      <Text style={{color: 'black'}}>{description}</Text>
+    <View
+      style={{
+        justifyContent: 'space-between',
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}>
+      <Text style={{color: 'black'}}>{card.vocab}</Text>
+      <Text style={{color: 'black'}}>{card.description}</Text>
+      <View style={{flexDirection: 'row'}}>
+        <TouchableOpacity
+          style={{
+            padding: 10,
+            borderWidth: 1,
+            borderRadius: 20,
+            borderColor: 'black',
+          }}
+          onPress={async () => {
+            await deleteCard(card._id).then(() => {
+              dispatch(
+                updateCurrentCards(
+                  listAllCurrentCard.filter(item => {
+                    return item._id !== card._id;
+                  }),
+                ),
+              );
+            });
+          }}>
+          <Text style={{color: 'black'}}>x</Text>
+        </TouchableOpacity>
+        <View style={{padding: 5}}></View>
+        <TouchableOpacity
+          style={{
+            padding: 10,
+            borderWidth: 1,
+            borderRadius: 20,
+            borderColor: 'black',
+          }}
+          onPress={() => {
+            setShowUpdatePopUp();
+          }}>
+          <Text style={{color: 'black'}}>Edit</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -376,6 +426,83 @@ export function CreateNewCardPopUp({
                 create();
               }}>
               <Text>Create</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <CircleButton
+          style={{position: 'absolute', bottom: -60}}
+          content={'x'}
+          onClick={() => {
+            close();
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+
+export function UpdateCardPopUp({
+  vocab,
+  setVocab,
+  description,
+  setDescription,
+  sentence,
+  setSentence,
+  close,
+  update,
+}) {
+  return (
+    <View
+      style={{
+        flex: 1,
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+      }}>
+      <View style={{margin: 'auto'}}>
+        <View
+          style={{
+            backgroundColor: '#6CDDAB',
+            borderRadius: 24,
+            padding: 24,
+            marginBottom: 12,
+          }}>
+          <Text style={{...ComponentStyle.largeWhiteTitle}}>Update Card</Text>
+          <InputTag
+            placeholder={'Your Vocab'}
+            content={vocab}
+            onValueChange={value => {
+              setVocab(value);
+            }}
+          />
+          <InputTag
+            placeholder={'Description'}
+            content={description}
+            onValueChange={value => {
+              setDescription(value);
+            }}
+          />
+          <InputTag
+            placeholder={'Sentences'}
+            content={sentence}
+            onValueChange={value => {
+              setSentence(value);
+            }}
+          />
+          <View style={{flexDirection: 'row-reverse'}}>
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#444',
+                padding: 12,
+                borderRadius: 24,
+                margin: 4,
+              }}
+              onPress={() => {
+                update();
+              }}>
+              <Text>Update</Text>
             </TouchableOpacity>
           </View>
         </View>

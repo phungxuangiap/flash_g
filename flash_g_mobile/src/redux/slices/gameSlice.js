@@ -13,6 +13,8 @@ const gameSlice = createSlice({
     updateCurrentDesk: (state, action) => {
       state.currentDesk = action.payload;
     },
+    // All active cards of desk
+    // If you wanna get all cards of desk, please add another state named allCardsOfDesk
     updateCurrentCards: (state, action) => {
       state.currentCards = action.payload;
     },

@@ -1,7 +1,7 @@
 import {Text} from '@react-navigation/elements';
 import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {ComponentStyle} from '../../appComponents/style';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {
   accessTokenSelector,
@@ -9,6 +9,7 @@ import {
   currentDesks,
   gameSelector,
   loadingSelector,
+  userSelector,
 } from '../../redux/selectors';
 import {
   CardComponent,
@@ -17,6 +18,7 @@ import {
   LoadingOverlay,
   OverLay,
   RadiusRetangleButton,
+  UpdateCardPopUp,
 } from '../../appComponents/appComponents';
 import createCard from '../../service/createCard';
 import {setLoading} from '../../redux/slices/stateSlice';
@@ -35,41 +37,51 @@ import {
   updateCard,
 } from '../../LocalDatabase/database';
 import {Card} from '../../LocalDatabase/model';
+import {ActiveStatus} from '../../constants';
 
 export default function CardScreen() {
   const desk = useSelector(gameSelector);
   const [showPopUp, setShowPopUp] = useState(false);
+  const [indexUpdatedCard, setIndexUpdatedCard] = useState(undefined);
   const [vocab, setVocab] = useState('');
   const loading = useSelector(loadingSelector);
   const [description, setDescription] = useState('');
   const [sentence, setSentence] = useState('');
+  const user = useSelector(userSelector);
   const dispatch = useDispatch();
   const listCurrentDesks = useSelector(currentDesks);
   const accessToken = useSelector(accessTokenSelector);
   const navigation = useNavigation();
-  const [data, setData] = useState(null);
-  const listAllCardsOfDesk = useSelector(currentCardsSelector);
+  const listAllCurrentCardsOfDesk = useSelector(currentCardsSelector);
+  const [listActiveCard, updateListActiveCard] = useState([]);
 
-  const [listNewCards, updateListNewCards] = useState([]);
-  const [listInprogressCards, updateListInprogressCards] = useState([]);
-  const [listPreviewCards, updateListPreviewCards] = useState([]);
+  const [newCards, updateNewCard] = useState(0);
+  const [inprogressCards, updateInprogressCard] = useState(0);
+  const [previewCards, updatePreviewCard] = useState(0);
 
   // const []
-  function updateDesk() {
+  function updateDesk(list) {
     let news = 0;
     let in_progress = 0;
     let preview = 0;
-    data &&
-      data.forEach(item => {
-        if (item.status === 'new') {
-          news++;
-        } else if (item.status === 'in_progress') {
-          in_progress++;
-        } else {
-          preview++;
+    let activeCards = [];
+    list &&
+      list.forEach(item => {
+        if (item.active_status === ActiveStatus) {
+          activeCards.push(item);
+          if (item.status === 'new') {
+            news = news + 1;
+          } else if (item.status === 'in_progress') {
+            in_progress = in_progress + 1;
+          } else {
+            preview = preview + 1;
+          }
         }
       });
-    console.log(news, in_progress, preview);
+    updateListActiveCard(activeCards);
+    updateNewCard(news);
+    updateInprogressCard(in_progress);
+    updatePreviewCard(preview);
   }
   function fetchData(accessToken) {
     dispatch(setLoading(true));
@@ -91,27 +103,32 @@ export default function CardScreen() {
         dispatch(setLoading(false));
       });
   }
-  useEffect(() => {
-    // fetchData(accessToken);
+  useLayoutEffect(() => {
+    updateDesk(listAllCurrentCardsOfDesk);
+  }, [listAllCurrentCardsOfDesk]);
+
+  useLayoutEffect(() => {
+    dispatch(setLoading(true));
     getListCurrentCardsOfDesk(desk._id)
       .then(listCards => {
-        dispatch(updateCurrentCards(listCards));
-        listCards.forEach(card => {
-          if (card.status === 'new') {
-            updateListNewCards(preState => [...preState, card]);
-          } else if (card.status === 'inprogress') {
-            updateListInprogressCards(preState => [...preState, card]);
-          } else {
-            updateListPreviewCards(preState => [...preState, card]);
-          }
-        });
+        dispatch(
+          updateCurrentCards(
+            listCards,
+            // listCards.filter(item => {
+            //   return item.active_status === ActiveStatus;
+            // }),
+          ),
+        );
+        dispatch(setLoading(false));
         return 0;
       })
       .catch(err => {
         console.log('Get current cards error with message:', err);
       });
   }, []);
-  return (
+  return loading ? (
+    <LoadingOverlay />
+  ) : (
     <View style={{flex: 1}}>
       <View
         style={{
@@ -130,17 +147,10 @@ export default function CardScreen() {
       </View>
       <View>
         <View>
-          <Text>{listNewCards.length}</Text>
-          <Text>{listInprogressCards.length}</Text>
-          <Text>{listPreviewCards.length}</Text>
+          <Text>{newCards}</Text>
+          <Text>{inprogressCards}</Text>
+          <Text>{previewCards}</Text>
         </View>
-        {/* <View
-          style={{flex: 1, backgroundColor: 'blue', width: 100, height: 100}}>
-          <Text>Ahih</Text>
-          {listAllCardsOfDesk.map(card => {
-            <CardComponent vocab={card.vocab} description={card.description} />;
-          })}
-        </View> */}
 
         <TouchableOpacity
           onPress={() => {
@@ -164,12 +174,18 @@ export default function CardScreen() {
             borderColor: 'black',
             borderRadius: 20,
           }}>
-          {listAllCardsOfDesk.map(card => {
+          {listActiveCard.map((card, index) => {
             return (
               <CardComponent
                 key={uuid.v4()}
-                vocab={card.vocab}
-                description={card.description}
+                card={card}
+                dispatch={dispatch}
+                listAllCurrentCard={listAllCurrentCardsOfDesk}
+                setShowUpdatePopUp={() => {
+                  setIndexUpdatedCard(index);
+                  console.log(index);
+                }}
+                showUpdatePopUp={indexUpdatedCard}
               />
             );
           })}
@@ -202,6 +218,7 @@ export default function CardScreen() {
               const newCard = new Card(
                 uuid.v4(),
                 desk._id,
+                user._id,
                 'new',
                 0,
                 JSON.stringify(new Date()).slice(1, -1),
@@ -215,19 +232,74 @@ export default function CardScreen() {
               );
               await updateCard(newCard)
                 .then(res => {
+                  console.log('Create card');
                   console.log('[NEW CARD]', res);
                 })
                 .catch(err => {
                   console.log('Create new card error with message:', err);
                 });
-              updateListNewCards(preState => [...preState, newCard]);
+              updateNewCard(preState => preState + 1);
               dispatch(
                 updateCurrentCards([
-                  ...listAllCardsOfDesk,
+                  ...listAllCurrentCardsOfDesk,
                   JSON.parse(JSON.stringify(newCard)),
                 ]),
               );
               setShowPopUp(false);
+              dispatch(setLoading(false));
+            }}
+          />
+        </>
+      ) : (
+        <></>
+      )}
+      {indexUpdatedCard || indexUpdatedCard === 0 ? (
+        <>
+          <OverLay />
+          <UpdateCardPopUp
+            vocab={vocab}
+            setVocab={setVocab}
+            description={description}
+            setDescription={setDescription}
+            sentence={sentence}
+            setSentence={setSentence}
+            close={() => {
+              setIndexUpdatedCard(undefined);
+            }}
+            update={async () => {
+              dispatch(setLoading(true));
+              // await createCard(
+              //   accessToken,
+              //   desk,
+              //   vocab,
+              //   sentence,
+              //   description,
+              //   data,
+              //   setData,
+              // );
+              const updatedCard = {
+                ...listActiveCard[indexUpdatedCard],
+                sentence,
+                vocab,
+                description,
+              };
+              await updateCard(updatedCard)
+                .then(res => {
+                  console.log('Update card');
+                  console.log('[NEW CARD]', res);
+                })
+                .catch(err => {
+                  console.log('Update new card error with message:', err);
+                });
+              updateNewCard(preState => preState + 1);
+              dispatch(
+                updateCurrentCards(
+                  listAllCurrentCardsOfDesk.map(item => {
+                    return item._id === updatedCard._id ? updatedCard : item;
+                  }),
+                ),
+              );
+              setIndexUpdatedCard(undefined);
               dispatch(setLoading(false));
             }}
           />

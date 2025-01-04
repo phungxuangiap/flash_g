@@ -29,6 +29,7 @@ export async function syncAllCards(listAllRemoteCards: any[]){
                 }
             });
             const mergedList = mergeLocalAndRemoteData(listAllRemoteCards, listAllLocalCards);
+            console.log("[CARD MERGE]", mergedList)
             return mergedList;
         })
         .catch(err=>{
@@ -72,8 +73,10 @@ export async function syncAllDesks(listRemoteDesks: any[]): Promise<any>{
 
 function mergeLocalAndRemoteData(remoteList:any[], localList:any[]):any[]{
     let mergedList: any[] = [];
+    remoteList = remoteList.map(item=>{
+        return {...item, active_status : "active"};
+    });
     if (remoteList && localList){
-
         mergedList = remoteList.concat(localList);
         mergedList.sort((itemA, itemB)=>{
             if (itemA._id < itemB._id){
@@ -84,7 +87,6 @@ function mergeLocalAndRemoteData(remoteList:any[], localList:any[]):any[]{
         });
         let i = 0;
         while(i<mergedList.length-1){
-            console.log(mergedList[i], mergedList[i].active_status, !mergedList[i].active_status);
             if (!mergedList[i].active_status){
                 mergedList.splice(i, 1);
                 continue;
@@ -109,7 +111,6 @@ function mergeLocalAndRemoteData(remoteList:any[], localList:any[]):any[]{
         mergedList = mergedList.filter((item, index)=>{
             return item.active_status === 'active';
         });
-        console.log('[MERGE LIST]', mergedList);
     }else {
         mergedList = remoteList ? remoteList : localList;
     }

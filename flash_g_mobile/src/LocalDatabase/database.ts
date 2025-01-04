@@ -94,7 +94,25 @@ export async function getListCurrentCardsOfDesk(deskId:string): Promise<any> {
       console.log(error);
     });
 } //OK
-
+export async function getListCardsOfDesk(deskId:string): Promise<any> {
+  return await getLocalDatabase()
+    .then(async (db: SQLite.SQLiteDatabase) => {
+      return await db.executeSql(getAllCardsOfDeskQuery, [deskId])
+        .then((res:any[])=>{
+          let listAllCardsOfDesk: any[] = [];
+          res?.forEach((item:any) => {
+            for (let index = 0; index < item.rows.length; index++) {
+              listAllCardsOfDesk.push(item.rows.item(index));
+            }
+          });
+          return listAllCardsOfDesk;
+        });
+      
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+} //OK
 
 
 export async function getListCurrentCards(): Promise<any[]> {
@@ -120,7 +138,7 @@ export async function getAllCards(): Promise<any>{
 export async function updateCard(card: Card): Promise<any> {
   return await getLocalDatabase()
     .then(async (db:SQLite.SQLiteDatabase) =>{
-      await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type]);
+      await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.user_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type]);
       console.log("Update card successfully")
     })
     .catch((error) => {
