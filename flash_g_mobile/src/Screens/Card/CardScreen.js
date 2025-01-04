@@ -37,7 +37,7 @@ import {
   updateCard,
 } from '../../LocalDatabase/database';
 import {Card} from '../../LocalDatabase/model';
-import {ActiveStatus} from '../../constants';
+import {ActiveStatus, Game, MainGame} from '../../constants';
 
 export default function CardScreen() {
   const desk = useSelector(gameSelector);
@@ -154,7 +154,7 @@ export default function CardScreen() {
 
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('MainGame');
+            navigation.navigate(Game);
           }}
           style={{
             backgroundColor: 'black',
@@ -164,6 +164,7 @@ export default function CardScreen() {
           }}>
           <Text style={{color: 'white'}}>Play</Text>
         </TouchableOpacity>
+
         <ScrollView
           style={{
             backgroundColor: 'white',
@@ -174,6 +175,7 @@ export default function CardScreen() {
             borderColor: 'black',
             borderRadius: 20,
           }}>
+          {/*TODO: fix render allcard in this list*/}
           {listActiveCard.map((card, index) => {
             return (
               <CardComponent

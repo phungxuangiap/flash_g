@@ -4,37 +4,67 @@ import {Text} from '@react-navigation/elements';
 import {ComponentStyle} from '../../appComponents/style';
 import {useDispatch, useSelector} from 'react-redux';
 import {currentCardsSelector, gameSelector} from '../../redux/selectors';
-import getAllCurrentCards from '../../service/getAllCurrentCards';
+import {updateCard} from '../../LocalDatabase/database';
+import {Card} from '../../LocalDatabase/model';
+import {ActiveStatus} from '../../constants';
+import {updateCurrentCards} from '../../redux/slices/gameSlice';
 
-function Game(name, implement) {
-  this.name = name;
+function Game() {
+  this.flashCard = FlashCard;
+  this.updateCardLevel = async function (card, point) {
+    let level = card.level;
+    switch (point) {
+      case 1:
+        level = 0;
+        break;
+      case 3:
+        level = level + 1;
+        break;
+      case 4:
+        level = level + 2;
+        break;
+      default:
+        break;
+    }
+    await updateCard(
+      new Card(
+        card._id,
+        card.desk_id,
+        card.user_id,
+        card.status,
+        level,
+        JSON.stringify(new Date()).slice(1, -1),
+        card.vocab,
+        card.description,
+        card.sentence,
+        card.vocab_audio,
+        card.sentence_audio,
+        card.type,
+        JSON.stringify(new Date()).slice(1, -1),
+        ActiveStatus,
+      ),
+    )
+      .then(res => {
+        console.log('Done');
+      })
+      .catch(err => {
+        console.log('Play game error with message:', err);
+      });
+  };
 }
+export const GameInstance = new Game();
 
-const GameService = [new Game('flash_card')];
-
-export const FlashCard = function () {
-  const [textShowFlash, setTextShowFlash] = useState('Vocab');
-  const currentCards = useSelector(currentCardsSelector);
+export const FlashCard = function ({card}) {
+  const [textShowFlash, setTextShowFlash] = useState('');
   const dispatch = useDispatch();
+  const listCurrentCard = useSelector(currentCardsSelector);
   const currentDesk = useSelector(gameSelector);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  async function renderCard() {
-    if (currentDesk) {
-      await getAllCurrentCards(currentDesk._id, dispatch);
-    }
-  }
-
   useEffect(() => {
-    renderCard();
-  }, []);
-
-  useEffect(() => {
-    if (currentCards[currentCardIndex]) {
-      setTextShowFlash(currentCards[currentCardIndex].vocab);
-      console.log('[CURRENT]', currentCards[currentCardIndex].vocab);
+    if (card) {
+      setTextShowFlash(card.vocab);
     }
-  }, [currentCards]);
-
+  }, [listCurrentCard]);
   const [showAnswer, setShowAnswer] = useState(false);
   return (
     <View style={FlashCardStyle.container}>
@@ -44,16 +74,74 @@ export const FlashCard = function () {
       <View style={FlashCardStyle.submit_button}>
         {showAnswer ? (
           <>
-            <TouchableOpacity style={ComponentStyle.button}>
+            <TouchableOpacity
+              style={ComponentStyle.button}
+              onPress={() => {
+                GameInstance.updateCardLevel(card, 1);
+                dispatch(
+                  updateCurrentCards([
+                    ...listCurrentCard.filter(item => {
+                      return item._id !== card._id;
+                    }),
+                    card,
+                  ]),
+                );
+                setShowAnswer(false);
+              }}>
               <Text style={ComponentStyle.textWhite16Medium}>Fail</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={ComponentStyle.button}>
+            <TouchableOpacity
+              style={ComponentStyle.button}
+              onPress={() => {
+                GameInstance.updateCardLevel(card, 2);
+                dispatch(
+                  updateCurrentCards(
+                    card.level === 0
+                      ? [
+                          ...listCurrentCard.filter(item => {
+                            return item._id !== card._id;
+                          }),
+                          card,
+                        ]
+                      : [
+                          ...listCurrentCard.filter(item => {
+                            return item._id !== card._id;
+                          }),
+                        ],
+                  ),
+                );
+                setShowAnswer(false);
+              }}>
               <Text style={ComponentStyle.textWhite16Medium}>Hard</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={ComponentStyle.button}>
+            <TouchableOpacity
+              style={ComponentStyle.button}
+              onPress={() => {
+                GameInstance.updateCardLevel(card, 3);
+                dispatch(
+                  updateCurrentCards([
+                    ...listCurrentCard.filter(item => {
+                      return item._id !== card._id;
+                    }),
+                  ]),
+                );
+                setShowAnswer(false);
+              }}>
               <Text style={ComponentStyle.textWhite16Medium}>Okay</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={ComponentStyle.button}>
+            <TouchableOpacity
+              style={ComponentStyle.button}
+              onPress={() => {
+                GameInstance.updateCardLevel(card, 4);
+                dispatch(
+                  updateCurrentCards([
+                    ...listCurrentCard.filter(item => {
+                      return item._id !== card._id;
+                    }),
+                  ]),
+                );
+                setShowAnswer(false);
+              }}>
               <Text style={ComponentStyle.textWhite16Medium}>Nice</Text>
             </TouchableOpacity>
           </>
@@ -63,7 +151,7 @@ export const FlashCard = function () {
               style={ComponentStyle.button}
               onPress={() => {
                 setShowAnswer(preState => !preState);
-                setTextShowFlash(currentCards[currentCardIndex].description);
+                setTextShowFlash(card.description);
               }}>
               <Text style={ComponentStyle.textWhite16Medium}>Submit</Text>
             </TouchableOpacity>
