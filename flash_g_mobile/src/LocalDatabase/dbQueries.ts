@@ -55,7 +55,7 @@ const createNewDeskQuery = `
         new_card, 
         inprogress_card, 
         preview_card,
-        modified_time) VALUES (?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
+        modified_time) VALUES (?, ?, ?, ?, ?, ?, ?,?)
 `;
 const createNewUserQuery = `
     INSERT INTO User (
@@ -63,7 +63,7 @@ const createNewUserQuery = `
         email,
         password, 
         user_name,
-        modified_time) VALUES (?, ?, ?, ?, ${JSON.stringify(new Date())})
+        modified_time) VALUES (?, ?, ?, ?, ?)
 `;
 const getUserQuery = `
     SELECT * FROM User
@@ -81,7 +81,7 @@ const updateDeskQuery = `
         inprogress_card,
         preview_card,
         modified_time
-    ) VALUES(?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
+    ) VALUES(?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(_id) DO UPDATE SET 
         _id = excluded._id,
         user_id = excluded.user_id,
@@ -90,7 +90,7 @@ const updateDeskQuery = `
         new_card = excluded.new_card,
         inprogress_card = excluded.inprogress_card,
         preview_card = excluded.preview_card,
-        modified_time = ${JSON.stringify(new Date())}    
+        modified_time = excluded.modified_time
 `;
 const deleteDeskQuery = `
     UPDATE Desk
@@ -128,7 +128,7 @@ const createNewCardQuery = `
         vocab_audio,
         sentence_audio,
         type,
-        modified_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
+        modified_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 const updateCardQuery = `
     INSERT INTO Card (
@@ -145,7 +145,7 @@ const updateCardQuery = `
         sentence_audio,
         type,
         modified_time
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${JSON.stringify(new Date())})
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(_id) DO UPDATE SET
         _id = excluded._id,
         desk_id = excluded.desk_id,
@@ -159,7 +159,7 @@ const updateCardQuery = `
         vocab_audio = excluded.vocab_audio,
         sentence_audio = excluded.sentence_audio,
         type = excluded.type,
-        modified_time = ${JSON.stringify(new Date())};
+        modified_time = excluded.modified_time;
 `;
 
 const deleteCardQuery = `

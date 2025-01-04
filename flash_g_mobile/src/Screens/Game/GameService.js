@@ -54,7 +54,8 @@ function Game() {
 }
 export const GameInstance = new Game();
 
-export const FlashCard = function ({card}) {
+export const FlashCard = function ({card, setRandomCard}) {
+  console.log('CURRENT', card);
   const [textShowFlash, setTextShowFlash] = useState('');
   const dispatch = useDispatch();
   const listCurrentCard = useSelector(currentCardsSelector);
@@ -78,15 +79,15 @@ export const FlashCard = function ({card}) {
               style={ComponentStyle.button}
               onPress={() => {
                 GameInstance.updateCardLevel(card, 1);
-                dispatch(
-                  updateCurrentCards([
-                    ...listCurrentCard.filter(item => {
-                      return item._id !== card._id;
-                    }),
-                    card,
-                  ]),
-                );
+                let list = listCurrentCard.filter(item => {
+                  return item._id !== card._id;
+                });
+                list.push(card);
+                dispatch(updateCurrentCards(list));
                 setShowAnswer(false);
+                setRandomCard(
+                  setRandomCard(Math.round((list.length - 1) * Math.random())),
+                );
               }}>
               <Text style={ComponentStyle.textWhite16Medium}>Fail</Text>
             </TouchableOpacity>
@@ -94,22 +95,14 @@ export const FlashCard = function ({card}) {
               style={ComponentStyle.button}
               onPress={() => {
                 GameInstance.updateCardLevel(card, 2);
-                dispatch(
-                  updateCurrentCards(
-                    card.level === 0
-                      ? [
-                          ...listCurrentCard.filter(item => {
-                            return item._id !== card._id;
-                          }),
-                          card,
-                        ]
-                      : [
-                          ...listCurrentCard.filter(item => {
-                            return item._id !== card._id;
-                          }),
-                        ],
-                  ),
-                );
+                let list = listCurrentCard.filter(item => {
+                  return item._id !== card._id;
+                });
+                if (card.level === 0) {
+                  list.push(card);
+                }
+                dispatch(updateCurrentCards(list));
+                setRandomCard(Math.round((list.length - 1) * Math.random()));
                 setShowAnswer(false);
               }}>
               <Text style={ComponentStyle.textWhite16Medium}>Hard</Text>
@@ -118,13 +111,11 @@ export const FlashCard = function ({card}) {
               style={ComponentStyle.button}
               onPress={() => {
                 GameInstance.updateCardLevel(card, 3);
-                dispatch(
-                  updateCurrentCards([
-                    ...listCurrentCard.filter(item => {
-                      return item._id !== card._id;
-                    }),
-                  ]),
-                );
+                let list = listCurrentCard.filter(item => {
+                  return item._id !== card._id;
+                });
+                dispatch(updateCurrentCards(list));
+                setRandomCard(Math.round((list.length - 1) * Math.random()));
                 setShowAnswer(false);
               }}>
               <Text style={ComponentStyle.textWhite16Medium}>Okay</Text>
@@ -133,13 +124,12 @@ export const FlashCard = function ({card}) {
               style={ComponentStyle.button}
               onPress={() => {
                 GameInstance.updateCardLevel(card, 4);
-                dispatch(
-                  updateCurrentCards([
-                    ...listCurrentCard.filter(item => {
-                      return item._id !== card._id;
-                    }),
-                  ]),
-                );
+                let list = listCurrentCard.filter(item => {
+                  return item._id !== card._id;
+                });
+                dispatch(updateCurrentCards(list));
+                setRandomCard(Math.round((list.length - 1) * Math.random()));
+
                 setShowAnswer(false);
               }}>
               <Text style={ComponentStyle.textWhite16Medium}>Nice</Text>

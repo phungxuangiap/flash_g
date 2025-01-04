@@ -29,7 +29,6 @@ export async function syncAllCards(listAllRemoteCards: any[]){
                 }
             });
             const mergedList = mergeLocalAndRemoteData(listAllRemoteCards, listAllLocalCards);
-            console.log("[CARD MERGE]", mergedList)
             return mergedList;
         })
         .catch(err=>{
