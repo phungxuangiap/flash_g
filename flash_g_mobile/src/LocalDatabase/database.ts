@@ -35,7 +35,7 @@ export async function createNewDesk(desk: Desk): Promise<any> {
 export async function updateDesk(desk: Desk): Promise<any> {
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      await db.executeSql(updateDeskQuery, [desk._id, desk.user_id, desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card, (JSON.stringify(new Date())).slice(1, -1)]);
+      await db.executeSql(updateDeskQuery, [desk._id, desk.user_id, desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card, desk.modified_time]);
     })
     .catch((error) => {
       console.log(error);
@@ -138,7 +138,7 @@ export async function getAllCards(): Promise<any>{
 export async function updateCard(card: Card): Promise<any> {
   return await getLocalDatabase()
     .then(async (db:SQLite.SQLiteDatabase) =>{
-      await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.user_id, card.status, card.level, (JSON.stringify(new Date())).slice(1, -1), card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type, (JSON.stringify(new Date())).slice(1, -1)]);
+      await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.user_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type, card.modified_time]);
       console.log("Update card successfully")
     })
     .catch((error) => {

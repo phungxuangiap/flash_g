@@ -66,7 +66,7 @@ const createNewDesk = asyncHandler(async (req, res, next) => {
   }
 });
 //@desc Update Desk
-//@route GET /api/desk/:id
+//@route PUT /api/desk/:id
 //@access private
 const updateDesk = asyncHandler(async (req, res, next) => {
   const desk = await Desk.findById(req.params.id);

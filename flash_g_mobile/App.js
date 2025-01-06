@@ -61,10 +61,6 @@ if (__DEV__) {
 const Stack = createNativeStackNavigator();
 
 function App() {
-  useEffect(() => {
-    // Init local database.
-    databaseInitialization();
-  }, []);
   return (
     <Provider store={store}>
       <AppContainer />

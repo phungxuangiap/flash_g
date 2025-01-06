@@ -79,7 +79,7 @@ export async function fetchAllCurrentCards(listDesks) {
 }
 
 export async function fetchAllCards(dispatch, accessToken) {
-  return axios
+  return await axios
     .get(`http://${process.env.REACT_APP_URL}/api/card`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,

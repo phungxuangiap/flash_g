@@ -103,14 +103,15 @@ export default function CardScreen() {
         dispatch(setLoading(false));
       });
   }
-  useLayoutEffect(() => {
+  useEffect(() => {
     updateDesk(listAllCurrentCardsOfDesk);
   }, [listAllCurrentCardsOfDesk]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     dispatch(setLoading(true));
     getListCurrentCardsOfDesk(desk._id)
       .then(listCards => {
+        console.log('[LIST CARD]', listCards);
         dispatch(
           updateCurrentCards(
             listCards,
@@ -284,6 +285,7 @@ export default function CardScreen() {
                 sentence,
                 vocab,
                 description,
+                modified_time: JSON.stringify(new Date()).slice(1, -1),
               };
               await updateCard(updatedCard)
                 .then(res => {

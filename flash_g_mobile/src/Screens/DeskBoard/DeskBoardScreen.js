@@ -93,6 +93,7 @@ export default function DeskBoardScreen() {
           const user = await fetchCurrentUser(accessToken, dispatch);
           if (user) {
             dispatch(setUser(user));
+            // change to merge user
             await createNewUser(user);
             return user;
           } else {
@@ -163,7 +164,11 @@ export default function DeskBoardScreen() {
                   news,
                   inProgress,
                   preview,
-                  JSON.stringify(new Date()),
+                  desk.new_card !== news ||
+                  desk.inprogress_card !== inProgress ||
+                  desk.preview_card !== preview
+                    ? JSON.stringify(new Date())
+                    : desk.modified_time,
                 );
               },
             );
@@ -182,15 +187,23 @@ export default function DeskBoardScreen() {
       // Update list updated desks in state
       .then(listDesks => {
         dispatch(updateCurrentDesks(JSON.parse(JSON.stringify(listDesks))));
+        return listDesks;
       })
-      .then(() => {
+      .then(listDesks => {
         dispatch(setLoading(false));
+        if (online) {
+          Promise.all(
+            listDesks.map(item => {
+              //todo
+            }),
+          );
+        }
       })
       .catch(err => {
         console.log('Handle data error with message:', err);
       });
   }
-  useLayoutEffect(() => {
+  useEffect(() => {
     handleData(online, actk);
   }, [actk]);
   return loading ? (
