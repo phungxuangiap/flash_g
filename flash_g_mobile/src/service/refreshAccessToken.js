@@ -6,6 +6,7 @@ const refresh = async dispatch => {
   await axios
     .get(`http://${process.env.REACT_APP_URL}/api/user/refresh`)
     .then(res => {
+      console.log('[CHANGE ACCESSTOKEN]');
       dispatch(refreshAccessToken(res.data.access_token));
     })
     .then(res => {

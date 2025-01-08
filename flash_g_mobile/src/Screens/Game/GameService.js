@@ -55,7 +55,6 @@ function Game() {
 export const GameInstance = new Game();
 
 export const FlashCard = function ({card, setRandomCard}) {
-  console.log('CURRENT', card);
   const [textShowFlash, setTextShowFlash] = useState('');
   const dispatch = useDispatch();
   const listCurrentCard = useSelector(currentCardsSelector);

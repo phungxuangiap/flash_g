@@ -4,6 +4,7 @@ import {
   updateCurrentDesk,
   updateCurrentDesks,
 } from '../redux/slices/gameSlice';
+import {setDatabase, setLoading, setOnline} from '../redux/slices/stateSlice';
 import {store} from '../redux/store';
 
 export function cleanUpStateAfterLoggingOut() {
@@ -12,4 +13,7 @@ export function cleanUpStateAfterLoggingOut() {
   store.dispatch(updateCurrentCards([]));
   store.dispatch(updateCurrentDesk([]));
   store.dispatch(updateCurrentDesks([]));
+  store.dispatch(setLoading(false));
+  store.dispatch(setOnline(true));
+  store.dispatch(setDatabase(null));
 }

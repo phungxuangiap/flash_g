@@ -66,6 +66,11 @@ import {
 import {Desk} from '../../LocalDatabase/model';
 import {ActiveStatus, Card, MainGame} from '../../constants';
 import {setUser} from '../../redux/slices/authSlice';
+import {
+  updateCardToRemote,
+  updateDeskToRemote,
+} from '../../service/postToRemote';
+import {desk} from '../../LocalDatabase/dbQueries';
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
   const user = useSelector(userSelector);
@@ -82,6 +87,7 @@ export default function DeskBoardScreen() {
   const currentUser = useSelector(userSelector);
   const online = useSelector(onlineStateSelector);
   async function handleData(onlineState, accessToken) {
+    console.log('[CHANGED]', accessToken);
     Promise.resolve()
       .then(() => {
         dispatch(setLoading(true));
@@ -124,7 +130,10 @@ export default function DeskBoardScreen() {
           const synchronizedListCards = await syncAllCards(listAllRemoteCards);
           await Promise.all(
             synchronizedListCards.map(card => {
-              return updateCard(card);
+              return Promise.all([
+                updateCard(card),
+                updateCardToRemote(accessToken, card),
+              ]);
             }),
           );
           return listDesk;
@@ -188,12 +197,13 @@ export default function DeskBoardScreen() {
         dispatch(updateCurrentDesks(JSON.parse(JSON.stringify(listDesks))));
         return listDesks;
       })
+      // Update list desk to mongoDB
       .then(listDesks => {
         dispatch(setLoading(false));
         if (online) {
           Promise.all(
-            listDesks.map(item => {
-              //todo
+            listDesks.map(desk => {
+              return updateDeskToRemote(accessToken, desk);
             }),
           );
         }
@@ -203,8 +213,9 @@ export default function DeskBoardScreen() {
       });
   }
   useEffect(() => {
+    console.log('ACCESS', actk);
     handleData(online, actk);
-  }, [actk]);
+  }, []);
   return loading ? (
     <LoadingOverlay />
   ) : (
@@ -260,7 +271,6 @@ export default function DeskBoardScreen() {
             create={async () => {
               dispatch(setLoading(true));
               const id = uuid.v4();
-              console.log(id);
               const newDesk = new Desk(
                 id,
                 user._id,

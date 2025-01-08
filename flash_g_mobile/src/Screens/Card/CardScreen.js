@@ -111,7 +111,6 @@ export default function CardScreen() {
     dispatch(setLoading(true));
     getListCurrentCardsOfDesk(desk._id)
       .then(listCards => {
-        console.log('[LIST CARD]', listCards);
         dispatch(
           updateCurrentCards(
             listCards,
@@ -186,7 +185,6 @@ export default function CardScreen() {
                 listAllCurrentCard={listAllCurrentCardsOfDesk}
                 setShowUpdatePopUp={() => {
                   setIndexUpdatedCard(index);
-                  console.log(index);
                 }}
                 showUpdatePopUp={indexUpdatedCard}
               />

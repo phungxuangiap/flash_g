@@ -23,7 +23,6 @@ export interface Database {
 }
 
 export async function createNewDesk(desk: Desk): Promise<any> {
-  console.log("CREATE NEW DESK IN LOCAL")
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
       return await db.executeSql(createNewDeskQuery, [desk._id, desk.user_id, desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card, (JSON.stringify(new Date())).slice(1, -1)]);
@@ -159,7 +158,6 @@ export async function deleteCard(cardId: string): Promise<any> {
 } //OK
 
 export async function createNewUser(user: User): Promise<any> {
-  console.log("store user in local");
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
       return await db.executeSql(createNewUserQuery, [user._id, user.email, user.password, user.user_name, (JSON.stringify(new Date())).slice(1, -1)]);
@@ -198,9 +196,11 @@ export function cleanUp():Promise<any>{
       return await db.executeSql(cleanAllCardQuery);
     })
     .catch(err=>{
-      console.log("Clean up local database error with message:", err)
+      console.log("Clean up local database error with message:", err);
     });
 }
+
+
 
 export const database: Database = {
   createNewDesk,
