@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const { Constants } = require("../middlewares/constants");
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
+const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const { generateAccessToken, generateRefreshToken } = require("../helper");
 //@desc Login User
@@ -94,6 +95,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const newUser = await User.create({
+        _id: uuidv4(),
         email,
         password: hashedPassword,
         user_name,

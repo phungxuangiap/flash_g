@@ -6,16 +6,16 @@ const Status = {
   PREVIEW: "preview",
 };
 const cardSchema = mongoose.Schema({
-  id: {
-    type: mongoose.Schema.ObjectId,
+  _id: {
+    type: String,
     require: [true],
   },
   user_id: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     require: [true],
   },
   desk_id: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     require: [true],
   },
   status: {

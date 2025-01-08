@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const { Constants } = require("../middlewares/constants");
 const Card = require("../models/cardModel");
 const { DistanceFromDateToDate } = require("../helper");
+const { v4: uuidv4 } = require("uuid");
 const { getAllDesks } = require("./DeskController");
 //@desc Get All Cards
 //@route api/card/:deskId
@@ -54,24 +55,24 @@ const getAllCards = asyncHandler(async (req, res, next) => {
 //@desc Update Changed Cards
 //@route api/card/:deskId
 //@access private
-const updateChangedCards = asyncHandler(async (req, res, next) => {
-  const listCardsUpdated = req.body?.cards_changed;
-  if (!listCardsUpdated) {
-    res.status(200).json({ message: "Nothing need to update" });
-  } else {
-    await listCardsUpdated.forEach(async (item) => {
-      const cardChanged = await Card.findByIdAndUpdate(
-        item._id,
-        { ...item, modified_time: JSON.stringify(new Date()).slice(1, -1) },
-        {
-          new: true,
-        }
-      );
-      console.log("[Card]", cardChanged);
-    });
-    res.status(200).json({ message: "All changes are updated" });
-  }
-});
+// const updateChangedCards = asyncHandler(async (req, res, next) => {
+//   const listCardsUpdated = req.body?.cards_changed;
+//   if (!listCardsUpdated) {
+//     res.status(200).json({ message: "Nothing need to update" });
+//   } else {
+//     await listCardsUpdated.forEach(async (item) => {
+//       const cardChanged = await Card.findByIdAndUpdate(
+//         item._id,
+//         { ...item, modified_time: JSON.stringify(new Date()).slice(1, -1) },
+//         {
+//           new: true,
+//         }
+//       );
+//       console.log("[Card]", cardChanged);
+//     });
+//     res.status(200).json({ message: "All changes are updated" });
+//   }
+// });
 
 //@desc Create New Card
 //@route api/card/:deskId
@@ -80,6 +81,7 @@ const createCard = asyncHandler(async (req, res, next) => {
   const { vocab, description, sentence, vocab_audio, sentence_audio } =
     req.body;
   const newCard = await Card.create({
+    _id: uuidv4(),
     desk_id: req.params.deskId,
     user_id: req.user._id,
     status: "new",
@@ -98,7 +100,16 @@ const createCard = asyncHandler(async (req, res, next) => {
 //@route api/card/:cardId
 //@access private
 const updateCard = asyncHandler(async (req, res, next) => {
-  const card = await Card.findById(req.params.cardId);
+  console.log(req.params.cardId);
+  const card = await Card.findById(req.params.cardId)
+    .then((res) => {
+      console.log("[RES]", res);
+      return res;
+    })
+    .catch((err) => {
+      console.log("[ERR]", err);
+      return null;
+    });
   if (card) {
     await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -107,8 +118,18 @@ const updateCard = asyncHandler(async (req, res, next) => {
     );
     res.status(200).json(card);
   } else {
-    res.status(Constants.NOT_FOUND);
-    throw new Error("Not Found");
+    console.log("Here");
+    const newCard = Card.collection.insertOne({
+      ...req.body,
+      last_preview: JSON.stringify(new Date()).slice(1, -1),
+      modified_time: JSON.stringify(new Date()).slice(1, -1),
+    });
+    if (newCard) {
+      res.status(200).json(newCard);
+    } else {
+      res.status(Constants.FORBIDDEN);
+      throw new Error("Forbiddant !");
+    }
   }
 });
 //@desc Delete Card
@@ -124,11 +145,48 @@ const deleteCard = asyncHandler(async (req, res, next) => {
     throw new Error("Not Found");
   }
 });
+
+//@desc Create Card, if exist Update
+//@route PUT api/card/:deskId/:cardId
+//@access private
+// const createUpdateCard = asyncHandler(async (req, res, next) => {
+//   const card = await Card.findById(req.params.cardId);
+//   if (card) {
+//     await Card.findByIdAndUpdate(
+//       req.params.cardId,
+//       {
+//         status: req.body.status,
+//         level: req.body.level,
+//         last_preview: JSON.stringify(new Date()).slice(1, -1),
+//         vocab: req.body.vocab,
+//         description: req.body.description,
+//         sentence: req.body.sentence,
+//         vocab_audio: req.body.vocab_audio,
+//         sentence_audio: req.body.sentence_audio,
+//         modified_time: JSON.stringify(new Date()).slice(1, -1),
+//       },
+//       { new: true }
+//     );
+//     res.status(200).json({ status: "Update", data: card });
+//   } else {
+//     const newCard = Card.create({
+//       ...req.body,
+//       last_preview: JSON.stringify(new Date()).slice(1, -1),
+//       modified_time: JSON.stringify(new Date()).slice(1, -1),
+//     });
+//     if (newCard) {
+//       res.status(200).json({
+//         status: "Create New Card Successfully",
+//         data: newCard,
+//       });
+//     }
+//   }
+// });
+
 module.exports = {
   getAllCardsOfDesk,
   updateCard,
   deleteCard,
   createCard,
-  updateChangedCards,
   getAllCards,
 };

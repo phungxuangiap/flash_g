@@ -81,7 +81,6 @@ export default function DeskBoardScreen() {
   const [indexUpdatedDesk, setindexUpdatedDesk] = useState(undefined);
   const currentUser = useSelector(userSelector);
   const online = useSelector(onlineStateSelector);
-
   async function handleData(onlineState, accessToken) {
     Promise.resolve()
       .then(() => {
@@ -260,8 +259,10 @@ export default function DeskBoardScreen() {
             }}
             create={async () => {
               dispatch(setLoading(true));
+              const id = uuid.v4();
+              console.log(id);
               const newDesk = new Desk(
-                uuid.v4(),
+                id,
                 user._id,
                 inputCreateDesk,
                 'black',

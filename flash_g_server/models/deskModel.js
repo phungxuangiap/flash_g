@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 
 const deskSchema = mongoose.Schema({
   user_id: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     require: [true],
   },
-  id: {
-    type: mongoose.Schema.ObjectId,
+  _id: {
+    type: String,
     require: [true],
   },
   title: {

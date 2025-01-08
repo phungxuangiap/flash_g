@@ -5,6 +5,7 @@ const {
   updateDesk,
   createNewDesk,
   deleteAllDesks,
+  createUpdateDesk,
 } = require("../controllers/DeskController");
 const validationHandler = require("../middlewares/validationHandler");
 const router = express();

@@ -72,6 +72,8 @@ export async function createNewCard(card: Card): Promise<any> {
     });
 } //OK
 
+
+// Need to change query to simplify it
 export async function getListCurrentCardsOfDesk(deskId:string): Promise<any> {
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
