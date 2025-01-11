@@ -12,6 +12,7 @@ import React, {
 import {useDispatch, useSelector} from 'react-redux';
 import {
   accessTokenSelector,
+  authStateSelector,
   currentDesks,
   loadingSelector,
   onlineStateSelector,
@@ -86,8 +87,9 @@ export default function DeskBoardScreen() {
   const [indexUpdatedDesk, setindexUpdatedDesk] = useState(undefined);
   const currentUser = useSelector(userSelector);
   const online = useSelector(onlineStateSelector);
-  async function handleData(onlineState, accessToken) {
-    console.log('[CHANGED]', accessToken);
+  const auth = useSelector(authStateSelector);
+
+  const handleData = (onlineState, accessToken) => {
     Promise.resolve()
       .then(() => {
         dispatch(setLoading(true));
@@ -146,11 +148,13 @@ export default function DeskBoardScreen() {
       .then(async listDesks => {
         let listMergedDesk = [];
         listMergedDesk = await syncAllDesks(listDesks);
+
         return await Promise.all(
           listMergedDesk.map(desk => {
             let news = 0;
             let inProgress = 0;
             let preview = 0;
+
             return getListCurrentCardsOfDesk(desk._id).then(
               async listCurrentCards => {
                 listCurrentCards.forEach(card => {
@@ -195,6 +199,7 @@ export default function DeskBoardScreen() {
       // Update list updated desks in state
       .then(listDesks => {
         dispatch(updateCurrentDesks(JSON.parse(JSON.stringify(listDesks))));
+
         return listDesks;
       })
       // Update list desk to mongoDB
@@ -211,11 +216,11 @@ export default function DeskBoardScreen() {
       .catch(err => {
         console.log('Handle data error with message:', err);
       });
-  }
+  };
   useEffect(() => {
-    console.log('ACCESS', actk);
+    console.log('[USER]', actk);
     handleData(online, actk);
-  }, []);
+  }, [actk]);
   return loading ? (
     <LoadingOverlay />
   ) : (

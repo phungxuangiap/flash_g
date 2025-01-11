@@ -7,6 +7,7 @@ import {cleanUp} from '../LocalDatabase/database';
 import {cleanUpStateAfterLoggingOut} from './cleanUpState';
 
 const logout = async accessToken => {
+  console.log(process.env.REACT_APP_URL);
   await axios
     .post(`http://${process.env.REACT_APP_URL}/api/user/logout`, {
       body: 'body of logout post request',

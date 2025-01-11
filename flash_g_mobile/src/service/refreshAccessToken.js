@@ -3,6 +3,7 @@ import {store} from '../redux/store';
 import {refreshAccessToken} from '../redux/slices/authSlice';
 
 const refresh = async dispatch => {
+  console.log(process.env.REACT_APP_URL);
   await axios
     .get(`http://${process.env.REACT_APP_URL}/api/user/refresh`)
     .then(res => {

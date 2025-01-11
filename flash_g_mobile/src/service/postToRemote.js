@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 export async function updateDeskToRemote(accessToken, desk) {
+  console.log(process.env.REACT_APP_URL);
   axios
     .put(`http://${process.env.REACT_APP_URL}/api/desk/${desk._id}`, desk, {
       headers: {

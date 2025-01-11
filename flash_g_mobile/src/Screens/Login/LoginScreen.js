@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   ClickableText,
   InputTag,
@@ -19,7 +19,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {loadingSelector} from '../../redux/selectors';
 import {setLoading} from '../../redux/slices/stateSlice';
 import {changeAuth, refreshAccessToken} from '../../redux/slices/authSlice';
-import {BottomBar, Register} from '../../constants';
+import {BottomBar, Login, Register} from '../../constants';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

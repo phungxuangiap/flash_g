@@ -22,6 +22,9 @@ const getLocalDatabaseSelector = state => {
 const onlineStateSelector = state => {
   return state.state.online;
 };
+const authStateSelector = state => {
+  return state.auth.authState;
+};
 export {
   loadingSelector,
   accessTokenSelector,
@@ -31,4 +34,5 @@ export {
   currentDesks,
   getLocalDatabaseSelector,
   onlineStateSelector,
+  authStateSelector,
 };

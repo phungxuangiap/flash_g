@@ -1,5 +1,5 @@
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import React, {useCallback, useLayoutEffect, useState} from 'react';
+import React, {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import DeskBoardScreen from '../Screens/DeskBoard/DeskBoardScreen';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import SummaryScreen from '../Screens/Summary/SummaryScreen';
@@ -26,7 +26,7 @@ import {
   Register,
   Summary,
 } from '../constants';
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import AuthNavigator from './authNavigation';
 import GameNavigator from './gameNavigation';
 import BottomBarNavigator from './bottomBarNavigation';

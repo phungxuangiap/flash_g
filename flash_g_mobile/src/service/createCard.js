@@ -13,6 +13,7 @@ export default async function createCard(
   listCard,
   setListCard,
 ) {
+  console.log(process.env.REACT_APP_URL);
   await axios
     .post(
       `http://${process.env.REACT_APP_URL}/api/card/${desk._id}`,

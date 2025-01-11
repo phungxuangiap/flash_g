@@ -12,6 +12,7 @@ export default async function createDesk(
   data,
   dispatch,
 ) {
+  console.log(process.env.REACT_APP_URL);
   await axios
     .post(
       `http://${process.env.REACT_APP_URL}/api/desk`,

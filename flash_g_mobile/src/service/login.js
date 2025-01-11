@@ -5,6 +5,7 @@ import {setLoading} from '../redux/slices/stateSlice';
 import {Alert} from 'react-native';
 
 const login = async (email, password) => {
+  console.log(process.env.REACT_APP_URL);
   return await axios
     .post(`http://${process.env.REACT_APP_URL}/api/user/login`, {
       email,

@@ -4,7 +4,7 @@ import {
   WrapContentButton,
 } from '../../appComponents/appComponents';
 import {useNavigation} from '@react-navigation/native';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {accessTokenSelector, loadingSelector} from '../../redux/selectors';
 import {logout} from '../../service/logout';
@@ -27,7 +27,11 @@ export default function ProfileScreen() {
 
           await logout(accessToken);
           dispatch(setLoading(false));
-          navigation.navigate(Auth);
+          // Reset navigation stack
+          navigation.reset({
+            index: 0,
+            routes: [{name: Auth}],
+          });
         }}
       />
       {loading ? <LoadingOverlay /> : <></>}

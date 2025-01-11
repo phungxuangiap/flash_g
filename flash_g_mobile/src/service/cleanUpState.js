@@ -1,4 +1,8 @@
-import {changeAuth, setUser} from '../redux/slices/authSlice';
+import {
+  changeAuth,
+  refreshAccessToken,
+  setUser,
+} from '../redux/slices/authSlice';
 import {
   updateCurrentCards,
   updateCurrentDesk,
@@ -15,5 +19,6 @@ export function cleanUpStateAfterLoggingOut() {
   store.dispatch(updateCurrentDesks([]));
   store.dispatch(setLoading(false));
   store.dispatch(setOnline(true));
+  store.dispatch(refreshAccessToken(null));
   store.dispatch(setDatabase(null));
 }
