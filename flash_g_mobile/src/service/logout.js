@@ -5,11 +5,12 @@ import {refresh} from './refreshAccessToken';
 import {getLocalDatabase} from '../LocalDatabase/databaseInitialization';
 import {cleanUp} from '../LocalDatabase/database';
 import {cleanUpStateAfterLoggingOut} from './cleanUpState';
+import {REACT_APP_URL} from '../../enviroment';
 
 const logout = async accessToken => {
-  console.log(process.env.REACT_APP_URL);
+  console.log(REACT_APP_URL);
   await axios
-    .post(`http://${process.env.REACT_APP_URL}/api/user/logout`, {
+    .post(`http://${REACT_APP_URL}/api/user/logout`, {
       body: 'body of logout post request',
     })
     .then(async res => {

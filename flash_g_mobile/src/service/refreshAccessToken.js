@@ -1,11 +1,12 @@
 import axios from 'axios';
 import {store} from '../redux/store';
 import {refreshAccessToken} from '../redux/slices/authSlice';
+import {REACT_APP_URL} from '../../enviroment';
 
 const refresh = async dispatch => {
-  console.log(process.env.REACT_APP_URL);
+  console.log(REACT_APP_URL);
   await axios
-    .get(`http://${process.env.REACT_APP_URL}/api/user/refresh`)
+    .get(`http://${REACT_APP_URL}/api/user/refresh`)
     .then(res => {
       console.log('[CHANGE ACCESSTOKEN]');
       dispatch(refreshAccessToken(res.data.access_token));

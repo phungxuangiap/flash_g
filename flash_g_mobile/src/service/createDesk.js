@@ -4,6 +4,7 @@ import {changeAuth, refreshAccessToken} from '../redux/slices/authSlice';
 import {setLoading} from '../redux/slices/stateSlice';
 import {refresh} from './refreshAccessToken';
 import {updateCurrentDesks} from '../redux/slices/gameSlice';
+import {REACT_APP_URL} from '../../enviroment';
 
 export default async function createDesk(
   title,
@@ -12,10 +13,10 @@ export default async function createDesk(
   data,
   dispatch,
 ) {
-  console.log(process.env.REACT_APP_URL);
+  console.log(REACT_APP_URL);
   await axios
     .post(
-      `http://${process.env.REACT_APP_URL}/api/desk`,
+      `http://${REACT_APP_URL}/api/desk`,
       {
         title,
         primary_color,

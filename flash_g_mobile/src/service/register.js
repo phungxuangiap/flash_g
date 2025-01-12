@@ -3,11 +3,12 @@ import {Alert} from 'react-native';
 import {store} from '../redux/store';
 import {changeAuth, refreshAccessToken} from '../redux/slices/authSlice';
 import {setLoading} from '../redux/slices/stateSlice';
+import {REACT_APP_URL} from '../../enviroment';
 
 const register = async (email, password, user_name) => {
-  console.log(process.env.REACT_APP_URL);
+  console.log(REACT_APP_URL);
   return await axios
-    .post(`http://${process.env.REACT_APP_URL}/api/user/register`, {
+    .post(`http://${REACT_APP_URL}/api/user/register`, {
       user_name,
       password,
       email,

@@ -1,9 +1,10 @@
 import axios from 'axios';
+import {REACT_APP_URL} from '../../enviroment';
 
 export async function updateDeskToRemote(accessToken, desk) {
-  console.log(process.env.REACT_APP_URL);
+  console.log(REACT_APP_URL);
   axios
-    .put(`http://${process.env.REACT_APP_URL}/api/desk/${desk._id}`, desk, {
+    .put(`http://${REACT_APP_URL}/api/desk/${desk._id}`, desk, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -18,7 +19,7 @@ export async function updateDeskToRemote(accessToken, desk) {
 
 export async function updateCardToRemote(accessToken, card) {
   axios
-    .put(`http://${process.env.REACT_APP_URL}/api/card/${card._id}`, card, {
+    .put(`http://${REACT_APP_URL}/api/card/${card._id}`, card, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

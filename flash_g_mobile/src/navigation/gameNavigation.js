@@ -1,5 +1,5 @@
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {BottomBar, Card, Game} from '../constants';
+import {BottomBar, Card, DeskBoard, Game} from '../constants';
 import CardScreen from '../Screens/Card/CardScreen';
 import {HeaderBackButton} from '@react-navigation/elements';
 import React from 'react';
@@ -13,12 +13,7 @@ export default function GameNavigator() {
         name={Card}
         component={CardScreen}
         options={({navigation, route}) => ({
-          headerLeft: props => (
-            <HeaderBackButton
-              {...props}
-              onPress={() => navigation.navigate(BottomBar)}
-            />
-          ),
+          headerShown: false,
         })}
       />
       <Stack.Screen

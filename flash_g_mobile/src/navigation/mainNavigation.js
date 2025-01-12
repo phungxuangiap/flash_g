@@ -40,16 +40,19 @@ export default function MainNavigation({initialRoute}) {
   const dispatch = useDispatch();
 
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      onStateChange={state => {
+        console.log('[NAVIGATION]', state);
+      }}>
       <Stack.Navigator initialRouteName={initialRoute}>
-        <Stack.Screen
-          name={Auth}
-          component={AuthNavigator}
-          options={{headerShown: false}}
-        />
         <Stack.Screen
           name={BottomBar}
           component={BottomBarNavigator}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name={Auth}
+          component={AuthNavigator}
           options={{headerShown: false}}
         />
         <Stack.Screen

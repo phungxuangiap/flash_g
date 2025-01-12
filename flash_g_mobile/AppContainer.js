@@ -16,6 +16,7 @@ export function AppContainer() {
   const dispatch = useDispatch();
   const [doneLoad, setDoneLoad] = useState(false);
   const database = useRef();
+
   const loadData = useCallback(async () => {
     try {
       // assign sqlite db
@@ -36,6 +37,7 @@ export function AppContainer() {
   }, []);
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
+      console.log(state);
       if (state.isConnected) {
         dispatch(setOnline(true));
         console.log('Connected');

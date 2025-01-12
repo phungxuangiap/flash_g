@@ -71,6 +71,8 @@ import {
   updateCardToRemote,
   updateDeskToRemote,
 } from '../../service/postToRemote';
+import networkSpeed from 'react-native-network-speed';
+
 import {desk} from '../../LocalDatabase/dbQueries';
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
@@ -90,6 +92,19 @@ export default function DeskBoardScreen() {
   const auth = useSelector(authStateSelector);
 
   const handleData = (onlineState, accessToken) => {
+    // networkSpeed.startListenNetworkSpeed(
+    //   ({
+    //     downLoadSpeed,
+    //     downLoadSpeedCurrent,
+    //     upLoadSpeed,
+    //     upLoadSpeedCurrent,
+    //   }) => {
+    //     console.log('[DOWN]', downLoadSpeed + 'kb/s'); // download speed for the entire device 整个设备的下载速度
+    //     console.log('[DOWN_CURRENT]', downLoadSpeedCurrent + 'kb/s'); // download speed for the current app 当前app的下载速度(currently can only be used on Android)
+    //     console.log('[UP]', upLoadSpeed + 'kb/s'); // upload speed for the entire device 整个设备的上传速度
+    //     console.log('[UP_CURRENT]', upLoadSpeedCurrent + 'kb/s'); // upload speed for the current app 当前app的上传速度(currently can only be used on Android)
+    //   },
+    // );
     Promise.resolve()
       .then(() => {
         dispatch(setLoading(true));
@@ -212,15 +227,17 @@ export default function DeskBoardScreen() {
             }),
           );
         }
+        // networkSpeed.stopListenNetworkSpeed();
       })
       .catch(err => {
         console.log('Handle data error with message:', err);
       });
   };
-  useEffect(() => {
-    console.log('[USER]', actk);
-    handleData(online, actk);
-  }, [actk]);
+  useFocusEffect(
+    useCallback(() => {
+      handleData(online, actk);
+    }, [actk]),
+  );
   return loading ? (
     <LoadingOverlay />
   ) : (
