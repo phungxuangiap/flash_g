@@ -285,6 +285,7 @@ export default function CardScreen() {
                 description,
                 modified_time: JSON.stringify(new Date()).slice(1, -1),
               };
+
               await updateCard(updatedCard)
                 .then(res => {
                   console.log('Update card');

@@ -51,8 +51,10 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                 return [];
               });
               const synchronizedListCards = await syncAllCards(listAllRemoteCards);
+              const testCompareList = compareListActiveDataInLocalWithRemote(synchronizedListCards, listAllRemoteCards);
+              console.log('[TESTCOMPARE]', testCompareList);
               await Promise.all(
-                synchronizedListCards.map(card => {
+                testCompareList.map(card => {
                   return Promise.all(
                     card.active_status === DeletedStatus
                       ? [
@@ -152,6 +154,41 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
           });
 }
 
+const compareListActiveDataInLocalWithRemote = (mergedList:any[], remoteList:any[]):any[] => {
+  mergedList = mergedList.sort((itemA:any, itemB:any):number=>{
+    return itemA._id < itemB._id ? 1 : -1;
+  });
+  remoteList = remoteList.sort((itemA:any, itemB:any):number=>{
+    return itemA._id < itemB._id ? 1 : -1;
+  });
+  console.log('[MERGE]', mergedList);
+  console.log('[REMOTE]', remoteList);
+  let listChange = [];
+  let j = 0;
+  for (let i = 0; i < mergedList.length; i++){
+    if (j<remoteList.length-1){
+
+      while (mergedList[i]._id < remoteList[j]._id){
+        j++;
+      }
+      if (mergedList[i]._id === remoteList[j]._id){
+        const comparedObject = {...mergedList[i]};
+  
+        delete comparedObject.active_status;
+        if(JSON.stringify(comparedObject) !== JSON.stringify(remoteList[j])){
+          if (Date.parse(comparedObject.modified_time) > Date.parse(remoteList[j].modified_time)){
+            listChange.push(mergedList[i]);
+          }
+        }
+      }
+    }else{
+      listChange.push(mergedList[i]);
+    }
+  }
+
+  return listChange;
+}
+
 export async function syncListCardsOfDesk(listRemoteCardsOfDesk: any[], deskId:string):Promise<any>{
     return await getListCurrentCardsOfDesk(deskId)
         .then(res=>{
@@ -181,7 +218,8 @@ export async function syncAllCards(listAllRemoteCards: any[]){
             return mergedList;
         })
         .catch(err=>{
-            console.log(err);
+          console.log(err);
+          return [];
         });
 }
 export async function syncCurrentCards(listRemoteCurrentCards: any[]){

@@ -1,14 +1,4 @@
-import React, {
-  act,
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {
   accessTokenSelector,
@@ -18,12 +8,8 @@ import {
   onlineStateSelector,
   userSelector,
 } from '../../redux/selectors';
-import axios from 'axios';
-import {refresh} from '../../service/refreshAccessToken';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import {store} from '../../redux/store';
-import {ScrollView, TouchableOpacity, View} from 'react-native';
-import {Text} from '@react-navigation/elements';
+import {ScrollView, View} from 'react-native';
 import {setLoading} from '../../redux/slices/stateSlice';
 import uuid from 'react-native-uuid';
 import {
@@ -34,50 +20,15 @@ import {
   OverLay,
   UpdateDeskPopUp,
 } from '../../appComponents/appComponents';
-import createDesk from '../../service/createDesk';
 import {
   updateCurrentDesk,
   updateCurrentDesks,
 } from '../../redux/slices/gameSlice';
-import {getData, storeData} from '../../service/asyncStorageService';
-import {REACT_APP_URL} from '@env';
-import {
-  fetchAllCurrentCardOfDesk,
-  fetchListDesks,
-  fetchCurrentUser,
-  fetchAllCards,
-} from '../../service/fetchRemoteData';
-import {
-  createNewDesk,
-  createNewUser,
-  deleteCard,
-  deleteDesk,
-  getAllCards,
-  getListCurrentCardsOfDesk,
-  getListDesks,
-  getUser,
-  updateCard,
-  updateDesk,
-} from '../../LocalDatabase/database';
-import {
-  handleLocalAndRemoteData,
-  mergeLocalAndRemoteData,
-  syncAllCards,
-  syncAllDesks,
-  syncCurrentCards,
-  syncListCardsOfDesk,
-} from '../../LocalDatabase/syncDBService';
+import {createNewDesk, updateDesk} from '../../LocalDatabase/database';
+import {handleLocalAndRemoteData} from '../../LocalDatabase/syncDBService';
 import {Desk} from '../../LocalDatabase/model';
-import {ActiveStatus, Card, DeletedStatus, MainGame} from '../../constants';
-import {setUser} from '../../redux/slices/authSlice';
-import {
-  deleteCardInRemote,
-  deleteDeskInRemote,
-  updateCardToRemote,
-  updateDeskToRemote,
-} from '../../service/postToRemote';
+import {DeletedStatus, MainGame} from '../../constants';
 
-import {desk} from '../../LocalDatabase/dbQueries';
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
   const user = useSelector(userSelector);
