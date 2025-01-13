@@ -50,6 +50,8 @@ import {
 import {
   createNewDesk,
   createNewUser,
+  deleteCard,
+  deleteDesk,
   getAllCards,
   getListCurrentCardsOfDesk,
   getListDesks,
@@ -58,6 +60,7 @@ import {
   updateDesk,
 } from '../../LocalDatabase/database';
 import {
+  handleLocalAndRemoteData,
   mergeLocalAndRemoteData,
   syncAllCards,
   syncAllDesks,
@@ -65,13 +68,14 @@ import {
   syncListCardsOfDesk,
 } from '../../LocalDatabase/syncDBService';
 import {Desk} from '../../LocalDatabase/model';
-import {ActiveStatus, Card, MainGame} from '../../constants';
+import {ActiveStatus, Card, DeletedStatus, MainGame} from '../../constants';
 import {setUser} from '../../redux/slices/authSlice';
 import {
+  deleteCardInRemote,
+  deleteDeskInRemote,
   updateCardToRemote,
   updateDeskToRemote,
 } from '../../service/postToRemote';
-import networkSpeed from 'react-native-network-speed';
 
 import {desk} from '../../LocalDatabase/dbQueries';
 export default function DeskBoardScreen() {
@@ -85,158 +89,16 @@ export default function DeskBoardScreen() {
   const [inputCreateDesk, setInputCreateDesk] = useState('');
   const [inputUpdateDesk, setInputUpdateDesk] = useState('');
   const [showCreateDesk, setShowCreateDesk] = useState(false);
+  const authState = useSelector(authStateSelector);
   // Hold index of updated desk
   const [indexUpdatedDesk, setindexUpdatedDesk] = useState(undefined);
   const currentUser = useSelector(userSelector);
   const online = useSelector(onlineStateSelector);
   const auth = useSelector(authStateSelector);
-
-  const handleData = (onlineState, accessToken) => {
-    // networkSpeed.startListenNetworkSpeed(
-    //   ({
-    //     downLoadSpeed,
-    //     downLoadSpeedCurrent,
-    //     upLoadSpeed,
-    //     upLoadSpeedCurrent,
-    //   }) => {
-    //     console.log('[DOWN]', downLoadSpeed + 'kb/s'); // download speed for the entire device 整个设备的下载速度
-    //     console.log('[DOWN_CURRENT]', downLoadSpeedCurrent + 'kb/s'); // download speed for the current app 当前app的下载速度(currently can only be used on Android)
-    //     console.log('[UP]', upLoadSpeed + 'kb/s'); // upload speed for the entire device 整个设备的上传速度
-    //     console.log('[UP_CURRENT]', upLoadSpeedCurrent + 'kb/s'); // upload speed for the current app 当前app的上传速度(currently can only be used on Android)
-    //   },
-    // );
-    Promise.resolve()
-      .then(() => {
-        dispatch(setLoading(true));
-      })
-      // Fetch current user, update state, store local
-      .then(async () => {
-        if (onlineState) {
-          const user = await fetchCurrentUser(accessToken, dispatch);
-          if (user) {
-            dispatch(setUser(user));
-            // change to merge user
-            await createNewUser(user);
-            return user;
-          } else {
-            return undefined;
-          }
-        } else {
-          return undefined;
-        }
-      })
-      // Fetch all Desks
-      .then(async user => {
-        if (user) {
-          return await fetchListDesks(accessToken, user._id, dispatch);
-        } else {
-          return false;
-        }
-      })
-      // Fetch all Cards
-      .then(async listDesk => {
-        if (listDesk) {
-          const listAllRemoteCards = await fetchAllCards(
-            dispatch,
-            accessToken,
-          ).catch(err => {
-            console.log('Get all remote cards error with message:', err);
-            console.log('Cannot connect to remote server!');
-            return [];
-          });
-          const synchronizedListCards = await syncAllCards(listAllRemoteCards);
-          await Promise.all(
-            synchronizedListCards.map(card => {
-              return Promise.all([
-                updateCard(card),
-                updateCardToRemote(accessToken, card),
-              ]);
-            }),
-          );
-          return listDesk;
-        } else {
-          console.log("Cannot connect to remote server! Let's use local");
-          return [];
-        }
-      })
-      // Get all current card and calculate, return list new desks
-      .then(async listDesks => {
-        let listMergedDesk = [];
-        listMergedDesk = await syncAllDesks(listDesks);
-
-        return await Promise.all(
-          listMergedDesk.map(desk => {
-            let news = 0;
-            let inProgress = 0;
-            let preview = 0;
-
-            return getListCurrentCardsOfDesk(desk._id).then(
-              async listCurrentCards => {
-                listCurrentCards.forEach(card => {
-                  if (card.active_status === ActiveStatus) {
-                    if (card.status === 'new') {
-                      news++;
-                    } else if (card.status === 'inprogress') {
-                      inProgress++;
-                    } else {
-                      preview++;
-                    }
-                  }
-                });
-                return new Desk(
-                  desk._id,
-                  desk.user_id,
-                  desk.title,
-                  desk.primary_color,
-                  news,
-                  inProgress,
-                  preview,
-                  desk.new_card !== news ||
-                  desk.inprogress_card !== inProgress ||
-                  desk.preview_card !== preview
-                    ? JSON.stringify(new Date())
-                    : desk.modified_time,
-                );
-              },
-            );
-          }),
-        );
-      })
-      // Receive List desk with total calculated cards, update new desk into local database
-      .then(async listUpdatedDesks => {
-        await Promise.all(
-          listUpdatedDesks.map(desk => {
-            return updateDesk(desk);
-          }),
-        );
-        return listUpdatedDesks;
-      })
-      // Update list updated desks in state
-      .then(listDesks => {
-        dispatch(updateCurrentDesks(JSON.parse(JSON.stringify(listDesks))));
-
-        return listDesks;
-      })
-      // Update list desk to mongoDB
-      .then(listDesks => {
-        dispatch(setLoading(false));
-        if (online) {
-          Promise.all(
-            listDesks.map(desk => {
-              return updateDeskToRemote(accessToken, desk);
-            }),
-          );
-        }
-        // networkSpeed.stopListenNetworkSpeed();
-      })
-      .catch(err => {
-        console.log('Handle data error with message:', err);
-      });
-  };
   useFocusEffect(
     useCallback(() => {
-      handleData(online, actk);
-    }, [actk]),
+      handleLocalAndRemoteData(online, actk, dispatch);
+    }, [actk, online, authState]),
   );
   return loading ? (
     <LoadingOverlay />
@@ -245,33 +107,35 @@ export default function DeskBoardScreen() {
       <ScrollView scrollEnabled={true}>
         {data &&
           data.map((item, index) => {
-            return (
-              <DeskComponent
-                key={uuid.v4()}
-                id={item._id}
-                title={item.title}
-                primaryColor={item.primary_color}
-                news={item.new_card}
-                progress={item.inprogress_card}
-                preview={item.preview_card}
-                dispatch={() => {
-                  dispatch(
-                    updateCurrentDesks(
-                      data.filter(deskDeleted => {
-                        return deskDeleted._id != item._id;
-                      }),
-                    ),
-                  );
-                }}
-                onClick={() => {
-                  dispatch(updateCurrentDesk(item));
-                  navigation.navigate(MainGame);
-                }}
-                onEdit={() => {
-                  setindexUpdatedDesk(index);
-                }}
-              />
-            );
+            if (item.active_status !== DeletedStatus) {
+              return (
+                <DeskComponent
+                  key={uuid.v4()}
+                  id={item._id}
+                  title={item.title}
+                  primaryColor={item.primary_color}
+                  news={item.new_card}
+                  progress={item.inprogress_card}
+                  preview={item.preview_card}
+                  onDelete={() => {
+                    dispatch(
+                      updateCurrentDesks(
+                        data.filter(deskDeleted => {
+                          return deskDeleted._id != item._id;
+                        }),
+                      ),
+                    );
+                  }}
+                  onClick={() => {
+                    dispatch(updateCurrentDesk(item));
+                    navigation.navigate(MainGame);
+                  }}
+                  onEdit={() => {
+                    setindexUpdatedDesk(index);
+                  }}
+                />
+              );
+            }
           })}
       </ScrollView>
       <CircleButton

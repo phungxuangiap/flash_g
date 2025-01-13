@@ -46,6 +46,9 @@ export async function deleteDesk(id: string): Promise<any> {
     .then(async (db: SQLite.SQLiteDatabase) => {
       await db.executeSql(deleteDeskQuery, [id]);
     })
+    .then(res=>{
+      console.log("delete successfully")
+    })
     .catch((error) => {
       console.log(error);
     });

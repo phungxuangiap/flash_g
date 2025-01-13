@@ -1,7 +1,156 @@
 
-import { ActiveStatus } from "../constants";
-import { getAllCards, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks } from "./database";
-
+import { useDispatch } from "react-redux";
+import { ActiveStatus, DeletedStatus } from "../constants";
+import { setUser } from "../redux/slices/authSlice";
+import { updateCurrentDesks } from "../redux/slices/gameSlice";
+import { setLoading } from "../redux/slices/stateSlice";
+import { fetchAllCards, fetchCurrentUser, fetchListDesks } from "../service/fetchRemoteData";
+import { deleteCardInRemote, deleteDeskInRemote, updateCardToRemote, updateDeskToRemote } from "../service/postToRemote";
+import { createNewUser, deleteCard, deleteDesk, getAllCards, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, updateCard, updateDesk } from "./database";
+import { Desk } from "./model";
+import { Dispatch, UnknownAction } from "@reduxjs/toolkit";
+export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:string, dispatch:Dispatch<UnknownAction>){
+    return await Promise.resolve()
+          .then(() => {
+            dispatch(setLoading(true));
+          })
+          // Fetch current user, update state, store local
+          .then(async () => {
+            if (onlineState) {
+              const user = await fetchCurrentUser(accessToken, dispatch);
+              if (user) {
+                dispatch(setUser(user));
+                // change to merge user
+                await createNewUser(user);
+                return user;
+              } else {
+                return undefined;
+              }
+            } else {
+              return undefined;
+            }
+          })
+          // Fetch all Desks
+          .then(async user => {
+            if (user) {
+              return await fetchListDesks(accessToken, user._id, dispatch);
+            } else {
+              return false;
+            }
+          })
+          // Fetch all Cards
+          // TODO: Optimize call PUT request, just call when modified time of card is different with the old one
+          .then(async listDesk => {
+            if (listDesk) {
+              const listAllRemoteCards = await fetchAllCards(
+                dispatch,
+                accessToken,
+              ).catch(err => {
+                console.log('Get all remote cards error with message:', err);
+                console.log('Cannot connect to remote server!');
+                return [];
+              });
+              const synchronizedListCards = await syncAllCards(listAllRemoteCards);
+              await Promise.all(
+                synchronizedListCards.map(card => {
+                  return Promise.all(
+                    card.active_status === DeletedStatus
+                      ? [
+                          deleteCard(card._id),
+                          deleteCardInRemote(accessToken, card),
+                        ]
+                      : [updateCard(card), updateCardToRemote(accessToken, card)],
+                  );
+                }),
+              );
+              return listDesk;
+            } else {
+              console.log("Cannot connect to remote server! Let's use local");
+              return [];
+            }
+          })
+          // Get all current card and calculate, return list new desks
+          .then(async (listDesks) => {
+            let listMergedDesk = [];
+            listMergedDesk = await syncAllDesks(listDesks);
+    
+            return await Promise.all(
+              listMergedDesk.map((desk:any) => {
+                let news = 0;
+                let inProgress = 0;
+                let preview = 0;
+    
+                return getListCurrentCardsOfDesk(desk._id).then(
+                  async listCurrentCards => {
+                    listCurrentCards.forEach((card:any) => {
+                      if (card.active_status === ActiveStatus) {
+                        if (card.status === 'new') {
+                          news++;
+                        } else if (card.status === 'inprogress') {
+                          inProgress++;
+                        } else {
+                          preview++;
+                        }
+                      }
+                    });
+                    return new Desk(
+                      desk._id,
+                      desk.user_id,
+                      desk.title,
+                      desk.primary_color,
+    
+                      news,
+                      inProgress,
+                      preview,
+                      desk.new_card !== news ||
+                      desk.inprogress_card !== inProgress ||
+                      desk.preview_card !== preview
+                        ? JSON.stringify(new Date())
+                        : desk.modified_time,
+                      desk.active_status,
+                    );
+                  },
+                );
+              }),
+            );
+          })
+          // Receive List desk with total calculated cards, update new desk into local database
+          .then(async listUpdatedDesks => {
+            await Promise.all(
+              listUpdatedDesks.map(desk => {
+                if (desk.active_status === DeletedStatus) {
+                  return deleteDesk(desk._id);
+                }
+                return updateDesk(desk);
+              }),
+            );
+            return listUpdatedDesks;
+          })
+          // Update list updated desks in state
+          .then(listDesks => {
+            dispatch(updateCurrentDesks(JSON.parse(JSON.stringify(listDesks))));
+    
+            return listDesks;
+          })
+          // Update list desk to mongoDB
+          // TODO: Do the same thing of card. Just PUT desk having different modified time.
+          .then(listDesks => {
+            dispatch(setLoading(false));
+            if (onlineState) {
+              Promise.all(
+                listDesks.map(desk => {
+                  if (desk.active_status === DeletedStatus) {
+                    return deleteDeskInRemote(accessToken, desk);
+                  }
+                  return updateDeskToRemote(accessToken, desk);
+                }),
+              );
+            }
+          })
+          .catch(err => {
+            console.log('Handle data error with message:', err);
+          });
+}
 
 export async function syncListCardsOfDesk(listRemoteCardsOfDesk: any[], deskId:string):Promise<any>{
     return await getListCurrentCardsOfDesk(deskId)
@@ -91,10 +240,12 @@ function mergeLocalAndRemoteData(remoteList:any[], localList:any[]):any[]{
                 continue;
             };
             if ((mergedList[i]._id === mergedList[i + 1]._id)){
-                if (mergedList[i].active_status === 'active' && mergedList[i+1].active_status === 'deleted'){
+                if (mergedList[i].active_status === ActiveStatus && mergedList[i+1].active_status === DeletedStatus){
+                    console.log("DELETE")
                     mergedList.splice(i, 1);
                 } else
-                if (mergedList[i].active_status === 'deleted' && mergedList[i+1].active_status === 'active'){
+                if (mergedList[i].active_status === DeletedStatus && mergedList[i+1].active_status === ActiveStatus){
+                    console.log("DELETE")
                     mergedList.splice(i + 1, 1);
                 } else{
                     if ((Date.parse(mergedList[i].modified_time) < Date.parse(mergedList[i + 1].modified_time))){
@@ -107,9 +258,9 @@ function mergeLocalAndRemoteData(remoteList:any[], localList:any[]):any[]{
             }
             i++;
         }
-        mergedList = mergedList.filter((item, index)=>{
-            return item.active_status === 'active';
-        });
+        // mergedList = mergedList.filter((item, index)=>{
+        //     return item.active_status === 'active';
+        // });
     }else {
         mergedList = remoteList ? remoteList : localList;
     }

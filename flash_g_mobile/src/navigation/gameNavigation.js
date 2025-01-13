@@ -12,21 +12,16 @@ export default function GameNavigator() {
       <Stack.Screen
         name={Card}
         component={CardScreen}
-        options={({navigation, route}) => ({
+        options={{
           headerShown: false,
-        })}
+        }}
       />
       <Stack.Screen
         name={Game}
         component={GameComponent}
-        options={({navigation, route}) => ({
-          headerLeft: props => (
-            <HeaderBackButton
-              {...props}
-              onPress={() => navigation.navigate(Card)}
-            />
-          ),
-        })}
+        options={{
+          headerShown: false,
+        }}
       />
     </Stack.Navigator>
   );

@@ -15,6 +15,8 @@ import {
 } from '../redux/slices/gameSlice';
 import {desk} from '../LocalDatabase/dbQueries';
 import {DeletedStatus} from '../constants';
+import {useSelector} from 'react-redux';
+import {currentDesks} from '../redux/selectors';
 export function InputTag({placeholder, value, onValueChange}) {
   return (
     <TextInput
@@ -121,10 +123,11 @@ export function DeskComponent({
   news,
   progress,
   preview,
-  dispatch,
+  onDelete,
   onClick,
   onEdit,
 }) {
+  const listCurrentDesks = useSelector(currentDesks);
   return (
     <TouchableOpacity
       onPress={() => {
@@ -148,7 +151,7 @@ export function DeskComponent({
             }}
             onPress={async () => {
               await deleteDesk(id);
-              dispatch();
+              onDelete();
               console.log('delete desk');
             }}>
             <Text style={{color: 'white'}}>x</Text>

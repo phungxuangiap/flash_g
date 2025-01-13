@@ -9,6 +9,7 @@ import {setUser} from './src/redux/slices/authSlice';
 import {onlineStateSelector, userSelector} from './src/redux/selectors';
 import NetInfo from '@react-native-community/netinfo';
 import {databaseInitialization} from './src/LocalDatabase/databaseInitialization';
+import networkSpeed from 'react-native-network-speed';
 
 const LocalDatabaseContext = createContext();
 export function AppContainer() {
@@ -37,8 +38,13 @@ export function AppContainer() {
   }, []);
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
-      console.log(state);
-      if (state.isConnected) {
+      console.log('[NETWORK STATE]', state.details);
+      console.log('NETWORK', state);
+      if (
+        state.isConnected &&
+        state.details.txLinkSpeed >= 1 &&
+        state.details.rxLinkSpeed >= 1
+      ) {
         dispatch(setOnline(true));
         console.log('Connected');
       } else {
@@ -46,8 +52,20 @@ export function AppContainer() {
         console.log('Not connected.');
       }
     });
+    // networkSpeed.startListenNetworkSpeed(
+    //   ({
+    //     downLoadSpeed,
+    //     downLoadSpeedCurrent,
+    //     upLoadSpeed,
+    //     upLoadSpeedCurrent,
+    //   }) => {
+    //     console.log('[DOWN]', downLoadSpeed + 'kb/s'); // download speed for the entire device 整个设备的下载速度
+    //     console.log('[DOWN_CURRENT]', downLoadSpeedCurrent + 'kb/s'); // download speed for the current app 当前app的下载速度(currently can only be used on Android)
+    //     console.log('[UP]', upLoadSpeed + 'kb/s'); // upload speed for the entire device 整个设备的上传速度
+    //     console.log('[UP_CURRENT]', upLoadSpeedCurrent + 'kb/s'); // upload speed for the current app 当前app的上传速度(currently can only be used on Android)
+    //   },
+    // );
   }, []);
-
   useEffect(() => {
     loadData();
   }, []);

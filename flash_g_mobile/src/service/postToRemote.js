@@ -31,3 +31,33 @@ export async function updateCardToRemote(accessToken, card) {
       console.log('Update card to remote error with message:', err);
     });
 }
+
+export async function deleteDeskInRemote(accessToken, desk) {
+  axios
+    .delete(`http://${REACT_APP_URL}/api/desk/${desk._id}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then(res => {
+      console.log('Update data successfully');
+    })
+    .catch(err => {
+      console.log('Update card to remote error with message:', err);
+    });
+}
+
+export async function deleteCardInRemote(accessToken, card) {
+  axios
+    .delete(`http://${REACT_APP_URL}/api/card/${card._id}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then(res => {
+      console.log('Update data successfully');
+    })
+    .catch(err => {
+      console.log('Update card to remote error with message:', err);
+    });
+}

@@ -6,17 +6,23 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import React, {useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {accessTokenSelector, loadingSelector} from '../../redux/selectors';
+import {
+  accessTokenSelector,
+  loadingSelector,
+  onlineStateSelector,
+} from '../../redux/selectors';
 import {logout} from '../../service/logout';
 import {store} from '../../redux/store';
 import {setLoading} from '../../redux/slices/stateSlice';
 import {Auth} from '../../constants';
+import {handleLocalAndRemoteData} from '../../LocalDatabase/syncDBService';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const loading = useSelector(loadingSelector);
   const accessToken = useSelector(accessTokenSelector);
+  const onlineState = useSelector(onlineStateSelector);
   return (
     <View style={style.container}>
       <Text>Profile</Text>
@@ -24,7 +30,7 @@ export default function ProfileScreen() {
         content={'Sign Out'}
         onClick={async () => {
           dispatch(setLoading(true));
-
+          await handleLocalAndRemoteData(onlineState, accessToken, dispatch);
           await logout(accessToken);
           dispatch(setLoading(false));
           // Reset navigation stack
