@@ -128,7 +128,8 @@ const createNewCardQuery = `
         vocab_audio,
         sentence_audio,
         type,
-        modified_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        modified_time,
+        active_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 const updateCardQuery = `
     INSERT INTO Card (
@@ -144,8 +145,9 @@ const updateCardQuery = `
         vocab_audio,
         sentence_audio,
         type,
-        modified_time
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        modified_time,
+        active_status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(_id) DO UPDATE SET
         _id = excluded._id,
         desk_id = excluded.desk_id,
@@ -159,15 +161,19 @@ const updateCardQuery = `
         vocab_audio = excluded.vocab_audio,
         sentence_audio = excluded.sentence_audio,
         type = excluded.type,
-        modified_time = excluded.modified_time;
+        modified_time = excluded.modified_time,
+        active_status = excluded.active_status
 `;
 
 const deleteCardQuery = `
     UPDATE Card
-    SET active_status = 'deleted'
+    SET active_status = 'deleted',
+        modified_time = ?
     WHERE _id = ?
 `;
-
+const removeCardQuery = `
+    DELETE FROM Card WHERE _id = ?
+`
 const cleanAllDeskQuery = `
     DELETE FROM Desk
 `;
@@ -193,6 +199,7 @@ export {
     cleanAllDeskQuery,
     cleanAllCardQuery,
     cleanAllUserQuery,
+    removeCardQuery,
 };
 
 

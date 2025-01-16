@@ -113,7 +113,7 @@ const updateCard = asyncHandler(async (req, res, next) => {
   if (card) {
     await Card.findByIdAndUpdate(
       req.params.cardId,
-      { ...req.body, modified_time: JSON.stringify(new Date()).slice(1, -1) },
+      { ...req.body },
       { new: true }
     );
     res.status(200).json(card);
@@ -121,8 +121,6 @@ const updateCard = asyncHandler(async (req, res, next) => {
     console.log("Here");
     const newCard = Card.collection.insertOne({
       ...req.body,
-      last_preview: JSON.stringify(new Date()).slice(1, -1),
-      modified_time: JSON.stringify(new Date()).slice(1, -1),
     });
     if (newCard) {
       res.status(200).json(newCard);

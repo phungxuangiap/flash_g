@@ -2,7 +2,7 @@ import {enablePromise, openDatabase} from 'react-native-sqlite-storage';
 import SQLite from "react-native-sqlite-storage";
 import { Desk, Card, User } from './model';
 import { getLocalDatabase } from './databaseInitialization';
-import { cleanAllCardQuery, cleanAllDeskQuery, cleanAllUserQuery, cleanUpQuery, createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getListCurrentCardsOfDeskQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
+import { card, cleanAllCardQuery, cleanAllDeskQuery, cleanAllUserQuery, cleanUpQuery, createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getListCurrentCardsOfDeskQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, removeCardQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
 import { store } from '../redux/store';
 
 // This file contains all services interacting with data in the local database
@@ -17,6 +17,7 @@ export interface Database {
   createNewCard: (card: Card, desk_id:string) => Promise<any>;
   updateCard: (card: Card) => Promise<any>;
   deleteCard: (card_id: string) => Promise<any>;
+  removeCard: (card_id: string) => Promise<any>;
   createNewUser: (user: User) => Promise<any>;
   getUser: ()=> Promise<any>;
   cleanUp: ()=> Promise<any>;
@@ -67,7 +68,7 @@ export async function getListDesks(): Promise<any> {
 export async function createNewCard(card: Card): Promise<any> {
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      await db.executeSql(createNewCardQuery, [card._id, card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type, (JSON.stringify(new Date())).slice(1, -1)]);
+      await db.executeSql(createNewCardQuery, [card._id, card.desk_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type, card.modified_time, card.active_status]);
     })
     .catch((error) => {
       console.log(error);
@@ -142,7 +143,7 @@ export async function getAllCards(): Promise<any>{
 export async function updateCard(card: Card): Promise<any> {
   return await getLocalDatabase()
     .then(async (db:SQLite.SQLiteDatabase) =>{
-      await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.user_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type, card.modified_time]);
+      await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.user_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type, card.modified_time, card.active_status]);
       console.log("Update card successfully")
     })
     .catch((error) => {
@@ -153,12 +154,22 @@ export async function updateCard(card: Card): Promise<any> {
 export async function deleteCard(cardId: string): Promise<any> {
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase)=>{
-      await db.executeSql(deleteCardQuery, [cardId]);
+      await db.executeSql(deleteCardQuery, [(JSON.stringify(new Date()).slice(1, -1)), cardId]);
     })
     .catch(error=>{
       console.log(error);
     });
 } //OK
+
+export async function removeCard(cardId: string): Promise<any> {
+  return await getLocalDatabase()
+    .then(async (db: SQLite.SQLiteDatabase)=>{
+      await db.executeSql(removeCardQuery, [cardId]);
+    })
+    .catch(error=>{
+      console.log("Remove card in local error with message:", error);
+    })
+}
 
 export async function createNewUser(user: User): Promise<any> {
   return await getLocalDatabase()
@@ -216,6 +227,7 @@ export const database: Database = {
   createNewCard,
   updateCard,
   deleteCard,
+  removeCard,
   createNewUser,
   getUser,
   cleanUp,

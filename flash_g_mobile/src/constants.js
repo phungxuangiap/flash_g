@@ -13,3 +13,4 @@ export const BottomBar = 'bottombar';
 export const MainGame = 'main_game';
 export const ActiveStatus = 'active';
 export const DeletedStatus = 'deleted';
+export const RemoteStatus = 'remote';

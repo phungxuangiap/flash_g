@@ -84,9 +84,7 @@ export const FlashCard = function ({card, setRandomCard}) {
                 list.push(card);
                 dispatch(updateCurrentCards(list));
                 setShowAnswer(false);
-                setRandomCard(
-                  setRandomCard(Math.round((list.length - 1) * Math.random())),
-                );
+                setRandomCard(Math.round((list.length - 1) * Math.random()));
               }}>
               <Text style={ComponentStyle.textWhite16Medium}>Fail</Text>
             </TouchableOpacity>
@@ -114,7 +112,7 @@ export const FlashCard = function ({card, setRandomCard}) {
                   return item._id !== card._id;
                 });
                 dispatch(updateCurrentCards(list));
-                setRandomCard(Math.round((list.length - 1) * Math.random()));
+                setRandomCard(Math.round((list.length - 2) * Math.random()));
                 setShowAnswer(false);
               }}>
               <Text style={ComponentStyle.textWhite16Medium}>Okay</Text>
@@ -127,7 +125,7 @@ export const FlashCard = function ({card, setRandomCard}) {
                   return item._id !== card._id;
                 });
                 dispatch(updateCurrentCards(list));
-                setRandomCard(Math.round((list.length - 1) * Math.random()));
+                setRandomCard(Math.round((list.length - 2) * Math.random()));
 
                 setShowAnswer(false);
               }}>

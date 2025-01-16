@@ -1,12 +1,12 @@
 
 import { useDispatch } from "react-redux";
-import { ActiveStatus, DeletedStatus } from "../constants";
+import { ActiveStatus, DeletedStatus, RemoteStatus } from "../constants";
 import { setUser } from "../redux/slices/authSlice";
 import { updateCurrentDesks } from "../redux/slices/gameSlice";
 import { setLoading } from "../redux/slices/stateSlice";
 import { fetchAllCards, fetchCurrentUser, fetchListDesks } from "../service/fetchRemoteData";
 import { deleteCardInRemote, deleteDeskInRemote, updateCardToRemote, updateDeskToRemote } from "../service/postToRemote";
-import { createNewUser, deleteCard, deleteDesk, getAllCards, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, updateCard, updateDesk } from "./database";
+import { createNewUser, deleteCard, deleteDesk, getAllCards, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, removeCard, updateCard, updateDesk } from "./database";
 import { Desk } from "./model";
 import { Dispatch, UnknownAction } from "@reduxjs/toolkit";
 export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:string, dispatch:Dispatch<UnknownAction>){
@@ -50,21 +50,29 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                 console.log('Cannot connect to remote server!');
                 return [];
               });
-              const synchronizedListCards = await syncAllCards(listAllRemoteCards);
-              const testCompareList = compareListActiveDataInLocalWithRemote(synchronizedListCards, listAllRemoteCards);
-              console.log('[TESTCOMPARE]', testCompareList);
-              await Promise.all(
-                testCompareList.map(card => {
-                  return Promise.all(
-                    card.active_status === DeletedStatus
-                      ? [
-                          deleteCard(card._id),
-                          deleteCardInRemote(accessToken, card),
-                        ]
-                      : [updateCard(card), updateCardToRemote(accessToken, card)],
-                  );
-                }),
-              );
+              let listAllLocakCards:any[] = [];
+              const localCardsResponseawait = await getAllCards();
+              localCardsResponseawait?.forEach((result:any) => {
+                for (let index = 0; index < result.rows.length; index++) {
+                    listAllLocakCards.push(result.rows.item(index));
+                }
+              });
+              syncCards(listAllLocakCards, listAllRemoteCards, accessToken);
+              // const synchronizedListCards = await syncAllCards(listAllRemoteCards);
+              // const testCompareList = compareListActiveDataInLocalWithRemote(synchronizedListCards, listAllRemoteCards);
+              // console.log('[TESTCOMPARE]', testCompareList);
+              // await Promise.all(
+              //   testCompareList.map(card => {
+              //     return Promise.all(
+              //       card.active_status === DeletedStatus
+              //         ? [
+              //             deleteCard(card._id),
+              //             deleteCardInRemote(accessToken, card),
+              //           ]
+              //         : [updateCard(card), updateCardToRemote(accessToken, card)],
+              //     );
+              //   }),
+              // );
               return listDesk;
             } else {
               console.log("Cannot connect to remote server! Let's use local");
@@ -85,7 +93,7 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                 return getListCurrentCardsOfDesk(desk._id).then(
                   async listCurrentCards => {
                     listCurrentCards.forEach((card:any) => {
-                      if (card.active_status === ActiveStatus) {
+                      if (card.active_status !== DeletedStatus) {
                         if (card.status === 'new') {
                           news++;
                         } else if (card.status === 'inprogress') {
@@ -166,7 +174,7 @@ const compareListActiveDataInLocalWithRemote = (mergedList:any[], remoteList:any
   let listChange = [];
   let j = 0;
   for (let i = 0; i < mergedList.length; i++){
-    if (j<remoteList.length-1){
+    if (j<=remoteList.length-1){
 
       while (mergedList[i]._id < remoteList[j]._id){
         j++;
@@ -176,6 +184,8 @@ const compareListActiveDataInLocalWithRemote = (mergedList:any[], remoteList:any
   
         delete comparedObject.active_status;
         if(JSON.stringify(comparedObject) !== JSON.stringify(remoteList[j])){
+          console.log("MErge", Date.parse(comparedObject.modified_time), comparedObject.modified_time)
+          console.log("REmote", Date.parse(remoteList[j].modified_time), remoteList[j].modified_time)
           if (Date.parse(comparedObject.modified_time) > Date.parse(remoteList[j].modified_time)){
             listChange.push(mergedList[i]);
           }
@@ -187,6 +197,86 @@ const compareListActiveDataInLocalWithRemote = (mergedList:any[], remoteList:any
   }
 
   return listChange;
+}
+
+const syncCards = (localCards:any[], remoteCards: any[], accessToken:string): Promise<any> =>{
+  const listMerge:any[] = [];
+  localCards = localCards.sort((itemA:any, itemB: any)=>{
+    return itemA._id < itemB._id ? 1 : -1;
+  });
+  remoteCards = remoteCards.sort((itemA:any, itemB: any)=>{
+    return itemA._id < itemB._id ? 1 : -1;
+  });
+  console.log('[LOCAL]', localCards)
+  console.log('[REMOTE]', remoteCards);
+  let remoteIndex = 0;
+  for (let localIndex = 0; localIndex < localCards.length; localIndex++){
+    if (remoteIndex < remoteCards.length){
+      while (localCards[localIndex]._id < remoteCards[remoteIndex]._id){
+        updateCard({...remoteCards[remoteIndex], active_status: RemoteStatus});
+        listMerge.push({method: "Update new remote card to local", data: remoteCards[remoteIndex]});
+        remoteIndex++;
+        if (remoteIndex >= remoteCards.length){
+          break;
+        }
+      }
+      if (localCards[localIndex]._id > remoteCards[remoteIndex]._id){
+        if (localCards[localIndex].active_status!==DeletedStatus){
+
+          let objectTmp = {...localCards[localIndex]}
+          delete objectTmp.active_status;
+          updateCardToRemote(accessToken, objectTmp);
+          listMerge.push({method: "Update local to remote", data: objectTmp});
+        }
+
+      }
+      if (localCards[localIndex]._id === remoteCards[remoteIndex]._id){
+        let objectTmp = {...localCards[localIndex]};
+        delete objectTmp.active_status;
+        if (JSON.stringify(objectTmp) !== JSON.stringify(remoteCards[remoteIndex])){
+          if (Date.parse(objectTmp.modified_time) > Date.parse(remoteCards[remoteIndex].modified_time)){
+            if (localCards[localIndex].active_status !== DeletedStatus){
+              console.log(localCards[localIndex].active_status, 'ACTIVE_STATUS')
+              listMerge.push({method: "Update remote when local change", data: objectTmp});
+
+              updateCardToRemote(accessToken, objectTmp);
+            } else{
+              listMerge.push({method: "Delete local and remote", data: objectTmp});
+              deleteCardInRemote(accessToken, objectTmp);
+              // remove card out of the local data
+              // deleteCard(objectTmp._id);
+              removeCard(objectTmp._id);
+
+            }
+          } else if (Date.parse(objectTmp.modified_time) < Date.parse(remoteCards[remoteIndex].modified_time)){
+            listMerge.push({method: "Update updated card to local", data: remoteCards[remoteIndex]});
+            updateCard({...remoteCards[remoteIndex], active_status: RemoteStatus});
+          }
+        }
+        remoteIndex++;
+        console.log("this this", remoteIndex)
+      } 
+      console.log("hererehrehrherhe", remoteIndex, localIndex, remoteCards.length)
+    } else {
+      if (localCards[localIndex].active_status !== RemoteStatus && localCards[localIndex].active_status !== DeletedStatus){
+        let objectTmp = {...localCards[localIndex]}
+        delete objectTmp.active_status;
+        updateCardToRemote(accessToken, objectTmp);
+        listMerge.push({method: "Update remote", data: localCards[localIndex]})
+      }else{
+        deleteCard(localCards[localIndex]._id);
+        listMerge.push({method: "Delete local", data: localCards[localIndex]._id});
+      }
+    }
+  }
+  if (remoteIndex < remoteCards.length){
+    for (let j = remoteIndex; j < remoteCards.length; j++){
+      updateCard({...remoteCards[j], active_status: RemoteStatus});
+      listMerge.push({method: "Update local", data: remoteCards[j]});
+    }
+  }
+  console.log('[MERGE]', listMerge)
+  return Promise.resolve();
 }
 
 export async function syncListCardsOfDesk(listRemoteCardsOfDesk: any[], deskId:string):Promise<any>{

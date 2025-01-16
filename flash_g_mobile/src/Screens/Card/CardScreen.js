@@ -37,7 +37,7 @@ import {
   updateCard,
 } from '../../LocalDatabase/database';
 import {Card} from '../../LocalDatabase/model';
-import {ActiveStatus, Game, MainGame} from '../../constants';
+import {ActiveStatus, DeletedStatus, Game, MainGame} from '../../constants';
 
 export default function CardScreen() {
   const desk = useSelector(gameSelector);
@@ -67,7 +67,7 @@ export default function CardScreen() {
     let activeCards = [];
     list &&
       list.forEach(item => {
-        if (item.active_status === ActiveStatus) {
+        if (item.active_status !== DeletedStatus) {
           activeCards.push(item);
           if (item.status === 'new') {
             news = news + 1;
@@ -113,7 +113,9 @@ export default function CardScreen() {
       .then(listCards => {
         dispatch(
           updateCurrentCards(
-            listCards,
+            listCards.filter(item => {
+              return item.active_status !== DeletedStatus;
+            }),
             // listCards.filter(item => {
             //   return item.active_status === ActiveStatus;
             // }),
