@@ -81,16 +81,11 @@ const updateDesk = asyncHandler(async (req, res, next) => {
       return null;
     });
   if (desk) {
-    await Desk.findByIdAndUpdate(
-      req.params.id,
-      { ...req.body, modified_time: JSON.stringify(new Date()).slice(1, -1) },
-      { new: true }
-    );
+    await Desk.findByIdAndUpdate(req.params.id, { ...req.body }, { new: true });
     res.status(200).json(desk);
   } else {
     const newDesk = await Desk.collection.insertOne({
       ...req.body,
-      modified_time: JSON.stringify(new Date()).slice(1, -1),
     });
 
     if (newDesk) {

@@ -2,7 +2,7 @@ import {enablePromise, openDatabase} from 'react-native-sqlite-storage';
 import SQLite from "react-native-sqlite-storage";
 import { Desk, Card, User } from './model';
 import { getLocalDatabase } from './databaseInitialization';
-import { card, cleanAllCardQuery, cleanAllDeskQuery, cleanAllUserQuery, cleanUpQuery, createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getListCurrentCardsOfDeskQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, removeCardQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
+import { card, cleanAllCardQuery, cleanAllDeskQuery, cleanAllUserQuery, cleanUpQuery, createNewCardQuery, createNewDeskQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getListCurrentCardsOfDeskQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, removeCardQuery, removeDeskQuery, updateCardQuery, updateDeskQuery } from './dbQueries';
 import { store } from '../redux/store';
 
 // This file contains all services interacting with data in the local database
@@ -10,6 +10,7 @@ export interface Database {
   createNewDesk: (desk: Desk) => Promise<any>;
   updateDesk: (desk: Desk) => Promise<any>;
   deleteDesk: (deskId: string) => Promise<any>;
+  removeDesk: (deskId: string) => Promise<any>;
   getListDesks: () => Promise<any[]>;
   getListCurrentCardsOfDesk: (deskId: string) => Promise<any[]>;
   getListCurrentCards: () => Promise<any[]>;
@@ -26,7 +27,7 @@ export interface Database {
 export async function createNewDesk(desk: Desk): Promise<any> {
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      return await db.executeSql(createNewDeskQuery, [desk._id, desk.user_id, desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card, (JSON.stringify(new Date())).slice(1, -1)]);
+      return await db.executeSql(createNewDeskQuery, [desk._id, desk.user_id, desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card, desk.modified_time]);
     })
     .catch((error) => {
       console.log(error);
@@ -171,6 +172,16 @@ export async function removeCard(cardId: string): Promise<any> {
     })
 }
 
+export async function removeDesk(deskId: string): Promise<any> {
+  return await getLocalDatabase()
+    .then(async (db:SQLite.SQLiteDatabase) => {
+      await db.executeSql(removeDeskQuery, [deskId]);
+    })
+    .catch(error=>{
+      console.log("Remove desk error with message:", error);
+    })
+}
+
 export async function createNewUser(user: User): Promise<any> {
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
@@ -220,6 +231,7 @@ export const database: Database = {
   createNewDesk,
   updateDesk,
   deleteDesk,
+  removeDesk,
   getListDesks,
   getListCurrentCardsOfDesk,
   getListCurrentCards,

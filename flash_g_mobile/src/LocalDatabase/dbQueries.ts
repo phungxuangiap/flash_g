@@ -174,6 +174,9 @@ const deleteCardQuery = `
 const removeCardQuery = `
     DELETE FROM Card WHERE _id = ?
 `
+const removeDeskQuery = `
+    DELETE FROM Desk WHERE _id = ?
+`
 const cleanAllDeskQuery = `
     DELETE FROM Desk
 `;
@@ -200,6 +203,7 @@ export {
     cleanAllCardQuery,
     cleanAllUserQuery,
     removeCardQuery,
+    removeDeskQuery,
 };
 
 
