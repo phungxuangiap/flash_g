@@ -9,7 +9,7 @@ import {
   userSelector,
 } from '../../redux/selectors';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import {ScrollView, View} from 'react-native';
+import {Alert, ScrollView, View} from 'react-native';
 import {setLoading} from '../../redux/slices/stateSlice';
 import uuid from 'react-native-uuid';
 import {
@@ -157,19 +157,24 @@ export default function DeskBoardScreen() {
                 data[indexUpdatedDesk].preview_card,
                 JSON.stringify(new Date()).slice(1, -1),
               );
-              await updateDesk(updatedDesk);
-              dispatch(
-                updateCurrentDesks(
-                  data.map(desk => {
-                    return desk._id !== updatedDesk._id
-                      ? desk
-                      : JSON.parse(JSON.stringify(updatedDesk));
-                  }),
-                ),
-              );
-              // await createDesk(inputCreateDesk, 'black', actk, data, dispatch);
-              dispatch(setLoading(false));
-              setindexUpdatedDesk(undefined);
+              await updateDesk(updatedDesk)
+                .then(res => {
+                  dispatch(
+                    updateCurrentDesks(
+                      data.map(desk => {
+                        return desk._id !== updatedDesk._id
+                          ? desk
+                          : JSON.parse(JSON.stringify(updatedDesk));
+                      }),
+                    ),
+                  );
+                  // await createDesk(inputCreateDesk, 'black', actk, data, dispatch);
+                  dispatch(setLoading(false));
+                  setindexUpdatedDesk(undefined);
+                })
+                .catch(err => {
+                  Alert.alert('Update Desk Fail with error:', err);
+                });
             }}
             desk={listCurrentDesks[indexUpdatedDesk]}
           />

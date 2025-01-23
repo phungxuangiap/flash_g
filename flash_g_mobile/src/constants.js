@@ -4,6 +4,7 @@ export const Login = 'Login';
 export const Register = 'Register';
 export const Pending = 'Pending';
 export const DeskBoard = 'Deskboard';
+export const Social = 'Social';
 export const Summary = 'Summary';
 export const Profile = 'Profile';
 export const Card = 'Card';

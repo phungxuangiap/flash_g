@@ -83,6 +83,7 @@ const createCard = asyncHandler(async (req, res, next) => {
   const newCard = await Card.create({
     _id: uuidv4(),
     desk_id: req.params.deskId,
+    author_id: req.user._id,
     user_id: req.user._id,
     status: "new",
     level: 0,
@@ -113,21 +114,32 @@ const updateCard = asyncHandler(async (req, res, next) => {
   if (card) {
     await Card.findByIdAndUpdate(
       req.params.cardId,
-      { ...req.body },
+      {
+        status: req.body.status || card.status,
+        level: req.body.level || card.level,
+        last_preview: req.body.last_preview || card.last_preview,
+        vocab: req.body.vocab || card.vocab,
+        description: req.body.description || card.description,
+        sentence: req.body.sentence || card.sentence,
+        vocab_audio: req.body.vocab_audio || card.vocab_audio,
+        sentence_audio: req.body.sentence_audio || card.sentence_audio,
+      },
       { new: true }
     );
     res.status(200).json(card);
   } else {
-    console.log("Here");
-    const newCard = Card.collection.insertOne({
-      ...req.body,
-    });
-    if (newCard) {
-      res.status(200).json(newCard);
-    } else {
-      res.status(Constants.FORBIDDEN);
-      throw new Error("Forbiddant !");
-    }
+    res.status(Constants.NOT_FOUND);
+    throw new Error("Card is not valid");
+    // console.log("Here");
+    // const newCard = Card.collection.insertOne({
+    //   ...req.body,
+    // });
+    // if (newCard) {
+    //   res.status(200).json(newCard);
+    // } else {
+    //   res.status(Constants.FORBIDDEN);
+    //   throw new Error("Forbiddant !");
+    // }
   }
 });
 //@desc Delete Card

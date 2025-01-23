@@ -83,8 +83,10 @@ export const FlashCard = function ({card, setRandomCard}) {
                 });
                 list.push(card);
                 dispatch(updateCurrentCards(list));
-                setShowAnswer(false);
-                setRandomCard(Math.round((list.length - 1) * Math.random()));
+                if (list.length) {
+                  setShowAnswer(false);
+                  setRandomCard(Math.round((list.length - 1) * Math.random()));
+                }
               }}>
               <Text style={ComponentStyle.textWhite16Medium}>Fail</Text>
             </TouchableOpacity>
@@ -99,8 +101,10 @@ export const FlashCard = function ({card, setRandomCard}) {
                   list.push(card);
                 }
                 dispatch(updateCurrentCards(list));
-                setRandomCard(Math.round((list.length - 1) * Math.random()));
-                setShowAnswer(false);
+                if (list.length) {
+                  setRandomCard(Math.round((list.length - 1) * Math.random()));
+                  setShowAnswer(false);
+                }
               }}>
               <Text style={ComponentStyle.textWhite16Medium}>Hard</Text>
             </TouchableOpacity>
@@ -112,8 +116,10 @@ export const FlashCard = function ({card, setRandomCard}) {
                   return item._id !== card._id;
                 });
                 dispatch(updateCurrentCards(list));
-                setRandomCard(Math.round((list.length - 2) * Math.random()));
-                setShowAnswer(false);
+                if (list.length) {
+                  setRandomCard(Math.round((list.length - 1) * Math.random()));
+                  setShowAnswer(false);
+                }
               }}>
               <Text style={ComponentStyle.textWhite16Medium}>Okay</Text>
             </TouchableOpacity>
@@ -125,9 +131,10 @@ export const FlashCard = function ({card, setRandomCard}) {
                   return item._id !== card._id;
                 });
                 dispatch(updateCurrentCards(list));
-                setRandomCard(Math.round((list.length - 2) * Math.random()));
-
-                setShowAnswer(false);
+                if (list.length) {
+                  setRandomCard(Math.round((list.length - 1) * Math.random()));
+                  setShowAnswer(false);
+                }
               }}>
               <Text style={ComponentStyle.textWhite16Medium}>Nice</Text>
             </TouchableOpacity>

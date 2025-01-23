@@ -16,7 +16,7 @@ export default function GameComponent() {
   const navigation = useNavigation();
   useEffect(() => {
     if (listActiveCard.length === 0) {
-      navigation.navigate(Card);
+      navigation.pop();
     }
   }, [listActiveCard]);
   const currentCard = listActiveCard[randomCard];

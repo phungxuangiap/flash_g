@@ -1,11 +1,23 @@
 const mongoose = require("mongoose");
 
 const deskSchema = mongoose.Schema({
+  _id: {
+    type: String,
+    require: [true],
+  },
+  author_id: {
+    type: String,
+    require: [true],
+  },
+  original_id: {
+    type: String,
+    require: [true],
+  },
   user_id: {
     type: String,
     require: [true],
   },
-  _id: {
+  access_status: {
     type: String,
     require: [true],
   },
