@@ -10,6 +10,10 @@ const cardSchema = mongoose.Schema({
     type: String,
     require: [true],
   },
+  original_id: {
+    type: String,
+    require: [true],
+  },
   author_id: {
     type: String,
     require: [true],

@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const { Constants } = require("../middlewares/constants");
 const Desk = require("../models/deskModel");
+const Card = require("../models/cardModel");
 const { v4: uuidv4 } = require("uuid");
 const { param } = require("../routes/UserRoutes");
 //@desc Get All Desks
@@ -77,10 +78,14 @@ const createNewDesk = asyncHandler(async (req, res, next) => {
 //@access private
 const cloneDesk = asyncHandler(async (req, res, next) => {
   const clonedDeskId = req.params.id;
+  console.log("clone...");
   if (clonedDeskId) {
     const clonedDesk = await Desk.findById(clonedDeskId);
-    console.log(clonedDesk.author_id !== req.user._id && clonedDesk);
-    if (clonedDesk && clonedDesk.author_id !== req.user._id) {
+    if (
+      clonedDesk &&
+      clonedDesk.author_id !== req.user._id &&
+      clonedDesk.user_id !== req.user._id
+    ) {
       const availableDesk = await Desk.find({
         original_id: clonedDesk._id,
         user_id: req.user._id,
@@ -89,6 +94,8 @@ const cloneDesk = asyncHandler(async (req, res, next) => {
         res.status(Constants.FORBIDDEN);
         throw new Error("You'd already owned this desk");
       } else {
+        const listCards = await Card.find({ desk_id: clonedDeskId });
+        console.log("Before create new Desk");
         const newDesk = await Desk.create({
           _id: uuidv4(),
           user_id: req.user._id,
@@ -97,11 +104,35 @@ const cloneDesk = asyncHandler(async (req, res, next) => {
           access_status: clonedDesk.access_status,
           title: clonedDesk.title,
           primary_color: clonedDesk.primary_color,
-          new_card: 0,
+          new_card: listCards.length,
           preview_card: 0,
           inprogress_card: 0,
           modified_time: JSON.stringify(new Date()).slice(1, -1),
         });
+        console.log(
+          "after creating new desk, before creating all cards of desk"
+        );
+        await Promise.all(
+          listCards.map((card) => {
+            return Card.create({
+              _id: uuidv4(),
+              desk_id: newDesk._id,
+              author_id: card.author_id,
+              original_id: card._id,
+              user_id: req.user._id,
+              status: "new",
+              level: 0,
+              last_preview: JSON.stringify(new Date()).slice(1, -1),
+              vocab: card.vocab,
+              description: card.description,
+              sentence: card.sentence,
+              vocab_audio: card.vocab_audio,
+              sentence_audio: card.sentence_audio,
+              modified_time: JSON.stringify(new Date()).slice(1, -1),
+            });
+          })
+        );
+        console.log("after creating all cards");
         res.status(200).json(newDesk);
       }
     } else {

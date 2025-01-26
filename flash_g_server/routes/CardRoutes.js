@@ -7,6 +7,7 @@ const {
   updateChangedCards,
   getAllCards,
   createUpdateCard,
+  cloneCard,
 } = require("../controllers/CardController");
 const { route } = require("./DeskRoutes");
 const validationHandler = require("../middlewares/validationHandler");
