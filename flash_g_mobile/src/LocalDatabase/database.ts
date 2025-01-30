@@ -27,7 +27,7 @@ export interface Database {
 export async function createNewDesk(desk: Desk): Promise<any> {
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      return await db.executeSql(createNewDeskQuery, [desk._id, desk.user_id, desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card, desk.modified_time]);
+      return await db.executeSql(createNewDeskQuery, [desk._id, desk.user_id, desk.author_id, desk.original_id, desk.access_status, desk.title, desk.description, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card, desk.modified_time]);
     })
     .catch((error) => {
       console.log(error);
@@ -36,7 +36,7 @@ export async function createNewDesk(desk: Desk): Promise<any> {
 export async function updateDesk(desk: Desk): Promise<any> {
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      await db.executeSql(updateDeskQuery, [desk._id, desk.user_id, desk.title, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card, desk.modified_time]);
+      await db.executeSql(updateDeskQuery, [desk._id, desk.user_id, desk.author_id, desk.original_id, desk.access_status, desk.title, desk.description, desk.primary_color, desk.new_card, desk.inprogress_card, desk.preview_card, desk.modified_time]);
     })
     .catch((error) => {
       console.log(error);

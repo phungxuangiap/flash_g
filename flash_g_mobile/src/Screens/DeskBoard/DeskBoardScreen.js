@@ -28,6 +28,7 @@ import {createNewDesk, updateDesk} from '../../LocalDatabase/database';
 import {handleLocalAndRemoteData} from '../../LocalDatabase/syncDBService';
 import {Desk} from '../../LocalDatabase/model';
 import {DeletedStatus, MainGame} from '../../constants';
+import {Text} from '@react-navigation/elements';
 
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
@@ -39,6 +40,10 @@ export default function DeskBoardScreen() {
   const loading = useSelector(loadingSelector);
   const [inputCreateDesk, setInputCreateDesk] = useState('');
   const [inputUpdateDesk, setInputUpdateDesk] = useState('');
+  const [descriptionCreateDesk, setDescriptionCreateDesk] = useState('');
+  const [descriptionUpdateDesk, setDescriptionUpdateDesk] = useState('');
+  const [accessStatus, setAccessStatus] = useState('PUBLIC');
+  const [primaryColorInp, setPrimaryColorInp] = useState('pink');
   const [showCreateDesk, setShowCreateDesk] = useState(false);
   const authState = useSelector(authStateSelector);
   // Hold index of updated desk
@@ -54,40 +59,104 @@ export default function DeskBoardScreen() {
   return loading ? (
     <LoadingOverlay />
   ) : (
-    <View style={{flex: 1, justifyContent: 'space-between', paddingBottom: 24}}>
-      <ScrollView scrollEnabled={true}>
-        {data &&
-          data.map((item, index) => {
-            if (item.active_status !== DeletedStatus) {
-              return (
-                <DeskComponent
-                  key={uuid.v4()}
-                  id={item._id}
-                  title={item.title}
-                  primaryColor={item.primary_color}
-                  news={item.new_card}
-                  progress={item.inprogress_card}
-                  preview={item.preview_card}
-                  onDelete={() => {
-                    dispatch(
-                      updateCurrentDesks(
-                        data.filter(deskDeleted => {
-                          return deskDeleted._id != item._id;
-                        }),
-                      ),
-                    );
-                  }}
-                  onClick={() => {
-                    dispatch(updateCurrentDesk(item));
-                    navigation.navigate(MainGame);
-                  }}
-                  onEdit={() => {
-                    setindexUpdatedDesk(index);
-                  }}
-                />
-              );
-            }
-          })}
+    <View
+      style={{
+        flex: 1,
+        paddingBottom: 24,
+        paddingLeft: 12,
+        paddingRight: 12,
+        paddingTop: 24,
+      }}>
+      {/* Header */}
+      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <Text style={{fontSize: 36, fontWeight: 'bold'}}>Library</Text>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Text>Search</Text>
+          <Text>Flag</Text>
+        </View>
+      </View>
+      {/*List all your desk*/}
+      <ScrollView>
+        {/* Your Desks */}
+        <View style={{flexDirection: 'column'}}>
+          <Text style={{paddingTop: 24, fontSize: 18, fontWeight: 'bold'}}>
+            Your Desks
+          </Text>
+          <ScrollView horizontal={true} scrollEnabled={true}>
+            {data &&
+              data.map((item, index) => {
+                if (item.active_status !== DeletedStatus) {
+                  return (
+                    <DeskComponent
+                      key={uuid.v4()}
+                      id={item._id}
+                      title={item.title}
+                      primaryColor={item.primary_color}
+                      news={item.new_card}
+                      progress={item.inprogress_card}
+                      preview={item.preview_card}
+                      onDelete={() => {
+                        dispatch(
+                          updateCurrentDesks(
+                            data.filter(deskDeleted => {
+                              return deskDeleted._id != item._id;
+                            }),
+                          ),
+                        );
+                      }}
+                      onClick={() => {
+                        dispatch(updateCurrentDesk(item));
+                        navigation.navigate(MainGame);
+                      }}
+                      onEdit={() => {
+                        setindexUpdatedDesk(index);
+                      }}
+                    />
+                  );
+                }
+              })}
+          </ScrollView>
+        </View>
+        {/* Your Saved Desks */}
+        <View style={{flexDirection: 'column'}}>
+          <Text style={{paddingTop: 24, fontSize: 18, fontWeight: 'bold'}}>
+            Saved Desks
+          </Text>
+          <ScrollView horizontal={true} scrollEnabled={true}>
+            {data &&
+              data.map((item, index) => {
+                if (item.active_status !== DeletedStatus) {
+                  return (
+                    <DeskComponent
+                      key={uuid.v4()}
+                      id={item._id}
+                      title={item.title}
+                      primaryColor={item.primary_color}
+                      news={item.new_card}
+                      progress={item.inprogress_card}
+                      preview={item.preview_card}
+                      onDelete={() => {
+                        dispatch(
+                          updateCurrentDesks(
+                            data.filter(deskDeleted => {
+                              return deskDeleted._id != item._id;
+                            }),
+                          ),
+                        );
+                      }}
+                      onClick={() => {
+                        dispatch(updateCurrentDesk(item));
+                        navigation.navigate(MainGame);
+                      }}
+                      onEdit={() => {
+                        setindexUpdatedDesk(index);
+                      }}
+                    />
+                  );
+                }
+              })}
+          </ScrollView>
+        </View>
       </ScrollView>
       <CircleButton
         style={{position: 'absolute', bottom: 12}}
@@ -102,6 +171,12 @@ export default function DeskBoardScreen() {
           <CreateNewDeskPopUp
             input={inputCreateDesk}
             setInput={setInputCreateDesk}
+            description={descriptionCreateDesk}
+            setDescription={setDescriptionCreateDesk}
+            primaryColor={primaryColorInp}
+            setPrimaryColor={setPrimaryColorInp}
+            accessStatus={accessStatus}
+            setAccessStatus={setAccessStatus}
             close={() => {
               setShowCreateDesk(preState => !preState);
             }}
@@ -111,8 +186,12 @@ export default function DeskBoardScreen() {
               const newDesk = new Desk(
                 id,
                 user._id,
+                user._id,
+                id,
+                accessStatus,
                 inputCreateDesk,
-                'black',
+                descriptionCreateDesk,
+                primaryColorInp,
                 0,
                 0,
                 0,

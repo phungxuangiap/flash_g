@@ -8,12 +8,34 @@ const { param } = require("../routes/UserRoutes");
 //@route GET /api/desk/
 //@access private
 const getAllDesks = asyncHandler(async (req, res, next) => {
-  const allDesk = await Desk.find({ user_id: req.user._id });
-  if (allDesk) {
-    res.status(200).json(allDesk);
+  const isGlobal = req.query.global;
+  console.log(isGlobal);
+  if (!isGlobal) {
+    const allDesk = await Desk.find({ user_id: req.user._id });
+    if (allDesk) {
+      res.status(200).json(allDesk);
+    } else {
+      res.status(Constants.NOT_FOUND);
+      throw new Error("Not found");
+    }
   } else {
-    res.status(Constants.NOT_FOUND);
-    throw new Error("Not found");
+    next();
+  }
+});
+
+//@desk Get All Global Desks
+//@route GET /api/desk/?global=true
+//@access private
+const getGlobalDesks = asyncHandler(async (req, res, next) => {
+  const isGlobal = req.query.global;
+  if (isGlobal) {
+    const globalPublicDesks = await Desk.find({ access_status: "PUBLIC" });
+    if (globalPublicDesks) {
+      res.status(200).json(globalPublicDesks);
+    } else {
+      res.status(Constants.NOT_FOUND);
+      throw new Error("Not found");
+    }
   }
 });
 
@@ -43,8 +65,8 @@ const deleteAllDesks = asyncHandler(async (req, res, next) => {
 //@route POST /api/desk/
 //@access private
 const createNewDesk = asyncHandler(async (req, res, next) => {
-  const { title, primary_color } = req.body;
-  if (!title || !primary_color) {
+  const { title, primary_color, description } = req.body;
+  if (!title || !primary_color || !description) {
     res.status(Constants.NOT_FOUND);
     throw new Error("All fields are mandatory");
   } else {
@@ -53,6 +75,7 @@ const createNewDesk = asyncHandler(async (req, res, next) => {
       _id: id,
       user_id: req.user._id,
       author_id: req.user._id,
+      description: description,
       original_id: id,
       access_status: req.body.access_status || "PRIVATE",
       title,
@@ -101,6 +124,7 @@ const cloneDesk = asyncHandler(async (req, res, next) => {
           user_id: req.user._id,
           author_id: clonedDesk.user_id,
           original_id: clonedDeskId,
+          description: clonedDesk.description,
           access_status: clonedDesk.access_status,
           title: clonedDesk.title,
           primary_color: clonedDesk.primary_color,
@@ -151,8 +175,8 @@ const cloneDesk = asyncHandler(async (req, res, next) => {
 //@route PUT /api/desk/:id
 //@access private
 const updateDesk = asyncHandler(async (req, res, next) => {
-  const { title, primary_color, modified_time } = req.body;
-  if (!title || !primary_color || !modified_time) {
+  const { title, primary_color, modified_time, description } = req.body;
+  if (!title || !primary_color || !modified_time || !description) {
     res.status(Constants.NOT_FOUND);
     throw new Error("Missing some field to update successfully!");
   }
@@ -164,6 +188,7 @@ const updateDesk = asyncHandler(async (req, res, next) => {
         req.params.id,
         {
           title: req.body.title,
+          description: req.body.description,
           primary_color: req.body.primary_color,
           access_status: req.body.access_status,
           new_card: req.body.new_card || desk.new_card,
@@ -217,71 +242,22 @@ const updateDesk = asyncHandler(async (req, res, next) => {
       }
     }
   } else {
-    res.status(Constants.NOT_FOUND);
-    throw new Error("Desk is not valid");
-
-    // const newDesk = await Desk.collection.insertOne({
-    //   _id: req.params.id,
-    //   author_id: req.user._id,
-    //   user_id: req.user._id,
-    //   title: req.body.title,
-    //   primary_color: req.body.primary_color,
-    //   modified_time: req.modified_time,
-    //   new_card: 0,
-    //   preview_card: 0,
-    //   inprogress_card: 0,
-    // });
-
-    // if (newDesk) {
-    //   res.status(200).json(newDesk);
-    // } else {
-    //   res.status(Constants.FORBIDDEN);
-    //   throw new Error("Forbiddent!");
-    // }
+    const newDesk = await Desk.create({
+      _id: req.body._id,
+      user_id: req.body.user_id,
+      author_id: req.body.author_id,
+      description: description,
+      original_id: req.body.original_id,
+      access_status: req.body.access_status || "PRIVATE",
+      title,
+      primary_color,
+      new_card: 0,
+      inprogress_card: 0,
+      preview_card: 0,
+      modified_time: JSON.stringify(new Date()).slice(1, -1),
+    });
   }
 });
-
-//@desc Create Desk, if exist Update
-//@route PUT /api/desk/:id
-//@access private
-// const createUpdateDesk = asyncHandler(async (req, res, next) => {
-//   console.log("HERE");
-//   const isExist = await Desk.findById(req.params.id);
-//   if (isExist) {
-//     await Desk.findByIdAndUpdate(
-//       req.params.id,
-//       {
-//         title: req.body.title,
-//         primary_color: req.body.primary_color,
-//         new_card: req.body.new_card,
-//         inprogress_card: req.body.inprogress_card,
-//         preview_card: req.body.preview_card,
-//         modified_time: JSON.stringify(new Date()).slice(1, -1),
-//       },
-//       { new: true }
-//     );
-//     res.status(200).json({
-//       status: "Update",
-//       data: isExist,
-//     });
-//   } else {
-//     const newDesk = await Desk.create({
-//       user_id: req.user._id,
-//       title: req.body.title,
-//       primary_color: req.body.primary_color,
-//       new_card: req.body.new_card,
-//       inprogress_card: req.body.inprogress_card,
-//       preview_card: req.body.preview_card,
-//       modified_time: JSON.stringify(new Date()).slice(1, -1),
-//     });
-//     if (newDesk) {
-//       res.status(200).json(newDesk);
-//     } else {
-//       res.status(Constants.FORBIDDEN);
-//       throw new Error("Forbiddent!");
-//     }
-//   }
-// });
 
 module.exports = {
   getAllDesks,
@@ -290,4 +266,5 @@ module.exports = {
   updateDesk,
   createNewDesk,
   cloneDesk,
+  getGlobalDesks,
 };

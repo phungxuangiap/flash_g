@@ -13,7 +13,10 @@ export async function updateDeskToRemote(accessToken, desk) {
       console.log('Update data successfully !');
     })
     .catch(err => {
-      console.log('Update desk to remote error with message:', err);
+      console.log(
+        `Update desk having id: ${desk._id} to remote error with message:`,
+        err,
+      );
     });
 }
 

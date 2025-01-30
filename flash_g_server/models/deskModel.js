@@ -13,6 +13,10 @@ const deskSchema = mongoose.Schema({
     type: String,
     require: [true],
   },
+  description: {
+    type: String,
+    require: [true],
+  },
   user_id: {
     type: String,
     require: [true],

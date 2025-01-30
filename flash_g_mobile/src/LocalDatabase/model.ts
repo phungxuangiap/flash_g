@@ -18,17 +18,25 @@ export class User {
 export class Desk {
     _id : string;
     user_id : string;
+    author_id: string;
+    original_id: string;
+    access_status: string;
     title : string;
+    description:string;
     primary_color : string;
     new_card : number;
     inprogress_card : number;
     preview_card : number;
     modified_time: string;
     active_status: string;
-    constructor(_id: string, user_id: string, title: string, primary_color: string, new_card: number, inprogress_card: number, preview_card: number, modified_time:string, active_status: string = ActiveStatus){
+    constructor(_id: string, user_id: string, author_id:string, original_id:string, access_status: string, title: string, description: string, primary_color: string, new_card: number, inprogress_card: number, preview_card: number, modified_time:string, active_status: string = ActiveStatus){
         this._id = _id;
         this.user_id = user_id;
+        this.author_id = author_id;
+        this.original_id = original_id;
+        this.access_status = access_status;
         this.title = title;
+        this.description = description;
         this.primary_color = primary_color;
         this.new_card = new_card;
         this.inprogress_card = inprogress_card;

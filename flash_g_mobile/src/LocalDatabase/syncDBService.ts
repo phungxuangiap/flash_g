@@ -92,9 +92,12 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                     return new Desk(
                       desk._id,
                       desk.user_id,
+                      desk.author_id,
+                      desk.original_id,
+                      desk.access_status,
                       desk.title,
+                      desk.description,
                       desk.primary_color,
-    
                       news,
                       inProgress,
                       preview,

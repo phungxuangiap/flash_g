@@ -25,6 +25,17 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
+	<key>NSCameraUsageDescription</key>
+
+	<string>Your app needs access to the camera.</string>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+
+	<string>Your app needs access to the photo library.</string>
+
+	<key>NSPhotoLibraryAddUsageDescription</key>
+
+	<string>Your app needs permission to store photos in the gallery.</string>
 	<dict>
 	  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 		<key>NSAllowsArbitraryLoads</key>
@@ -50,3 +61,5 @@
 	<false/>
 </dict>
 </plist>
+
+

@@ -1,4 +1,5 @@
 import {
+  Pressable,
   Text,
   TextInput,
   Touchable,
@@ -6,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
+import React, {useState} from 'react';
 import {ComponentStyle} from './style';
 import {deleteCard, deleteDesk, updateCard} from '../LocalDatabase/database';
 import {
@@ -136,12 +137,22 @@ export function DeskComponent({
       style={{...ComponentStyle.deskContainer, backgroundColor: primaryColor}}>
       <View
         style={{
-          flex: 1,
           justifyContent: 'space-between',
-          flexDirection: 'row',
+          flexDirection: 'column',
         }}>
+        <View
+          style={{
+            width: 200,
+            height: 200,
+            justifyContent: 'center',
+            alignItems: 'center',
+            alignSelf: 'center',
+            backgroundColor: 'white',
+          }}>
+          <Text style={{color: 'black'}}>Image</Text>
+        </View>
         <Text style={{...ComponentStyle.largeWhiteTitle}}>{title}</Text>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        {/* <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <TouchableOpacity
             style={{
               padding: 10,
@@ -168,15 +179,70 @@ export function DeskComponent({
             }}>
             <Text style={{color: 'white'}}>Edit</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
       <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-        <TextCircleBorder content={`${news} New`} color={'#C12450'} />
-        <TextCircleBorder
-          content={`${progress} In Progress`}
-          color={'#444444'}
-        />
-        <TextCircleBorder content={`${preview} Preview`} color={'#6CDDAB'} />
+        <TextCircleBorder content={`${news} N`} color={'#C12450'} />
+        <TextCircleBorder content={`${progress} I`} color={'#444444'} />
+        <TextCircleBorder content={`${preview} P`} color={'#6CDDAB'} />
+      </View>
+      <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        <View style={{width: 50, height: 50, backgroundColor: 'white'}}></View>
+        <Text>Alex Gi</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+export function DeskComponentType2({
+  id,
+  title,
+  primaryColor,
+  description,
+  news,
+  progress,
+  preview,
+  onDelete,
+  onClick,
+  onEdit,
+}) {
+  const listCurrentDesks = useSelector(currentDesks);
+  return (
+    <TouchableOpacity
+      onPress={() => {
+        onClick();
+      }}
+      style={{...ComponentStyle.deskContainer, backgroundColor: 'black'}}>
+      <View
+        style={{
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          flex: 1,
+        }}>
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            alignSelf: 'center',
+            backgroundColor: 'white',
+            flex: 1,
+          }}>
+          <Text style={{color: 'black'}}>Image</Text>
+        </View>
+        <View style={{flex: 3}}>
+          <Text style={{...ComponentStyle.largeWhiteTitle}}>{title}</Text>
+          <Text style={{color: 'white'}}>{description}</Text>
+          <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+            <TextCircleBorder content={`${news} N`} color={'#C12450'} />
+            <TextCircleBorder content={`${progress} I`} color={'#444444'} />
+            <TextCircleBorder content={`${preview} P`} color={'#6CDDAB'} />
+          </View>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <View
+              style={{width: 50, height: 50, backgroundColor: 'white'}}></View>
+            <Text>Alex Gi</Text>
+          </View>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -236,7 +302,36 @@ export function OverLay() {
       }}></View>
   );
 }
-export function CreateNewDeskPopUp({input, setInput, close, create}) {
+export const MyCheckbox = ({checked, setChecked}) => {
+  return (
+    <View>
+      <Pressable
+        onPress={() => setChecked(!checked)}
+        style={{
+          width: 25,
+          height: 25,
+          borderWidth: 2,
+          borderColor: 'black',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        {checked && <Text style={{fontSize: 18}}>✔</Text>}
+      </Pressable>
+    </View>
+  );
+};
+export function CreateNewDeskPopUp({
+  input,
+  setInput,
+  description,
+  setDescription,
+  primaryColor,
+  setPrimaryColor,
+  accessStatus,
+  setAccessStatus,
+  close,
+  create,
+}) {
   return (
     <View
       style={{
@@ -259,12 +354,30 @@ export function CreateNewDeskPopUp({input, setInput, close, create}) {
             Create New Desk
           </Text>
           <InputTag
-            placeholder={'Your Desk'}
+            placeholder={'Title'}
             content={input}
             onValueChange={value => {
               setInput(value);
             }}
           />
+          <InputTag
+            placeholder={'Description'}
+            content={description}
+            onValueChange={value => {
+              setDescription(value);
+            }}
+          />
+          <View style={{flexDirection: 'row'}}>
+            <Text>Public?</Text>
+            <MyCheckbox
+              checked={accessStatus === 'PUBLIC'}
+              setChecked={() => {
+                setAccessStatus(
+                  accessStatus === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC',
+                );
+              }}
+            />
+          </View>
           <View style={{flexDirection: 'row-reverse'}}>
             <TouchableOpacity
               style={{

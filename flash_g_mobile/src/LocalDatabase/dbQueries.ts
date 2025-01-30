@@ -19,7 +19,11 @@ const desk = `
    CREATE TABLE IF NOT EXISTS Desk (
         _id TEXT PRIMARY KEY,
         user_id TEXT,
+        author_id TEXT,
+        original_id TEXT,
+        access_status TEXT,
         title TEXT,
+        description TEXT,
         primary_color TEXT,
         new_card INTEGER,
         inprogress_card INTEGER,
@@ -50,12 +54,16 @@ const createNewDeskQuery = `
     INSERT INTO Desk (
         _id, 
         user_id, 
+        author_id,
+        original_id,
+        access_status,
         title, 
+        description,
         primary_color, 
         new_card, 
         inprogress_card, 
         preview_card,
-        modified_time) VALUES (?, ?, ?, ?, ?, ?, ?,?)
+        modified_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 const createNewUserQuery = `
     INSERT INTO User (
@@ -75,17 +83,25 @@ const updateDeskQuery = `
     INSERT INTO Desk (
         _id,
         user_id,
+        author_id,
+        original_id,
+        access_status,
         title,
+        description,
         primary_color,
         new_card,
         inprogress_card,
         preview_card,
         modified_time
-    ) VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(_id) DO UPDATE SET 
         _id = excluded._id,
         user_id = excluded.user_id,
+        author_id = excluded.author_id,
+        original_id = excluded.original_id,
+        access_status = excluded.access_status,
         title = excluded.title,
+        description = excluded.description,
         primary_color = excluded.primary_color,
         new_card = excluded.new_card,
         inprogress_card = excluded.inprogress_card,
