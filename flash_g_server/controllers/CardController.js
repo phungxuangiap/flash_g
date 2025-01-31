@@ -4,6 +4,7 @@ const Card = require("../models/cardModel");
 const { DistanceFromDateToDate } = require("../helper");
 const { v4: uuidv4 } = require("uuid");
 const { getAllDesks } = require("./DeskController");
+const Desk = require("../models/deskModel");
 //@desc Get All Cards
 //@route api/card/:deskId
 //@access private
@@ -82,7 +83,8 @@ const createCard = asyncHandler(async (req, res, next) => {
     req.body;
   const card_id = uuidv4();
   const action = req.query.action;
-
+  // action variable here is used for separate clone and create card service.
+  // action that don't have value is create method another wise in case clone will be clone
   if (!action) {
     const newCard = await Card.create({
       _id: card_id,
@@ -100,6 +102,35 @@ const createCard = asyncHandler(async (req, res, next) => {
       sentence_audio,
       modified_time: JSON.stringify(new Date()).slice(1, -1),
     });
+    const listClonedDeskOfCard = await Desk.find({
+      original_id: req.params.deskId,
+    });
+    console.log("LIST CLONED", req.params.deskId);
+    if (listClonedDeskOfCard) {
+      await Promise.all(
+        listClonedDeskOfCard.map((desk) => {
+          let clonedCardId = uuidv4();
+          if (desk._id !== desk.original_id) {
+            return Card.create({
+              _id: clonedCardId,
+              desk_id: desk._id,
+              original_id: card_id,
+              author_id: req.user._id,
+              user_id: desk.user_id,
+              status: "new",
+              level: 0,
+              last_preview: JSON.stringify(new Date()).slice(1, -1),
+              vocab,
+              description,
+              sentence,
+              vocab_audio,
+              sentence_audio,
+              modified_time: JSON.stringify(new Date()).slice(1, -1),
+            });
+          }
+        })
+      );
+    }
     res.status(200).json(newCard);
   } else {
     next();
@@ -194,8 +225,17 @@ const updateCard = asyncHandler(async (req, res, next) => {
 const deleteCard = asyncHandler(async (req, res, next) => {
   const card = await Card.findById(req.params.cardId);
   if (card) {
-    await Card.findByIdAndDelete(req.params.cardId);
-    res.status(200).json(card);
+    const listDeletedCard = await Card.find({ original_id: req.params.cardId });
+    if (listDeletedCard) {
+      await Promise.all(
+        listDeletedCard.map((card) => {
+          return Card.findByIdAndDelete(card._id);
+        })
+      );
+    }
+    res
+      .status(200)
+      .json({ message: "Delete card and cloned version successfully!" });
   } else {
     res.status(Constants.NOT_FOUND);
     throw new Error("Not Found");

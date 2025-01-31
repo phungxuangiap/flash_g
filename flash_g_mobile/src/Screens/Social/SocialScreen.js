@@ -5,6 +5,7 @@ import {accessTokenSelector, onlineStateSelector} from '../../redux/selectors';
 import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {fetchAllGlobalDesks} from '../../service/fetchRemoteData';
 import {useFocusEffect} from '@react-navigation/native';
+import uuid from 'react-native-uuid';
 
 export function SocialScreen() {
   const onlineState = useSelector(onlineStateSelector);
@@ -29,16 +30,19 @@ export function SocialScreen() {
           globalDesks.map((desk, index) => {
             return (
               <DeskComponentType2
+                key={uuid.v4()}
                 id={desk._id}
                 title={desk.title}
-                primaryColor={desk.primaryColor}
+                primaryColor={desk.primary_color}
                 description={desk.description}
-                news={desk.new_card}
-                progress={desk.inprogress_card}
-                preview={desk.preview_card}
+                numCard={
+                  desk.new_card + desk.inprogress_card + desk.preview_card
+                }
+                authorId={desk.author_id}
                 onDelete={() => {}}
                 onClick={() => {}}
                 onEdit={() => {}}
+                accessToken={accessToken}
               />
             );
           })}

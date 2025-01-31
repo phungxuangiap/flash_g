@@ -1,4 +1,5 @@
 import {
+  Alert,
   Pressable,
   Text,
   TextInput,
@@ -7,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {ComponentStyle} from './style';
 import {deleteCard, deleteDesk, updateCard} from '../LocalDatabase/database';
 import {
@@ -18,6 +19,9 @@ import {desk} from '../LocalDatabase/dbQueries';
 import {DeletedStatus} from '../constants';
 import {useSelector} from 'react-redux';
 import {currentDesks} from '../redux/selectors';
+import axios from 'axios';
+import {fetchUserById} from '../service/fetchUserById';
+import {cloneDesk} from '../service/cloneDesk';
 export function InputTag({placeholder, value, onValueChange}) {
   return (
     <TextInput
@@ -225,20 +229,27 @@ export function DeskComponentType2({
   title,
   primaryColor,
   description,
-  news,
-  progress,
-  preview,
+  numCard,
+  authorId,
   onDelete,
   onClick,
   onEdit,
+  accessToken,
 }) {
-  const listCurrentDesks = useSelector(currentDesks);
+  const [authorName, setAuthorName] = useState('');
+  useEffect(() => {
+    fetchUserById(authorId, accessToken).then(res => {
+      if (res) {
+        setAuthorName(res.data.full_name);
+      }
+    });
+  }, []);
   return (
     <TouchableOpacity
       onPress={() => {
         onClick();
       }}
-      style={{...ComponentStyle.deskContainer, backgroundColor: 'black'}}>
+      style={{...ComponentStyle.deskContainer, backgroundColor: primaryColor}}>
       <View
         style={{
           justifyContent: 'space-between',
@@ -259,17 +270,33 @@ export function DeskComponentType2({
           <Text style={{...ComponentStyle.largeWhiteTitle}}>{title}</Text>
           <Text style={{color: 'white'}}>{description}</Text>
           <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-            <TextCircleBorder content={`${news} N`} color={'#C12450'} />
-            <TextCircleBorder content={`${progress} I`} color={'#444444'} />
-            <TextCircleBorder content={`${preview} P`} color={'#6CDDAB'} />
+            <TextCircleBorder
+              content={`Total cards: ${numCard}`}
+              color={'#C12450'}
+            />
           </View>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <View
               style={{width: 50, height: 50, backgroundColor: 'white'}}></View>
-            <Text>Alex Gi</Text>
+            <Text>{authorName}</Text>
           </View>
         </View>
       </View>
+      <TouchableOpacity
+        style={{
+          width: 50,
+          height: 50,
+          backgroundColor: 'black',
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderRadius: 50,
+          alignSelf: 'flex-end',
+        }}
+        onPress={() => {
+          cloneDesk(accessToken, id);
+        }}>
+        <Text>PULL</Text>
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 }

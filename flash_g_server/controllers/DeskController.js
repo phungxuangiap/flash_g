@@ -29,7 +29,12 @@ const getAllDesks = asyncHandler(async (req, res, next) => {
 const getGlobalDesks = asyncHandler(async (req, res, next) => {
   const isGlobal = req.query.global;
   if (isGlobal) {
-    const globalPublicDesks = await Desk.find({ access_status: "PUBLIC" });
+    const globalPublicDesks = await Desk.find({
+      $and: [
+        { access_status: "PUBLIC" },
+        { $expr: { $eq: ["$author_id", "$user_id"] } },
+      ],
+    });
     if (globalPublicDesks) {
       res.status(200).json(globalPublicDesks);
     } else {
@@ -122,8 +127,8 @@ const cloneDesk = asyncHandler(async (req, res, next) => {
         const newDesk = await Desk.create({
           _id: uuidv4(),
           user_id: req.user._id,
-          author_id: clonedDesk.user_id,
-          original_id: clonedDeskId,
+          author_id: clonedDesk.author_id,
+          original_id: clonedDesk.original_id,
           description: clonedDesk.description,
           access_status: clonedDesk.access_status,
           title: clonedDesk.title,
