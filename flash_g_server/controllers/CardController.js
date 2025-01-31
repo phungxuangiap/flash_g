@@ -176,18 +176,16 @@ const updateCard = asyncHandler(async (req, res, next) => {
       });
     }
   } else {
-    res.status(Constants.NOT_FOUND);
-    throw new Error("Card is not valid");
-    // console.log("Here");
-    // const newCard = Card.collection.insertOne({
-    //   ...req.body,
-    // });
-    // if (newCard) {
-    //   res.status(200).json(newCard);
-    // } else {
-    //   res.status(Constants.FORBIDDEN);
-    //   throw new Error("Forbiddant !");
-    // }
+    console.log("Here");
+    const newCard = Card.collection.insertOne({
+      ...req.body,
+    });
+    if (newCard) {
+      res.status(200).json(newCard);
+    } else {
+      res.status(Constants.FORBIDDEN);
+      throw new Error("Forbiddant !");
+    }
   }
 });
 //@desc Delete Card

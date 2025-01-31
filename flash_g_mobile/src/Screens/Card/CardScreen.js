@@ -218,10 +218,13 @@ export default function CardScreen() {
               //   data,
               //   setData,
               // );
+              const id = uuid.v4();
               const newCard = new Card(
-                uuid.v4(),
+                id,
                 desk._id,
                 user._id,
+                user._id,
+                id,
                 'new',
                 0,
                 JSON.stringify(new Date()).slice(1, -1),
@@ -232,6 +235,7 @@ export default function CardScreen() {
                 '',
                 'verb',
                 JSON.stringify(new Date()).slice(1, -1),
+                ActiveStatus,
               );
               await updateCard(newCard)
                 .then(res => {

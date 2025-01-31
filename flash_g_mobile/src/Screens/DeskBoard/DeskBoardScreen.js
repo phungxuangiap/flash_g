@@ -32,19 +32,24 @@ import {Text} from '@react-navigation/elements';
 
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
+  //
   const user = useSelector(userSelector);
   const data = useSelector(currentDesks);
   const navigation = useNavigation();
   const listCurrentDesks = useSelector(currentDesks);
   const actk = useSelector(accessTokenSelector);
   const loading = useSelector(loadingSelector);
+  //input
   const [inputCreateDesk, setInputCreateDesk] = useState('');
   const [inputUpdateDesk, setInputUpdateDesk] = useState('');
   const [descriptionCreateDesk, setDescriptionCreateDesk] = useState('');
   const [descriptionUpdateDesk, setDescriptionUpdateDesk] = useState('');
   const [accessStatus, setAccessStatus] = useState('PUBLIC');
   const [primaryColorInp, setPrimaryColorInp] = useState('pink');
+
+  //show ui
   const [showCreateDesk, setShowCreateDesk] = useState(false);
+  // auth state
   const authState = useSelector(authStateSelector);
   // Hold index of updated desk
   const [indexUpdatedDesk, setindexUpdatedDesk] = useState(undefined);
@@ -85,11 +90,15 @@ export default function DeskBoardScreen() {
           <ScrollView horizontal={true} scrollEnabled={true}>
             {data &&
               data.map((item, index) => {
-                if (item.active_status !== DeletedStatus) {
+                if (
+                  item.active_status !== DeletedStatus &&
+                  item.author_id === item.user_id
+                ) {
                   return (
                     <DeskComponent
                       key={uuid.v4()}
                       id={item._id}
+                      user={user}
                       title={item.title}
                       primaryColor={item.primary_color}
                       news={item.new_card}
@@ -125,7 +134,10 @@ export default function DeskBoardScreen() {
           <ScrollView horizontal={true} scrollEnabled={true}>
             {data &&
               data.map((item, index) => {
-                if (item.active_status !== DeletedStatus) {
+                if (
+                  item.active_status !== DeletedStatus &&
+                  item.author_id !== item.user_id
+                ) {
                   return (
                     <DeskComponent
                       key={uuid.v4()}

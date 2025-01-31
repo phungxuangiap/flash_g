@@ -31,6 +31,8 @@ function Game() {
         card._id,
         card.desk_id,
         card.user_id,
+        card.author_id,
+        card.original_id,
         card.status,
         level,
         JSON.stringify(new Date()).slice(1, -1),

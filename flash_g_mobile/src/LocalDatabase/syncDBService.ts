@@ -7,7 +7,7 @@ import { setLoading } from "../redux/slices/stateSlice";
 import { fetchAllCards, fetchCurrentUser, fetchListDesks } from "../service/fetchRemoteData";
 import { deleteCardInRemote, deleteDeskInRemote, updateCardToRemote, updateDeskToRemote } from "../service/postToRemote";
 import { createNewUser, deleteCard, deleteDesk, getAllCards, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, removeCard, removeDesk, updateCard, updateDesk } from "./database";
-import { Desk } from "./model";
+import { Desk, Card } from "./model";
 import { Dispatch, UnknownAction } from "@reduxjs/toolkit";
 export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:string, dispatch:Dispatch<UnknownAction>){
     return await Promise.resolve()
@@ -171,7 +171,9 @@ const syncCards = (localCards:any[], remoteCards: any[], accessToken:string): Pr
   for (let localIndex = 0; localIndex < localCards.length; localIndex++){
     if (remoteIndex < remoteCards.length){
       while (remoteCards[remoteIndex] && localCards[localIndex] && localCards[localIndex]._id < remoteCards[remoteIndex]._id){
-        updateCard({...remoteCards[remoteIndex], active_status: RemoteStatus});
+        const cardElement = remoteCards[remoteIndex];
+        const updatedCard = new Card(cardElement._id, cardElement.desk_id, cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus);
+        updateCard(updatedCard);
         listMerge.push({method: "Update new remote card to local", data: remoteCards[remoteIndex]});
         remoteIndex++;
         if (remoteIndex >= remoteCards.length){
@@ -187,7 +189,9 @@ const syncCards = (localCards:any[], remoteCards: any[], accessToken:string): Pr
           delete objectTmp.active_status;
           updateCardToRemote(accessToken, objectTmp);
           if (localCards[localIndex].active_status === ActiveStatus){
-            updateCard({...objectTmp, active_status:RemoteStatus});
+            const cardElement = objectTmp;
+            const updatedCard = new Card(cardElement._id, cardElement.desk_id, cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus);
+            updateCard(updatedCard);
           }
           listMerge.push({method: "Update local to remote", data: objectTmp});
         }
@@ -212,18 +216,30 @@ const syncCards = (localCards:any[], remoteCards: any[], accessToken:string): Pr
             }
           } else if (Date.parse(objectTmp.modified_time) < Date.parse(remoteCards[remoteIndex].modified_time)){
             listMerge.push({method: "Update updated card to local", data: remoteCards[remoteIndex]});
-            updateCard({...remoteCards[remoteIndex], active_status: RemoteStatus});
+            const cardElement = remoteCards[remoteIndex];
+            const updatedCard = new Card(cardElement._id, cardElement.desk_id, cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus);
+            updateCard(updatedCard);
           }
         }
         remoteIndex++;
       } 
     } else {
-      if (remoteCards[remoteIndex] && localCards[localIndex] && localCards[localIndex].active_status !== RemoteStatus && localCards[localIndex].active_status !== DeletedStatus){
+      if (
+        (remoteCards.length ===0 && localCards[localIndex])
+        ||
+        (
+        remoteCards[remoteIndex] && 
+        localCards[localIndex] && 
+        localCards[localIndex].active_status !== RemoteStatus && 
+        localCards[localIndex].active_status !== DeletedStatus)
+      ){
         let objectTmp = {...localCards[localIndex]}
         delete objectTmp.active_status;
         updateCardToRemote(accessToken, objectTmp);
         if (localCards[localIndex].active_status === ActiveStatus){
-          updateCard({...objectTmp, active_status:RemoteStatus})
+          const cardElement = objectTmp;
+            const updatedCard = new Card(cardElement._id, cardElement.desk_id, cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus);
+            updateCard(updatedCard);
         }
         listMerge.push({method: "Update remote", data: localCards[localIndex]})
       }else{
@@ -234,7 +250,9 @@ const syncCards = (localCards:any[], remoteCards: any[], accessToken:string): Pr
   }
   if (remoteIndex < remoteCards.length){
     for (let j = remoteIndex; j < remoteCards.length; j++){
-      updateCard({...remoteCards[j], active_status: RemoteStatus});
+      const cardElement = remoteCards[j];
+      const updatedCard = new Card(cardElement._id, cardElement.desk_id, cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus);
+      updateCard(updatedCard);
       listMerge.push({method: "Update local", data: remoteCards[j]});
     }
   }

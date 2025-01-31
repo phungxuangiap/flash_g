@@ -117,8 +117,33 @@ export function CardComponent({
   );
 }
 
+export function AvataBaseWordComponent({full_name}) {
+  const userNameShortHand = (full_name ? full_name : 'Owner')
+    .split(' ')
+    .map(word => {
+      return word[0];
+    })
+    .join('');
+  return (
+    <View
+      style={{
+        width: 50,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: 'black',
+        borderRadius: 50,
+        backgroundColor: '#444',
+      }}>
+      <Text>{userNameShortHand}</Text>
+    </View>
+  );
+}
+
 export function DeskComponent({
   id,
+  user,
   title,
   primaryColor,
   news,
@@ -129,6 +154,7 @@ export function DeskComponent({
   onEdit,
 }) {
   const listCurrentDesks = useSelector(currentDesks);
+  console.log(title, user);
   return (
     <TouchableOpacity
       onPress={() => {
@@ -187,8 +213,8 @@ export function DeskComponent({
         <TextCircleBorder content={`${preview} P`} color={'#6CDDAB'} />
       </View>
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        <View style={{width: 50, height: 50, backgroundColor: 'white'}}></View>
-        <Text>Alex Gi</Text>
+        <AvataBaseWordComponent full_name={user ? user.full_name : 'Owner'} />
+        <Text>{user ? user.full_name : 'Owner'}</Text>
       </View>
     </TouchableOpacity>
   );

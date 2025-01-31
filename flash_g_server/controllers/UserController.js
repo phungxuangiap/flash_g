@@ -24,6 +24,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
       access_token = generateAccessToken({
         _id: availableUser._id,
         user_name: availableUser.user_name,
+        full_name: availableUser.full_name,
         email: availableUser.email,
         password: availableUser.password,
       });
@@ -31,6 +32,8 @@ const loginUser = asyncHandler(async (req, res, next) => {
         _id: availableUser._id,
         user_name: availableUser.user_name,
         email: availableUser.email,
+        full_name: availableUser.full_name,
+
         password: availableUser.password,
       });
       res.cookie(process.env.REFRESH_TOKEN_COOKIE, refresh_token, {
@@ -64,6 +67,7 @@ const getCurrentUser = asyncHandler(async (req, res, next) => {
         res.status(200).json({
           _id: decoded._id,
           user_name: decoded.user_name,
+          full_name: decoded.full_name,
           email: decoded.email,
           password: decoded.password,
         });
@@ -81,9 +85,8 @@ const getCurrentUser = asyncHandler(async (req, res, next) => {
 const registerUser = asyncHandler(async (req, res, next) => {
   let access_token;
   let refresh_token;
-  const { email, password, user_name } = req.body;
-  console.log(email, password, user_name);
-  if (!email || !password || !user_name) {
+  const { email, password, user_name, full_name } = req.body;
+  if (!email || !password || !user_name || !full_name) {
     res.status(Constants.VALIDATION_ERROR);
     throw new Error("All fields are mandatory!");
   } else {
@@ -99,18 +102,21 @@ const registerUser = asyncHandler(async (req, res, next) => {
         email,
         password: hashedPassword,
         user_name,
+        full_name,
         modified_time: JSON.stringify(new Date()).slice(1, -1),
       });
       access_token = generateAccessToken({
         _id: newUser._id,
         user_name: newUser.user_name,
         email: newUser.email,
+        full_name: newUser.full_name,
         password: newUser.password,
       });
       refresh_token = generateRefreshToken({
         _id: newUser._id,
         user_name: newUser.user_name,
         email: newUser.email,
+        full_name: newUser.full_name,
         password: newUser.password,
       });
       res.cookie(process.env.REFRESH_TOKEN_COOKIE, refresh_token, {
@@ -145,6 +151,7 @@ const refreshToken = (req, res, next) => {
         access_token = generateAccessToken({
           _id: decoded._id,
           user_name: decoded.user_name,
+          full_name: decoded.full_name,
           email: decoded.email,
           password: decoded.password,
         });
@@ -167,10 +174,32 @@ const logout = async (req, res, next) => {
   await res.status(200).json({ title: "Logout successfully!" });
 };
 
+//@desk get user by id
+//@route /api/user/:id
+//@access private
+const getUserById = asyncHandler(async (req, res, next) => {
+  const id = req.params.id;
+  if (id) {
+    const user = await User.findOne({ _id: id })
+      .then((respone) => {
+        res.status(200).json({
+          _id: respone._id,
+          full_name: respone.full_name,
+          email: respone.email,
+          user_name: respone.user_name,
+        });
+      })
+      .catch((err) => {
+        console.log("Get user by id error with message:", err);
+      });
+  }
+});
+
 module.exports = {
   loginUser,
   registerUser,
   refreshToken,
   logout,
   getCurrentUser,
+  getUserById,
 };

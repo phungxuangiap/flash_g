@@ -37,6 +37,8 @@ const card = `
         _id TEXT PRIMARY KEY,
         desk_id TEXT,
         user_id TEXT,
+        author_id TEXT,
+        original_id TEXT,
         status TEXT,
         level INTEGER,
         last_preview TEXT,
@@ -135,6 +137,8 @@ const createNewCardQuery = `
         _id,
         desk_id,
         user_id,
+        author_id,
+        original_id,
         status,
         level,
         last_preview,
@@ -145,13 +149,15 @@ const createNewCardQuery = `
         sentence_audio,
         type,
         modified_time,
-        active_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        active_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 const updateCardQuery = `
     INSERT INTO Card (
         _id,
         desk_id,
         user_id,
+        author_id,
+        original_id,
         status,
         level,
         last_preview,
@@ -163,11 +169,13 @@ const updateCardQuery = `
         type,
         modified_time,
         active_status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(_id) DO UPDATE SET
         _id = excluded._id,
         desk_id = excluded.desk_id,
         user_id = excluded.user_id,
+        author_id = excluded.author_id,
+        original_id = excluded.original_id,
         status = excluded.status,
         level = excluded.level,
         last_preview = excluded.last_preview,
