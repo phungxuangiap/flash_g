@@ -28,7 +28,6 @@ export default async function createDesk(
       },
     )
     .then(res => {
-      console.log(data, res);
       dispatch(updateCurrentDesks([...data, res.data]));
       console.log('Create desk successfully');
     })

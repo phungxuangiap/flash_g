@@ -6,11 +6,12 @@ import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {fetchAllGlobalDesks} from '../../service/fetchRemoteData';
 import {useFocusEffect} from '@react-navigation/native';
 import uuid from 'react-native-uuid';
+import React from 'react';
 
 export function SocialScreen() {
   const onlineState = useSelector(onlineStateSelector);
   const accessToken = useSelector(accessTokenSelector);
-  const [globalDesks, setGlobalDesks] = useState('');
+  const [globalDesks, setGlobalDesks] = useState([]);
   async function handleData(accessToken) {
     const data = await fetchAllGlobalDesks(accessToken);
     setGlobalDesks(data);
@@ -42,6 +43,13 @@ export function SocialScreen() {
                 onDelete={() => {}}
                 onClick={() => {}}
                 onEdit={() => {}}
+                onPull={() => {
+                  setGlobalDesks(pre => {
+                    return pre.filter(item => {
+                      item._id !== desk._id;
+                    });
+                  });
+                }}
                 accessToken={accessToken}
               />
             );

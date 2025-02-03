@@ -158,7 +158,6 @@ export function DeskComponent({
   onEdit,
 }) {
   const listCurrentDesks = useSelector(currentDesks);
-  console.log(title, user);
   return (
     <TouchableOpacity
       onPress={() => {
@@ -220,6 +219,32 @@ export function DeskComponent({
         <AvataBaseWordComponent full_name={user ? user.full_name : 'Owner'} />
         <Text>{user ? user.full_name : 'Owner'}</Text>
       </View>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+        }}>
+        <TouchableOpacity
+          style={{backgroundColor: 'black', padding: 12}}
+          onPress={async () => {
+            await deleteDesk(id);
+            onDelete();
+            console.log('delete desk');
+          }}>
+          <Text>Delete</Text>
+        </TouchableOpacity>
+        {user ? (
+          <TouchableOpacity
+            style={{backgroundColor: '#444', padding: 12, marginLeft: 12}}
+            onPress={() => {
+              onEdit();
+            }}>
+            <Text>Edit</Text>
+          </TouchableOpacity>
+        ) : (
+          <></>
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
@@ -234,6 +259,7 @@ export function DeskComponentType2({
   onDelete,
   onClick,
   onEdit,
+  onPull,
   accessToken,
 }) {
   const [authorName, setAuthorName] = useState('');
@@ -293,6 +319,7 @@ export function DeskComponentType2({
           alignSelf: 'flex-end',
         }}
         onPress={() => {
+          onPull();
           cloneDesk(accessToken, id);
         }}>
         <Text>PULL</Text>
@@ -457,8 +484,17 @@ export function CreateNewDeskPopUp({
     </View>
   );
 }
-export function UpdateDeskPopUp({input, setInput, close, update, desk}) {
-  console.log(desk);
+export function UpdateDeskPopUp({
+  input,
+  setInput,
+  description,
+  setDescription,
+  accessStatus,
+  setAccessStatus,
+  close,
+  update,
+  desk,
+}) {
   return (
     <View
       style={{
@@ -483,6 +519,20 @@ export function UpdateDeskPopUp({input, setInput, close, update, desk}) {
             content={input}
             onValueChange={value => {
               setInput(value);
+            }}
+          />
+
+          <InputTag
+            placeholder={'Your Description'}
+            content={description}
+            onValueChange={value => {
+              setDescription(value);
+            }}
+          />
+          <MyCheckbox
+            checked={accessStatus === 'PUBLIC'}
+            setChecked={() => {
+              setAccessStatus(accessStatus === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC');
             }}
           />
           <View style={{flexDirection: 'row-reverse'}}>

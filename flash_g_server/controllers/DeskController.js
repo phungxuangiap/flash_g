@@ -28,14 +28,24 @@ const getAllDesks = asyncHandler(async (req, res, next) => {
 //@access private
 const getGlobalDesks = asyncHandler(async (req, res, next) => {
   const isGlobal = req.query.global;
+  const userId = req.user._id;
+  // Get list Desks pulled
+  let listOwnerDeskId = await Desk.find({ user_id: req.user._id });
+  console.log("DESK_ID_LIST", listOwnerDeskId);
+  listOwnerDeskId = listOwnerDeskId.map((item) => {
+    return item.original_id;
+  });
   if (isGlobal) {
     const globalPublicDesks = await Desk.find({
       $and: [
         { access_status: "PUBLIC" },
         { $expr: { $eq: ["$author_id", "$user_id"] } },
+        { author_id: { $ne: userId } },
+        { _id: { $nin: listOwnerDeskId } },
       ],
     });
     if (globalPublicDesks) {
+      console.log("GLOBAL_DESK", globalPublicDesks);
       res.status(200).json(globalPublicDesks);
     } else {
       res.status(Constants.NOT_FOUND);

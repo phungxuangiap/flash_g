@@ -32,7 +32,6 @@ export default async function createCard(
       },
     )
     .then(res => {
-      console.log(res.data);
       setListCard([...listCard, res.data]);
       console.log('Create card successfully');
     })

@@ -44,6 +44,8 @@ export default function DeskBoardScreen() {
   const [inputUpdateDesk, setInputUpdateDesk] = useState('');
   const [descriptionCreateDesk, setDescriptionCreateDesk] = useState('');
   const [descriptionUpdateDesk, setDescriptionUpdateDesk] = useState('');
+  const [accessStatusUpdateDesk, setAccessStatusUpdateDesk] =
+    useState('PUBLIC');
   const [accessStatus, setAccessStatus] = useState('PUBLIC');
   const [primaryColorInp, setPrimaryColorInp] = useState('pink');
 
@@ -108,7 +110,7 @@ export default function DeskBoardScreen() {
                         dispatch(
                           updateCurrentDesks(
                             data.filter(deskDeleted => {
-                              return deskDeleted._id != item._id;
+                              return deskDeleted._id !== item._id;
                             }),
                           ),
                         );
@@ -233,6 +235,10 @@ export default function DeskBoardScreen() {
           <UpdateDeskPopUp
             input={inputUpdateDesk}
             setInput={setInputUpdateDesk}
+            description={descriptionUpdateDesk}
+            setDescription={setDescriptionUpdateDesk}
+            accessStatus={accessStatusUpdateDesk}
+            setAccessStatus={setAccessStatusUpdateDesk}
             close={() => {
               setindexUpdatedDesk(undefined);
             }}
@@ -241,12 +247,17 @@ export default function DeskBoardScreen() {
               const updatedDesk = new Desk(
                 data[indexUpdatedDesk]._id,
                 user._id,
+                data[indexUpdatedDesk].author_id,
+                data[indexUpdatedDesk].original_id,
+                accessStatusUpdateDesk,
                 inputUpdateDesk,
+                descriptionUpdateDesk,
                 data[indexUpdatedDesk].primary_color,
                 data[indexUpdatedDesk].new_card,
                 data[indexUpdatedDesk].inprogress_card,
                 data[indexUpdatedDesk].preview_card,
                 JSON.stringify(new Date()).slice(1, -1),
+                data[indexUpdatedDesk].active_status,
               );
               await updateDesk(updatedDesk)
                 .then(res => {

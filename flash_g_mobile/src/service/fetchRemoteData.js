@@ -80,7 +80,6 @@ export async function fetchAllCurrentCards(listDesks) {
 }
 
 export async function fetchAllCards(dispatch, accessToken) {
-  console.log(REACT_APP_URL);
   return await axios
     .get(`http://${REACT_APP_URL}/api/card`, {
       headers: {
