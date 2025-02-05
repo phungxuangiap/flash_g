@@ -33,3 +33,18 @@ export const createImage = async function (img_url, deskId, accessToken) {
     },
   );
 };
+
+export const getImageOfDesk = async function (accessToken, deskId) {
+  return axios
+    .get(`http://${REACT_APP_URL}/api/image/${deskId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then(res => {
+      return res.data.img_url;
+    })
+    .catch(err => {
+      console.log('Get image of desk error with message:', err);
+    });
+};

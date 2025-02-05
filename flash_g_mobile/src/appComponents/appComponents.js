@@ -1,5 +1,6 @@
 import {
   Alert,
+  Image,
   Pressable,
   Text,
   TextInput,
@@ -252,6 +253,7 @@ export function DeskComponent({
 export function DeskComponentType2({
   id,
   title,
+  img_url,
   primaryColor,
   description,
   numCard,
@@ -262,6 +264,7 @@ export function DeskComponentType2({
   onPull,
   accessToken,
 }) {
+  console.log('IMG', img_url);
   const [authorName, setAuthorName] = useState('');
   useEffect(() => {
     fetchUserById(authorId, accessToken).then(res => {
@@ -290,7 +293,19 @@ export function DeskComponentType2({
             backgroundColor: 'white',
             flex: 1,
           }}>
-          <Text style={{color: 'black'}}>Image</Text>
+          {img_url[id] ? (
+            <Image
+              source={{
+                uri: img_url[id],
+              }}
+              style={{resizeMode: 'cover', width: 100, height: 100}}
+            />
+          ) : (
+            <Image
+              source={require('../assets/noimage.jpg')}
+              style={{resizeMode: 'cover', width: 100, height: 100}}
+            />
+          )}
         </View>
         <View style={{flex: 3}}>
           <Text style={{...ComponentStyle.largeWhiteTitle}}>{title}</Text>

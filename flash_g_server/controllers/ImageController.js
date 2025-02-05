@@ -9,13 +9,11 @@ const Desk = require("../models/deskModel");
 //@access Private
 const getImageOfDeskId = asyncHandler(async (req, res, next) => {
   console.log(req.params.desk_id);
-  const imageArray = await Image.find({ _id: req.params.desk_id });
+  const imageArray = await Image.find({ desk_id: req.params.desk_id });
 
   const image = imageArray[0] ? imageArray[0] : undefined;
   if (image) {
-    res
-      .status(200)
-      .json({ message: "Get image of desk successfully!", image: image });
+    res.status(200).json(image);
   } else {
     res.status(Constants.NOT_FOUND);
     throw new Error(`Cannot find any image of desk_id: ${req.params.desk_id}`);
