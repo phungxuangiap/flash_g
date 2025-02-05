@@ -29,6 +29,10 @@ import {handleLocalAndRemoteData} from '../../LocalDatabase/syncDBService';
 import {Desk} from '../../LocalDatabase/model';
 import {DeletedStatus, MainGame} from '../../constants';
 import {Text} from '@react-navigation/elements';
+import {
+  deleteDeskInRemote,
+  updateDeskToRemote,
+} from '../../service/postToRemote';
 
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();

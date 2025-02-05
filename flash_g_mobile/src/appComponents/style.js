@@ -7,6 +7,7 @@ export const ComponentStyle = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'brown',
     borderRadius: 12,
+    color: 'black',
   },
   button: {
     padding: 12,

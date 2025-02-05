@@ -57,7 +57,7 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                     listAllLocakCards.push(result.rows.item(index));
                 }
               });
-              syncCards(listAllLocakCards, listAllRemoteCards, accessToken);
+              syncCards(listAllLocakCards, listAllRemoteCards, accessToken, dispatch);
 
               return listDesk;
             } else {
@@ -140,13 +140,13 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                 listDesks.map(desk => {
                   if (desk.active_status === DeletedStatus) {
                     return Promise.all([
-                      deleteDeskInRemote(accessToken, desk),
+                      deleteDeskInRemote(accessToken, desk, dispatch),
                       removeDesk(desk._id),
 
                     ])
                     
                   }
-                  return updateDeskToRemote(accessToken, desk);
+                  return updateDeskToRemote(accessToken, desk, dispatch);
                 }),
               );
             }
@@ -157,7 +157,7 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
 }
 
 
-const syncCards = (localCards:any[], remoteCards: any[], accessToken:string): Promise<any> =>{
+const syncCards = (localCards:any[], remoteCards: any[], accessToken:string, dispatch:Dispatch<UnknownAction>): Promise<any> =>{
   const listMerge:any[] = [];
   localCards = localCards.sort((itemA:any, itemB: any)=>{
     return itemA._id < itemB._id ? 1 : -1;
@@ -187,7 +187,7 @@ const syncCards = (localCards:any[], remoteCards: any[], accessToken:string): Pr
 
           let objectTmp = {...localCards[localIndex]}
           delete objectTmp.active_status;
-          updateCardToRemote(accessToken, objectTmp);
+          updateCardToRemote(accessToken, objectTmp, dispatch);
           if (localCards[localIndex].active_status === ActiveStatus){
             const cardElement = objectTmp;
             const updatedCard = new Card(cardElement._id, cardElement.desk_id, cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus);
@@ -205,10 +205,10 @@ const syncCards = (localCards:any[], remoteCards: any[], accessToken:string): Pr
             if (localCards[localIndex].active_status !== DeletedStatus){
               listMerge.push({method: "Update remote when local change", data: objectTmp});
 
-              updateCardToRemote(accessToken, objectTmp);
+              updateCardToRemote(accessToken, objectTmp, dispatch);
             } else{
               listMerge.push({method: "Delete local and remote", data: objectTmp});
-              deleteCardInRemote(accessToken, objectTmp);
+              deleteCardInRemote(accessToken, objectTmp, dispatch);
               // remove card out of the local data
               // deleteCard(objectTmp._id);
               removeCard(objectTmp._id);
@@ -235,7 +235,7 @@ const syncCards = (localCards:any[], remoteCards: any[], accessToken:string): Pr
       ){
         let objectTmp = {...localCards[localIndex]}
         delete objectTmp.active_status;
-        updateCardToRemote(accessToken, objectTmp);
+        updateCardToRemote(accessToken, objectTmp, dispatch);
         if (localCards[localIndex].active_status === ActiveStatus){
           const cardElement = objectTmp;
             const updatedCard = new Card(cardElement._id, cardElement.desk_id, cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus);

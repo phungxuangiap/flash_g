@@ -28,6 +28,7 @@ export function InputTag({placeholder, value, onValueChange}) {
     <TextInput
       style={ComponentStyle.inputStyle}
       placeholder={placeholder}
+      placeholderTextColor={'black'}
       value={value}
       onChangeText={newValue => {
         onValueChange(newValue);
@@ -264,7 +265,6 @@ export function DeskComponentType2({
   onPull,
   accessToken,
 }) {
-  console.log('IMG', img_url);
   const [authorName, setAuthorName] = useState('');
   useEffect(() => {
     fetchUserById(authorId, accessToken).then(res => {
@@ -281,7 +281,6 @@ export function DeskComponentType2({
       style={{...ComponentStyle.deskContainer, backgroundColor: primaryColor}}>
       <View
         style={{
-          justifyContent: 'space-between',
           flexDirection: 'row',
           flex: 1,
         }}>
@@ -290,25 +289,28 @@ export function DeskComponentType2({
             justifyContent: 'center',
             alignItems: 'center',
             alignSelf: 'center',
-            backgroundColor: 'white',
             flex: 1,
+            aspectRatio: 1,
+            backgroundColor: 'white',
           }}>
           {img_url[id] ? (
             <Image
               source={{
                 uri: img_url[id],
               }}
-              style={{resizeMode: 'cover', width: 100, height: 100}}
+              style={{resizeMode: 'crop', flex: 1, aspectRatio: 1}}
             />
           ) : (
             <Image
               source={require('../assets/noimage.jpg')}
-              style={{resizeMode: 'cover', width: 100, height: 100}}
+              style={{resizeMode: 'cover', flex: 1, aspectRatio: 1}}
             />
           )}
         </View>
-        <View style={{flex: 3}}>
-          <Text style={{...ComponentStyle.largeWhiteTitle}}>{title}</Text>
+        <View style={{flex: 2}}>
+          <Text style={{...ComponentStyle.largeWhiteTitle}} numberOfLines={1}>
+            {title}
+          </Text>
           <Text style={{color: 'white'}}>{description}</Text>
           <View style={{flexDirection: 'row', justifyContent: 'center'}}>
             <TextCircleBorder
@@ -322,23 +324,23 @@ export function DeskComponentType2({
             <Text>{authorName}</Text>
           </View>
         </View>
+        <TouchableOpacity
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'black',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 50,
+            alignSelf: 'flex-end',
+          }}
+          onPress={() => {
+            onPull();
+            cloneDesk(accessToken, id);
+          }}>
+          <Text>PULL</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        style={{
-          width: 50,
-          height: 50,
-          backgroundColor: 'black',
-          justifyContent: 'center',
-          alignItems: 'center',
-          borderRadius: 50,
-          alignSelf: 'flex-end',
-        }}
-        onPress={() => {
-          onPull();
-          cloneDesk(accessToken, id);
-        }}>
-        <Text>PULL</Text>
-      </TouchableOpacity>
     </TouchableOpacity>
   );
 }

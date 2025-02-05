@@ -59,15 +59,26 @@ const getGlobalDesks = asyncHandler(async (req, res, next) => {
 //@access private
 const deleteDesk = asyncHandler(async (req, res, next) => {
   const desk = await Desk.findById(req.params.id);
+
   if (desk) {
-    const listDeletedDesk = await Desk.find({ original_id: req.params.id });
-    if (listDeletedDesk) {
-      await Promise.all(
-        listDeletedDesk.map((desk) => {
-          return Desk.findByIdAndDelete(desk._id);
-        })
-      );
+    //handle delete authorizely
+
+    if (desk.original_id === req.params.id) {
+      const listDeletedDesk = await Desk.find({
+        original_id: desk.original_id,
+      });
+      if (listDeletedDesk.length !== 0) {
+        await Promise.all(
+          listDeletedDesk.map((desk) => {
+            return Desk.findByIdAndDelete(desk._id);
+          })
+        );
+      }
+    } else {
+      //Handle delete unauthorizely
+      await Desk.findByIdAndDelete(req.params.id);
     }
+
     res
       .status(200)
       .json({ message: "Delete desk and cloned version successfully!" });

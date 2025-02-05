@@ -38,6 +38,7 @@ import {
 } from '../../LocalDatabase/database';
 import {Card} from '../../LocalDatabase/model';
 import {ActiveStatus, DeletedStatus, Game, MainGame} from '../../constants';
+import {updateCardToRemote} from '../../service/postToRemote';
 
 export default function CardScreen() {
   const desk = useSelector(gameSelector);
@@ -275,15 +276,6 @@ export default function CardScreen() {
             }}
             update={async () => {
               dispatch(setLoading(true));
-              // await createCard(
-              //   accessToken,
-              //   desk,
-              //   vocab,
-              //   sentence,
-              //   description,
-              //   data,
-              //   setData,
-              // );
               const updatedCard = {
                 ...listActiveCard[indexUpdatedCard],
                 sentence,

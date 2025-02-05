@@ -20,10 +20,12 @@ import {changeAuth, refreshAccessToken} from '../../redux/slices/authSlice';
 import {setLoading} from '../../redux/slices/stateSlice';
 import {loadingSelector} from '../../redux/selectors';
 import {BottomBar, Login} from '../../constants';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [userName, setUserName] = useState('');
   const [retypePassword, setRetypePassword] = useState('');
   const loadingState = useSelector(loadingSelector);
@@ -36,6 +38,11 @@ export default function RegisterScreen() {
         placeholder={'User Name'}
         value={userName}
         onValueChange={setUserName}
+      />
+      <InputTag
+        placeholder={'Full name'}
+        value={fullName}
+        onValueChange={setFullName}
       />
       <InputTag
         placeholder={'Password'}
@@ -51,7 +58,7 @@ export default function RegisterScreen() {
         content={'Register'}
         onClick={() => {
           dispatch(setLoading(true));
-          register(email, password, userName)
+          register(email, password, userName, fullName)
             .then(accessToken => {
               dispatch(refreshAccessToken(accessToken));
               dispatch(changeAuth());

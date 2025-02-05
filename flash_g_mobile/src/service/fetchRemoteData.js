@@ -112,8 +112,5 @@ export async function fetchAllGlobalDesks(accessToken) {
     .then(res => {
       console.log('Get all global desks successfully!', res.data);
       return res.data;
-    })
-    .catch(err => {
-      console.log('Get all global desks error with message:', err);
     });
 }

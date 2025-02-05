@@ -1,6 +1,6 @@
 import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {DeskComponentType2} from '../../appComponents/appComponents';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {accessTokenSelector, onlineStateSelector} from '../../redux/selectors';
 import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {fetchAllGlobalDesks} from '../../service/fetchRemoteData';
@@ -8,20 +8,23 @@ import {useFocusEffect} from '@react-navigation/native';
 import uuid from 'react-native-uuid';
 import React from 'react';
 import {getImageOfDesk} from '../../service/imageService';
+import {refresh} from '../../service/refreshAccessToken';
 
 export function SocialScreen() {
+  const dispatch = useDispatch();
   const onlineState = useSelector(onlineStateSelector);
   const accessToken = useSelector(accessTokenSelector);
   const [globalDesks, setGlobalDesks] = useState([]);
   const [deskImageRelationship, setDeskImageRelationship] = useState({});
   async function handleData(accessToken) {
-    const data = await fetchAllGlobalDesks(accessToken);
+    const data = await fetchAllGlobalDesks(accessToken).catch(err => {
+      refresh(dispatch);
+    });
     setGlobalDesks(data);
     if (data) {
       await Promise.all(
         data.map(desk => {
           return getImageOfDesk(accessToken, desk._id).then(img_url => {
-            console.log('HERE', img_url);
             setDeskImageRelationship(pre => {
               let obj = pre;
               obj[desk._id] = img_url;
@@ -35,7 +38,7 @@ export function SocialScreen() {
   useFocusEffect(
     useCallback(() => {
       handleData(accessToken);
-    }, [onlineState]),
+    }, [onlineState, accessToken]),
   );
   console.log('LIST MAP', deskImageRelationship);
   return onlineState ? (
@@ -63,9 +66,12 @@ export function SocialScreen() {
                 onEdit={() => {}}
                 onPull={() => {
                   setGlobalDesks(pre => {
-                    return pre.filter(item => {
-                      item._id !== desk._id;
+                    let obj = pre;
+                    obj = pre.filter(item => {
+                      return item._id !== desk._id;
                     });
+                    console.log('OBJECT', obj);
+                    return obj;
                   });
                 }}
                 accessToken={accessToken}
