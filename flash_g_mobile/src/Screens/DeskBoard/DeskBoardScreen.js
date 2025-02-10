@@ -24,15 +24,20 @@ import {
   updateCurrentDesk,
   updateCurrentDesks,
 } from '../../redux/slices/gameSlice';
-import {createNewDesk, updateDesk} from '../../LocalDatabase/database';
+import {
+  createNewDesk,
+  createNewImage,
+  updateDesk,
+} from '../../LocalDatabase/database';
 import {handleLocalAndRemoteData} from '../../LocalDatabase/syncDBService';
-import {Desk} from '../../LocalDatabase/model';
+import {Desk, Image} from '../../LocalDatabase/model';
 import {DeletedStatus, MainGame} from '../../constants';
 import {Text} from '@react-navigation/elements';
 import {
   deleteDeskInRemote,
   updateDeskToRemote,
 } from '../../service/postToRemote';
+import {addImageToCloudinary} from '../../service/imageService';
 
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
@@ -50,6 +55,7 @@ export default function DeskBoardScreen() {
   const [descriptionUpdateDesk, setDescriptionUpdateDesk] = useState('');
   const [accessStatusUpdateDesk, setAccessStatusUpdateDesk] =
     useState('PUBLIC');
+  const [fileImage, setFileImage] = useState(undefined);
   const [accessStatus, setAccessStatus] = useState('PUBLIC');
   const [primaryColorInp, setPrimaryColorInp] = useState('pink');
 
@@ -64,7 +70,7 @@ export default function DeskBoardScreen() {
   const auth = useSelector(authStateSelector);
   useFocusEffect(
     useCallback(() => {
-      handleLocalAndRemoteData(online, actk, dispatch);
+      handleLocalAndRemoteData(online, actk, dispatch, navigation);
     }, [actk, online, authState]),
   );
   return loading ? (
@@ -104,6 +110,7 @@ export default function DeskBoardScreen() {
                     <DeskComponent
                       key={uuid.v4()}
                       id={item._id}
+                      original_id={item.original_id}
                       user={user}
                       title={item.title}
                       primaryColor={item.primary_color}
@@ -148,6 +155,7 @@ export default function DeskBoardScreen() {
                     <DeskComponent
                       key={uuid.v4()}
                       id={item._id}
+                      original_id={item.original_id}
                       title={item.title}
                       primaryColor={item.primary_color}
                       news={item.new_card}
@@ -193,6 +201,8 @@ export default function DeskBoardScreen() {
             setDescription={setDescriptionCreateDesk}
             primaryColor={primaryColorInp}
             setPrimaryColor={setPrimaryColorInp}
+            fileImage={fileImage}
+            setFileImage={setFileImage}
             accessStatus={accessStatus}
             setAccessStatus={setAccessStatus}
             close={() => {
@@ -216,7 +226,18 @@ export default function DeskBoardScreen() {
                 JSON.stringify(new Date()).slice(1, -1),
                 'active',
               );
+              console.log(fileImage, 'FILEIMAGE');
+              if (fileImage) {
+                const newImage = new Image(
+                  uuid.v4(),
+                  newDesk._id,
+                  JSON.stringify(fileImage),
+                  JSON.stringify(new Date()).slice(1, -1),
+                );
+                createNewImage(newImage);
+              }
               await createNewDesk(newDesk);
+              // const img_link = await addImageToCloudinary(file, actk);
               dispatch(
                 updateCurrentDesks([
                   ...listCurrentDesks,

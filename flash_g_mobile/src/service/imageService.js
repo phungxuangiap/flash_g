@@ -2,16 +2,16 @@ import axios from 'axios';
 import {REACT_APP_URL} from '../../enviroment';
 
 export const addImageToCloudinary = async function (file, accessToken) {
-  const data = new FormData();
-  data.append('my_file', file);
   return axios
-    .post(`http://${REACT_APP_URL}/api/image/upload`, data, {
+    .post(`http://${REACT_APP_URL}/api/image/upload`, file, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'multipart/form-data',
       },
     })
     .then(res => {
-      console.log(res.path);
+      console.log('Store Image in cloudinary successfully');
+      return res.data.path;
     })
     .catch(err => {
       console.log('Add image to cloudinary error with message:', err);
@@ -19,22 +19,29 @@ export const addImageToCloudinary = async function (file, accessToken) {
 };
 
 export const createImage = async function (img_url, deskId, accessToken) {
-  return axios.post(
-    `http://${REACT_APP_URL}/api/image/${deskId}`,
-    {
-      img_url,
-      desk_id: deskId,
-      modified_time: JSON.stringify(new Date()).slice(1, -1),
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+  return axios
+    .post(
+      `http://${REACT_APP_URL}/api/image/${deskId}`,
+      {
+        img_url,
+        desk_id: deskId,
+        modified_time: JSON.stringify(new Date()).slice(1, -1),
       },
-    },
-  );
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    )
+    .then(res => {
+      console.log('Create new image in remote successfully');
+    })
+    .catch(err => {
+      console.log('Create new Image error with message:', err);
+    });
 };
 
-export const getImageOfDesk = async function (accessToken, deskId) {
+export const fetchImageOfDesk = async function (accessToken, deskId) {
   return axios
     .get(`http://${REACT_APP_URL}/api/image/${deskId}`, {
       headers: {
@@ -45,6 +52,6 @@ export const getImageOfDesk = async function (accessToken, deskId) {
       return res.data.img_url;
     })
     .catch(err => {
-      console.log('Get image of desk error with message:', err);
+      console.log('Fetch image of desk error with message:', err);
     });
 };

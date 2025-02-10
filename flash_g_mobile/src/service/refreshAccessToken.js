@@ -4,19 +4,15 @@ import {refreshAccessToken} from '../redux/slices/authSlice';
 import {REACT_APP_URL} from '../../enviroment';
 
 const refresh = async dispatch => {
-  console.log(REACT_APP_URL);
+  console.log('DISPATCH', dispatch);
   await axios
     .get(`http://${REACT_APP_URL}/api/user/refresh`)
     .then(res => {
-      console.log('[CHANGE ACCESSTOKEN]');
+      console.log('refresh successfully ');
       dispatch(refreshAccessToken(res.data.access_token));
     })
-    .then(res => {
-      console.log('refresh successfully ');
-    })
     .catch(err => {
-      console.log('err in refresh');
-      console.log(err);
+      console.log('refresh to get new token error with message:', err);
     });
 };
 

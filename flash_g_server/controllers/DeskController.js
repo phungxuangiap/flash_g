@@ -69,19 +69,23 @@ const deleteDesk = asyncHandler(async (req, res, next) => {
       });
       if (listDeletedDesk.length !== 0) {
         await Promise.all(
-          listDeletedDesk.map((desk) => {
-            return Desk.findByIdAndDelete(desk._id);
+          listDeletedDesk.map((deskItem) => {
+            return Promise.all(
+              Desk.findByIdAndDelete(deskItem._id),
+              Card.deleteMany({ desk_id: deskItem._id })
+            );
           })
         );
       }
     } else {
       //Handle delete unauthorizely
-      await Desk.findByIdAndDelete(req.params.id);
+      await Promise.all([
+        Desk.findByIdAndDelete(req.params.id),
+        Card.deleteMany({ desk_id: req.params.id }),
+      ]);
     }
 
-    res
-      .status(200)
-      .json({ message: "Delete desk and cloned version successfully!" });
+    res.status(200).json(desk);
   } else {
     res.status(Constants.NOT_FOUND);
     throw new Error("Not Found");
@@ -105,7 +109,7 @@ const createNewDesk = asyncHandler(async (req, res, next) => {
     res.status(Constants.NOT_FOUND);
     throw new Error("All fields are mandatory");
   } else {
-    const id = uuidv4();
+    let id = uuidv4();
     const newDesk = await Desk.create({
       _id: id,
       user_id: req.user._id,
@@ -121,7 +125,6 @@ const createNewDesk = asyncHandler(async (req, res, next) => {
       modified_time: JSON.stringify(new Date()).slice(1, -1),
     });
 
-    console.log(newDesk);
     if (newDesk) {
       res.status(200).json(newDesk);
     } else {
@@ -219,7 +222,7 @@ const updateDesk = asyncHandler(async (req, res, next) => {
   if (desk) {
     if (desk.author_id === req.user._id) {
       console.log("AUTHOR");
-      await Desk.findByIdAndUpdate(
+      const updatedDesk = await Desk.findByIdAndUpdate(
         req.params.id,
         {
           title: req.body.title,
@@ -241,17 +244,20 @@ const updateDesk = asyncHandler(async (req, res, next) => {
       if (desks.length !== 0) {
         await Promise.all(
           desks.map((item) => {
-            return Desk.findByIdAndUpdate(item._id, {
-              title: req.body.title,
-              modified_time: req.body.modified_time,
-              access_status: req.body.access_status,
-              primary_color: req.body.primary_color,
-            });
+            return Desk.findByIdAndUpdate(
+              item._id,
+              {
+                title: req.body.title,
+                modified_time: req.body.modified_time,
+                access_status: req.body.access_status,
+                primary_color: req.body.primary_color,
+              },
+              { new: true }
+            );
           })
         );
-        console.log("HERERERE");
       }
-      res.status(200).json(desk);
+      res.status(200).json(updatedDesk);
     } else {
       // unauthor update: Just allow update number of card of each type, restrict updating content of desk
       const updatedDesk = await Desk.find({
@@ -260,25 +266,27 @@ const updateDesk = asyncHandler(async (req, res, next) => {
       });
       console.log(updatedDesk, "UPDATED_DESK");
       if (updatedDesk.length !== 0) {
-        await Desk.findByIdAndUpdate(updatedDesk[0]._id, {
-          new_card: req.body.new_card,
-          inprogress_card: req.body.inprogress_card,
-          preview_card: req.body.preview_card,
-          modified_time: req.body.modified_time,
-        });
+        const deskResult = await Desk.findByIdAndUpdate(
+          updatedDesk[0]._id,
+          {
+            new_card: req.body.new_card,
+            inprogress_card: req.body.inprogress_card,
+            preview_card: req.body.preview_card,
+            modified_time: req.body.modified_time,
+          },
+          { new: true }
+        );
 
-        res.status(200).json({
-          message: "Update unauthorized desk successfully!",
-          data: updatedDesk[0],
-        });
+        res.status(200).json(deskResult);
       } else {
         res.status(Constants.FORBIDDEN);
         throw new Error("Desk with provided id is not valid");
       }
     }
   } else {
+    const newId = uuidv4();
     const newDesk = await Desk.create({
-      _id: req.body._id,
+      _id: newId,
       user_id: req.body.user_id,
       author_id: req.body.author_id,
       description: description,
@@ -289,8 +297,9 @@ const updateDesk = asyncHandler(async (req, res, next) => {
       new_card: 0,
       inprogress_card: 0,
       preview_card: 0,
-      modified_time: JSON.stringify(new Date()).slice(1, -1),
+      modified_time: res.body.modified_time,
     });
+    res.json(newDesk);
   }
 });
 

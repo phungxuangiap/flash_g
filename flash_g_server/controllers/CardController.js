@@ -53,87 +53,86 @@ const getAllCards = asyncHandler(async (req, res, next) => {
   res.json(allCards);
 });
 
-//@desc Update Changed Cards
-//@route api/card/:deskId
-//@access private
-// const updateChangedCards = asyncHandler(async (req, res, next) => {
-//   const listCardsUpdated = req.body?.cards_changed;
-//   if (!listCardsUpdated) {
-//     res.status(200).json({ message: "Nothing need to update" });
-//   } else {
-//     await listCardsUpdated.forEach(async (item) => {
-//       const cardChanged = await Card.findByIdAndUpdate(
-//         item._id,
-//         { ...item, modified_time: JSON.stringify(new Date()).slice(1, -1) },
-//         {
-//           new: true,
-//         }
-//       );
-//       console.log("[Card]", cardChanged);
-//     });
-//     res.status(200).json({ message: "All changes are updated" });
-//   }
-// });
-
 //@desc Create New Card
 //@route POST api/card/:deskId
 //@access private
 const createCard = asyncHandler(async (req, res, next) => {
-  const { vocab, description, sentence, vocab_audio, sentence_audio } =
-    req.body;
-  const card_id = uuidv4();
-  const action = req.query.action;
-  // action variable here is used for separate clone and create card service.
-  // action that don't have value is create method another wise in case clone will be clone
-  if (!action) {
-    const newCard = await Card.create({
-      _id: card_id,
-      desk_id: req.params.deskId,
-      original_id: card_id,
-      author_id: req.user._id,
-      user_id: req.user._id,
-      status: "new",
-      level: 0,
-      last_preview: JSON.stringify(new Date()).slice(1, -1),
-      vocab,
-      description,
-      sentence,
-      vocab_audio,
-      sentence_audio,
-      modified_time: JSON.stringify(new Date()).slice(1, -1),
-    });
-    const listClonedDeskOfCard = await Desk.find({
-      original_id: req.params.deskId,
-    });
-    console.log("LIST CLONED", req.params.deskId);
-    if (listClonedDeskOfCard) {
-      await Promise.all(
-        listClonedDeskOfCard.map((desk) => {
-          let clonedCardId = uuidv4();
-          if (desk._id !== desk.original_id) {
-            return Card.create({
-              _id: clonedCardId,
-              desk_id: desk._id,
-              original_id: card_id,
-              author_id: req.user._id,
-              user_id: desk.user_id,
-              status: "new",
-              level: 0,
-              last_preview: JSON.stringify(new Date()).slice(1, -1),
-              vocab,
-              description,
-              sentence,
-              vocab_audio,
-              sentence_audio,
-              modified_time: JSON.stringify(new Date()).slice(1, -1),
-            });
-          }
-        })
-      );
-    }
-    res.status(200).json(newCard);
+  console.log("Ahihi");
+  const {
+    vocab,
+    description,
+    sentence,
+    vocab_audio,
+    sentence_audio,
+    last_preview,
+    modified_time,
+  } = req.body;
+  if (
+    !vocab ||
+    !description ||
+    !sentence ||
+    !vocab_audio ||
+    !sentence_audio ||
+    !last_preview ||
+    !modified_time
+  ) {
+    res.status(Constants.NOT_FOUND);
+    throw new Error("Cannot create card because of missing field!");
   } else {
-    next();
+    let card_id = uuidv4();
+    const action = req.query.action;
+    // action variable here is used for separate clone and create card service.
+    // action that don't have value is create method another wise in case clone will be clone
+    if (!action) {
+      const newCard = await Card.create({
+        _id: card_id,
+        desk_id: req.params.deskId,
+        original_id: card_id,
+        author_id: req.user._id,
+        user_id: req.user._id,
+        status: "new",
+        level: 0,
+        last_preview,
+        vocab,
+        description,
+        sentence,
+        vocab_audio,
+        sentence_audio,
+        modified_time,
+      });
+      const listClonedDeskOfCard = await Desk.find({
+        original_id: req.params.deskId,
+      });
+      console.log("LIST CLONED", req.params.deskId);
+      if (listClonedDeskOfCard) {
+        await Promise.all(
+          listClonedDeskOfCard.map((desk) => {
+            let clonedCardId = uuidv4();
+            if (desk._id !== desk.original_id) {
+              return Card.create({
+                _id: clonedCardId,
+                desk_id: desk._id,
+                original_id: card_id,
+                author_id: req.user._id,
+                user_id: desk.user_id,
+                status: "new",
+                level: 0,
+                last_preview,
+                vocab,
+                description,
+                sentence,
+                vocab_audio,
+                sentence_audio,
+                modified_time,
+              });
+            }
+          })
+        );
+      }
+      res.status(200).json(newCard);
+    } else {
+      next();
+    }
   }
 });
 
@@ -146,7 +145,7 @@ const updateCard = asyncHandler(async (req, res, next) => {
   if (card) {
     if (card.author_id === req.user._id) {
       // AUTHOR handling
-      await Card.findByIdAndUpdate(
+      const updatedCard = await Card.findByIdAndUpdate(
         req.params.cardId,
         {
           status: req.body.status || card.status,
@@ -174,25 +173,30 @@ const updateCard = asyncHandler(async (req, res, next) => {
           console.log("Updaten cloned card version");
           await Promise.all(
             listClonedVersion.map((item) => {
-              return Card.findByIdAndUpdate(item._id, {
-                status: "new",
-                level: 0,
-                last_preview: req.body.last_preview || card.last_preview,
-                modified_time: req.body.modified_time || card.modified_time,
-                vocab: req.body.vocab || card.vocab,
-                description: req.body.description || card.description,
-                sentence: req.body.sentence || card.sentence,
-                vocab_audio: req.body.vocab_audio || card.vocab_audio,
-                sentence_audio: req.body.sentence_audio || card.sentence_audio,
-              });
+              return Card.findByIdAndUpdate(
+                item._id,
+                {
+                  status: "new",
+                  level: 0,
+                  last_preview: req.body.last_preview || card.last_preview,
+                  modified_time: req.body.modified_time || card.modified_time,
+                  vocab: req.body.vocab || card.vocab,
+                  description: req.body.description || card.description,
+                  sentence: req.body.sentence || card.sentence,
+                  vocab_audio: req.body.vocab_audio || card.vocab_audio,
+                  sentence_audio:
+                    req.body.sentence_audio || card.sentence_audio,
+                },
+                { new: true }
+              );
             })
           );
         }
       }
-      res.status(200).json(card);
+      res.status(200).json(updatedCard);
     } else {
       // UNAUTHOR handling
-      await Card.findByIdAndUpdate(
+      const updatedCard = await Card.findByIdAndUpdate(
         req.params.cardId,
         {
           status: req.body.status || card.status,
@@ -202,9 +206,7 @@ const updateCard = asyncHandler(async (req, res, next) => {
         },
         { new: true }
       );
-      res.status(200).json({
-        message: "Update cloned card successfully!",
-      });
+      res.status(200).json(updatedCard);
     }
   } else {
     console.log("Here");
@@ -242,42 +244,161 @@ const deleteCard = asyncHandler(async (req, res, next) => {
   }
 });
 
-//@desc Create Card, if exist Update
-//@route PUT api/card/:deskId/:cardId
+//@desc Create Multiple Cards
+//@route POST api/card/multiple/:deskId
 //@access private
-// const createUpdateCard = asyncHandler(async (req, res, next) => {
-//   const card = await Card.findById(req.params.cardId);
-//   if (card) {
-//     await Card.findByIdAndUpdate(
-//       req.params.cardId,
-//       {
-//         status: req.body.status,
-//         level: req.body.level,
-//         last_preview: JSON.stringify(new Date()).slice(1, -1),
-//         vocab: req.body.vocab,
-//         description: req.body.description,
-//         sentence: req.body.sentence,
-//         vocab_audio: req.body.vocab_audio,
-//         sentence_audio: req.body.sentence_audio,
-//         modified_time: JSON.stringify(new Date()).slice(1, -1),
-//       },
-//       { new: true }
-//     );
-//     res.status(200).json({ status: "Update", data: card });
-//   } else {
-//     const newCard = Card.create({
-//       ...req.body,
-//       last_preview: JSON.stringify(new Date()).slice(1, -1),
-//       modified_time: JSON.stringify(new Date()).slice(1, -1),
-//     });
-//     if (newCard) {
-//       res.status(200).json({
-//         status: "Create New Card Successfully",
-//         data: newCard,
-//       });
-//     }
-//   }
-// });
+const createMultipleCards = asyncHandler(async (req, res, next) => {
+  const desk_id = req.params.deskId;
+  const listNewCards = req.body.list_new_cards;
+  const createCardFunc = async (card) => {
+    const card_id = uuidv4();
+    const newCard = await Card.create({
+      _id: card_id,
+      desk_id: req.params.deskId,
+      original_id: card_id,
+      author_id: req.user._id,
+      user_id: req.user._id,
+      status: card.status,
+      level: 0,
+      last_preview: card.last_preview,
+      vocab: card.vocab,
+      description: card.description,
+      sentence: card.sentence,
+      vocab_audio: card.vocab_audio,
+      sentence_audio: card.sentence_audio,
+      modified_time: card.modified_time,
+    });
+    const listClonedDeskOfCard = await Desk.find({
+      original_id: req.params.deskId,
+    });
+    console.log("LIST CLONED", req.params.deskId);
+    if (listClonedDeskOfCard) {
+      await Promise.all(
+        listClonedDeskOfCard.map((desk) => {
+          let clonedCardId = uuidv4();
+          if (desk._id !== desk.original_id) {
+            return Card.create({
+              _id: clonedCardId,
+              desk_id: desk._id,
+              original_id: card_id,
+              author_id: req.user._id,
+              user_id: desk.user_id,
+              status: card.status,
+              level: 0,
+              last_preview: card.last_preview,
+              vocab: card.vocab,
+              description: card.description,
+              sentence: card.sentence,
+              vocab_audio: card.vocab_audio,
+              sentence_audio: card.sentence_audio,
+              modified_time: card.modified_time,
+            });
+          }
+        })
+      );
+    }
+    return newCard;
+  };
+  if (listNewCards) {
+    res.json(
+      await Promise.all(
+        listNewCards.map((card) => {
+          return createCardFunc(card);
+        })
+      )
+    );
+  }
+});
+
+//@desc Update Multiple Cards
+//@route PUT api/card/multiple/:deskId
+//@access private
+const updateMultipleCards = asyncHandler(async (req, res, next) => {
+  const listUpdatedCard = req.body.list_update_cards;
+  const updateCardFunc = async (card) => {
+    if (card) {
+      if (card.author_id === req.user._id) {
+        // AUTHOR handling
+        const updatedCard = await Card.findByIdAndUpdate(
+          req.params.cardId,
+          {
+            status: card.status,
+            level: card.level,
+            last_preview: card.last_preview,
+            modified_time: card.modified_time,
+            vocab: card.vocab,
+            description: card.description,
+            sentence: card.sentence,
+            vocab_audio: card.vocab_audio,
+            sentence_audio: card.sentence_audio,
+          },
+          { new: true }
+        );
+        // after updating specific card, let update all its cloned versions
+        if (
+          req.body.vocab !== card.vocab ||
+          req.body.description !== card.description ||
+          req.body.sentence !== card.sentence ||
+          req.body.vocab_audio !== card.vocab_audio ||
+          req.body.sentence_audio !== card.sentence_audio
+        ) {
+          const listClonedVersion = await Card.find({ original_id: card._id });
+          if (listClonedVersion.length !== 0) {
+            console.log("Updaten cloned card version");
+            await Promise.all(
+              listClonedVersion.map((item) => {
+                return Card.findByIdAndUpdate(item._id, {
+                  status: "new",
+                  level: 0,
+                  last_preview: req.body.last_preview || card.last_preview,
+                  modified_time: req.body.modified_time || card.modified_time,
+                  vocab: req.body.vocab || card.vocab,
+                  description: req.body.description || card.description,
+                  sentence: req.body.sentence || card.sentence,
+                  vocab_audio: req.body.vocab_audio || card.vocab_audio,
+                  sentence_audio:
+                    req.body.sentence_audio || card.sentence_audio,
+                });
+              })
+            );
+          }
+        }
+        return updatedCard;
+      } else {
+        // UNAUTHOR handling
+        const updatedCard = await Card.findByIdAndUpdate(
+          req.params.cardId,
+          {
+            status: req.body.status || card.status,
+            level: req.body.level || card.level,
+            last_preview: req.body.last_preview || card.last_preview,
+            modified_time: req.body.modified_time || card.modified_time,
+          },
+          { new: true }
+        );
+
+        return updateCard;
+      }
+    } else {
+      const newCard = Card.collection.insertOne({
+        ...req.body,
+      });
+      return newCard;
+    }
+  };
+  if (listUpdatedCard) {
+    res.json(
+      await Promise.all(
+        listUpdatedCard.map((card) => {
+          return updateCardFunc(card);
+        })
+      )
+    );
+  } else {
+    res.status(Constants.NOT_FOUND);
+    throw new Error("Missing request's body");
+  }
+});
 
 module.exports = {
   getAllCardsOfDesk,
@@ -285,4 +406,5 @@ module.exports = {
   deleteCard,
   createCard,
   getAllCards,
+  createMultipleCards,
 };

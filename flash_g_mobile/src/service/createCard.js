@@ -7,23 +7,23 @@ import {REACT_APP_URL} from '../../enviroment';
 
 export default async function createCard(
   accessToken,
-  desk,
+  deskId,
   vocab,
   sentence,
   description,
-  listCard,
-  setListCard,
 ) {
   console.log(REACT_APP_URL);
   await axios
     .post(
-      `http://${REACT_APP_URL}/api/card/${desk._id}`,
+      `http://${REACT_APP_URL}/api/card/${deskId}`,
       {
         vocab,
         description,
         sentence,
         vocab_audio: null,
         sentence_audio: null,
+        last_preview: JSON.stringify(new Date()).slice(1, -1),
+        modified_time: JSON.stringify(new Date()).slice(1, -1),
       },
       {
         headers: {
@@ -32,18 +32,9 @@ export default async function createCard(
       },
     )
     .then(res => {
-      setListCard([...listCard, res.data]);
       console.log('Create card successfully');
     })
     .catch(async err => {
-      console.log(err);
-      await refresh();
-      createCard(
-        store.getState().auth.accessToken,
-        desk,
-        vocab,
-        sentence,
-        description,
-      );
+      console.log('Create new card error with message:', err);
     });
 }

@@ -29,7 +29,8 @@ export class Desk {
     preview_card : number;
     modified_time: string;
     active_status: string;
-    constructor(_id: string, user_id: string, author_id:string, original_id:string, access_status: string, title: string, description: string, primary_color: string, new_card: number, inprogress_card: number, preview_card: number, modified_time:string, active_status: string = ActiveStatus){
+    remote_id: string;
+    constructor(_id: string, user_id: string, author_id:string, original_id:string, access_status: string, title: string, description: string, primary_color: string, new_card: number, inprogress_card: number, preview_card: number, modified_time:string, active_status: string = ActiveStatus, remote_id:string = ""){
         this._id = _id;
         this.user_id = user_id;
         this.author_id = author_id;
@@ -43,6 +44,7 @@ export class Desk {
         this.preview_card = preview_card;
         this.modified_time = modified_time;
         this.active_status = active_status;
+        this.remote_id = remote_id;
     }
 }
 
@@ -63,7 +65,8 @@ export class Card {
     type : string;
     modified_time: string;
     active_status:string;
-    constructor(_id:string, desk_id: string, user_id:string, author_id:string, original_id:string, status: string, level: number, last_preview: string, vocab: string, description: string, sentence: string, vocab_audio: string, sentence_audio: string, type: string, modified_time:string, active_status:string = 'active'){
+    remote_id: string;
+    constructor(_id:string, desk_id: string, user_id:string, author_id:string, original_id:string, status: string, level: number, last_preview: string, vocab: string, description: string, sentence: string, vocab_audio: string, sentence_audio: string, type: string, modified_time:string, active_status:string = ActiveStatus, remote_id:string = ""){
         this._id = _id;
         this.desk_id = desk_id;
         this.user_id = user_id;
@@ -80,7 +83,25 @@ export class Card {
         this.type = type;
         this.modified_time = modified_time;
         this.active_status = active_status;
+        this.remote_id = remote_id;
     }
+}
+
+
+export class Image {
+    _id: string;
+    desk_id: string;
+    file: string;
+    status: string;
+    modified_time: string;
+    constructor(_id:string, desk_id: string, file:string, status:string, modified_time:string){
+        this._id = _id;
+        this.desk_id = desk_id;
+        this.file = file;
+        this.status = status;
+        this.modified_time = modified_time;
+    }
+
 }
 
 

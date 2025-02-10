@@ -7,7 +7,7 @@ import {fetchAllGlobalDesks} from '../../service/fetchRemoteData';
 import {useFocusEffect} from '@react-navigation/native';
 import uuid from 'react-native-uuid';
 import React from 'react';
-import {getImageOfDesk} from '../../service/imageService';
+import {fetchImageOfDesk} from '../../service/imageService';
 import {refresh} from '../../service/refreshAccessToken';
 
 export function SocialScreen() {
@@ -24,7 +24,7 @@ export function SocialScreen() {
     if (data) {
       await Promise.all(
         data.map(desk => {
-          return getImageOfDesk(accessToken, desk._id).then(img_url => {
+          return fetchImageOfDesk(accessToken, desk._id).then(img_url => {
             setDeskImageRelationship(pre => {
               let obj = pre;
               obj[desk._id] = img_url;

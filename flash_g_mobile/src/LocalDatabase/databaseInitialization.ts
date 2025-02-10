@@ -1,6 +1,6 @@
 
 import SQLite from "react-native-sqlite-storage";
-import { card, createNewDeskQuery, desk, user, userPreferencesQuery } from "./dbQueries";
+import { card, createNewDeskQuery, desk, image, user, userPreferencesQuery } from "./dbQueries";
 import { User } from "./model";
 
 
@@ -20,6 +20,7 @@ export async function databaseInitialization() {
             await db.executeSql(desk);
             await db.executeSql(card);
             await db.executeSql(user);
+            await db.executeSql(image);
             await db.executeSql(userPreferencesQuery);
             return db;
         })

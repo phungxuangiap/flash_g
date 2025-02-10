@@ -5,7 +5,7 @@ import {refresh} from './refreshAccessToken';
 import {REACT_APP_URL} from '../../enviroment';
 
 // Fetch current user and store in local storage, update redux state
-export function fetchCurrentUser(accessToken, dispatch) {
+export function fetchCurrentUser(accessToken) {
   console.log('fetch current user');
   return axios
     .get(`http://${REACT_APP_URL}/api/user/current`, {
@@ -17,19 +17,12 @@ export function fetchCurrentUser(accessToken, dispatch) {
       return res.data;
     })
     .catch(async err => {
-      console.log(
-        'Fetch user error with message',
-        err,
-        'and refresh to get a new token...',
-      );
-      await refresh(dispatch).catch(err => {
-        console.log('Get user error with message:', err);
-      });
+      console.log('Fetch user error with message', err);
     });
 }
 
 // Fetch current desks, set initial value of current desks in local: user_id = {}
-export async function fetchListDesks(accessToken, userId, dispatch) {
+export async function fetchListDesks(accessToken) {
   let mapDesks = [];
   return await axios
     .get(`http://${REACT_APP_URL}/api/desk/`, {
@@ -44,16 +37,7 @@ export async function fetchListDesks(accessToken, userId, dispatch) {
       return mapDesks;
     })
     .catch(async err => {
-      console.log(
-        'Fetch all desks error with message',
-        err,
-        'refresh to get a new token...',
-      );
-      await refresh(dispatch).catch(err => {
-        console.log('Get all desk error with message:', err);
-      });
-
-      return false;
+      console.log('Fetch all desks error with message', err);
     });
 }
 
@@ -79,7 +63,7 @@ export async function fetchAllCurrentCards(listDesks) {
   });
 }
 
-export async function fetchAllCards(dispatch, accessToken) {
+export async function fetchAllCards(accessToken) {
   return await axios
     .get(`http://${REACT_APP_URL}/api/card`, {
       headers: {
@@ -90,17 +74,7 @@ export async function fetchAllCards(dispatch, accessToken) {
       return res.data;
     })
     .catch(async err => {
-      console.log(
-        'Fetch all cards met error',
-        err,
-        'and refresh a new token...',
-      );
-      await refresh(dispatch).catch(error => {
-        console.log(
-          'Fetch all cards after refreshing error with message:',
-          error,
-        );
-      });
+      console.log('Fetch all cards met error', err);
     });
 }
 

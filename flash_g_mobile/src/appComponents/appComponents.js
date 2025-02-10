@@ -19,10 +19,16 @@ import {
 import {desk} from '../LocalDatabase/dbQueries';
 import {DeletedStatus} from '../constants';
 import {useSelector} from 'react-redux';
-import {currentDesks} from '../redux/selectors';
+import {
+  accessTokenSelector,
+  currentDesks,
+  onlineStateSelector,
+} from '../redux/selectors';
 import axios from 'axios';
 import {fetchUserById} from '../service/fetchUserById';
 import {cloneDesk} from '../service/cloneDesk';
+import {launchImageLibrary} from 'react-native-image-picker';
+import {fetchImageOfDesk} from '../service/imageService';
 export function InputTag({placeholder, value, onValueChange}) {
   return (
     <TextInput
@@ -149,6 +155,7 @@ export function AvataBaseWordComponent({full_name}) {
 
 export function DeskComponent({
   id,
+  original_id,
   user,
   title,
   primaryColor,
@@ -160,6 +167,15 @@ export function DeskComponent({
   onEdit,
 }) {
   const listCurrentDesks = useSelector(currentDesks);
+  const onlineState = useSelector(onlineStateSelector);
+  const accessToken = useSelector(accessTokenSelector);
+  const [image, setImage] = useState(undefined);
+  // useEffect(() => {
+  //   fetchImageOfDesk(accessToken, original_id).then(response => {
+  //     setImage(response);
+  //     console.log('IMAGE IMAGE', response);
+  //   });
+  // }, [onlineState]);
   return (
     <TouchableOpacity
       onPress={() => {
@@ -180,7 +196,14 @@ export function DeskComponent({
             alignSelf: 'center',
             backgroundColor: 'white',
           }}>
-          <Text style={{color: 'black'}}>Image</Text>
+          {image ? (
+            <Image
+              source={{uri: image}}
+              style={{resizeMode: 'cover', flex: 1, aspectRatio: 1}}
+            />
+          ) : (
+            <Text style={{color: 'black'}}>Image</Text>
+          )}
         </View>
         <Text style={{...ComponentStyle.largeWhiteTitle}}>{title}</Text>
         {/* <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -424,11 +447,30 @@ export function CreateNewDeskPopUp({
   setDescription,
   primaryColor,
   setPrimaryColor,
+  fileImage,
+  setFileImage,
   accessStatus,
   setAccessStatus,
   close,
   create,
 }) {
+  const pickImage = () => {
+    const options = {
+      mediaType: 'photo',
+      maxWidth: 800,
+      maxHeight: 600,
+      quality: 0.8,
+    };
+    launchImageLibrary(options, response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        console.log('Image Picker Error: ', response.errorMessage);
+      } else {
+        setFileImage(response.assets[0]); // Lưu đường dẫn hình ảnh
+      }
+    });
+  };
   return (
     <View
       style={{
@@ -450,6 +492,17 @@ export function CreateNewDeskPopUp({
           <Text style={{...ComponentStyle.largeWhiteTitle}}>
             Create New Desk
           </Text>
+          <TouchableOpacity
+            onPress={pickImage}
+            style={{backgroundColor: 'blue', padding: 20, borderRadius: 10}}>
+            <Text>Choose Image</Text>
+          </TouchableOpacity>
+          {fileImage && (
+            <Image
+              source={{uri: fileImage.uri}}
+              style={{width: 300, height: 300, marginTop: 20}}
+            />
+          )}
           <InputTag
             placeholder={'Title'}
             content={input}
@@ -457,6 +510,7 @@ export function CreateNewDeskPopUp({
               setInput(value);
             }}
           />
+
           <InputTag
             placeholder={'Description'}
             content={description}
