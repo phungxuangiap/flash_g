@@ -283,6 +283,7 @@ export default function DeskBoardScreen() {
                 data[indexUpdatedDesk].preview_card,
                 JSON.stringify(new Date()).slice(1, -1),
                 data[indexUpdatedDesk].active_status,
+                data[indexUpdatedDesk].remote_id,
               );
               await updateDesk(updatedDesk)
                 .then(res => {

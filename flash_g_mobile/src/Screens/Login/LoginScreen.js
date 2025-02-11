@@ -41,7 +41,7 @@ export default function LoginScreen() {
           login(email, password)
             .then(accessToken => {
               console.log('Login successfully !');
-              // dispatch(changeAuth());
+              dispatch(changeAuth());
               dispatch(refreshAccessToken(accessToken));
               dispatch(setLoading(false));
               navigation.navigate(BottomBar);

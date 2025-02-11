@@ -23,10 +23,8 @@ export function AppContainer() {
       // assign sqlite db
       database.current = await databaseInitialization();
       getUser().then(userRes => {
-        if (userRes && userRes[0].rows.item(0)) {
-          dispatch(
-            setUser(JSON.parse(JSON.stringify(userRes[0].rows.item(0)))),
-          );
+        if (userRes) {
+          dispatch(setUser(JSON.parse(JSON.stringify(userRes))));
         } else {
           dispatch(setUser(undefined));
         }

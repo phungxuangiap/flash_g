@@ -6,20 +6,23 @@ import {refresh} from './refreshAccessToken';
 import {updateCurrentDesks} from '../redux/slices/gameSlice';
 import {REACT_APP_URL} from '../../enviroment';
 
-export default async function createDesk(
+export default async function createDeskInRemote(
   title,
   primary_color,
+  description,
+  modified_time,
+  status,
   accessToken,
-  data,
-  dispatch,
 ) {
-  console.log(REACT_APP_URL);
-  await axios
+  return await axios
     .post(
       `http://${REACT_APP_URL}/api/desk`,
       {
         title,
         primary_color,
+        description,
+        access_status: status ? status : 'PUBLIC',
+        modified_time,
       },
       {
         headers: {
@@ -28,12 +31,10 @@ export default async function createDesk(
       },
     )
     .then(res => {
-      dispatch(updateCurrentDesks([...data, res.data]));
       console.log('Create desk successfully');
+      return res.data;
     })
     .catch(async err => {
-      console.log(err);
-      await refresh();
-      createDesk(title, primary_color, store.getState().auth.accessToken);
+      console.log('Create new desk error with message:', err);
     });
 }

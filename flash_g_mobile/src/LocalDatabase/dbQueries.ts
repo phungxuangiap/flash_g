@@ -105,7 +105,8 @@ const createNewDeskQuery = `
         inprogress_card, 
         preview_card,
         modified_time,
-        remote_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        remote_id,
+        active_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 const createNewUserQuery = `
     INSERT INTO User (
@@ -135,8 +136,9 @@ const updateDeskQuery = `
         inprogress_card,
         preview_card,
         modified_time,
-        remote_id
-    ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        remote_id,
+        active_status
+    ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(_id) DO UPDATE SET 
         _id = excluded._id,
         user_id = excluded.user_id,
@@ -150,7 +152,8 @@ const updateDeskQuery = `
         inprogress_card = excluded.inprogress_card,
         preview_card = excluded.preview_card,
         modified_time = excluded.modified_time,
-        remote_id = excluded.remote_id
+        remote_id = excluded.remote_id,
+        active_status = excluded.active_status
 `;
 const deleteDeskQuery = `
     UPDATE Desk

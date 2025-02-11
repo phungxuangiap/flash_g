@@ -59,23 +59,30 @@ const getGlobalDesks = asyncHandler(async (req, res, next) => {
 //@access private
 const deleteDesk = asyncHandler(async (req, res, next) => {
   const desk = await Desk.findById(req.params.id);
-
   if (desk) {
     //handle delete authorizely
-
     if (desk.original_id === req.params.id) {
       const listDeletedDesk = await Desk.find({
         original_id: desk.original_id,
       });
       if (listDeletedDesk.length !== 0) {
+        console.log("DELETED", listDeletedDesk);
+
         await Promise.all(
           listDeletedDesk.map((deskItem) => {
-            return Promise.all(
-              Desk.findByIdAndDelete(deskItem._id),
-              Card.deleteMany({ desk_id: deskItem._id })
-            );
+            return Promise.all([
+              Desk.findByIdAndDelete(deskItem._id).then((res) => {
+                console.log("after 1");
+              }),
+              Card.deleteMany({ desk_id: deskItem._id }).then((res) => {
+                console.log("after 2");
+              }),
+            ]);
           })
-        );
+        ).then((res) => {
+          console.log("DELETED", listDeletedDesk);
+        });
+        console.log("RIght here");
       }
     } else {
       //Handle delete unauthorizely
@@ -84,7 +91,6 @@ const deleteDesk = asyncHandler(async (req, res, next) => {
         Card.deleteMany({ desk_id: req.params.id }),
       ]);
     }
-
     res.status(200).json(desk);
   } else {
     res.status(Constants.NOT_FOUND);
@@ -122,7 +128,9 @@ const createNewDesk = asyncHandler(async (req, res, next) => {
       new_card: 0,
       inprogress_card: 0,
       preview_card: 0,
-      modified_time: JSON.stringify(new Date()).slice(1, -1),
+      modified_time: req.body.modified_time
+        ? req.body.modified_time
+        : JSON.stringify(new Date()).slice(1, -1),
     });
 
     if (newDesk) {

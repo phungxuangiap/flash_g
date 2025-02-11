@@ -6,13 +6,15 @@ import { updateCurrentDesks } from "../redux/slices/gameSlice";
 import { setLoading } from "../redux/slices/stateSlice";
 import { fetchAllCards, fetchCurrentUser, fetchListDesks } from "../service/fetchRemoteData";
 import { deleteCardInRemote, deleteDeskInRemote, updateCardToRemote, updateDeskToRemote } from "../service/postToRemote";
-import { createNewCard, createNewImage, createNewUser, deleteCard, deleteDesk, deleteImage, getAllCards, getAllCurrentCardsOfDesk, getAllDesks, getAllLocalImage, getDesk, getImageOfDesk, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, getUser, removeCard, removeDesk, updateCard, updateDesk } from "./database";
+import { createNewCard, createNewDesk, createNewImage, createNewUser, deleteCard, deleteDesk, deleteImage, getAllCards, getAllCurrentCardsOfDesk, getAllDesks, getAllLocalImage, getDesk, getImageOfDesk, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, getUser, removeCard, removeDesk, updateCard, updateDesk } from "./database";
 import { Desk, Card } from "./model";
 import { Dispatch, UnknownAction } from "@reduxjs/toolkit";
 import { addImageToCloudinary, createImage, fetchImageOfDesk } from "../service/imageService";
 import uuid from 'react-native-uuid';
 import { refresh } from "../service/refreshAccessToken";
 import createCard from "../service/createCard";
+import createDesk from "../service/createDesk";
+import createDeskInRemote from "../service/createDesk";
 
 
 export async function calculateCardsAndUpdateDesk(updatedList:any[], createdList:any[], deletedList:any[]): Promise<any>{
@@ -62,12 +64,14 @@ export async function calculateCardsAndUpdateDesk(updatedList:any[], createdList
 
 
 export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:string, dispatch:Dispatch<UnknownAction>, navigation:any){
+
     return await Promise.resolve()
           .then(() => {
             dispatch(setLoading(true));
           })
           // Fetch current user
           .then(async () => {
+
             let user = undefined;
             if (onlineState){
               // It'll have a responsibility to check current user, available accesstoken and refresh token for next requests below.
@@ -115,22 +119,25 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
               listUpdatedRemoteCard,
               ] = syncCards(listLocalCard, listRemoteCard);
               // update cards to remote
-              Promise.all(
-                [
-                  ...listDeletedRemoteCard.map((deletedCard: any)=>{
-                    return deleteCardInRemote(accessToken, deletedCard);
-                  }),
-                  ...listCreatedRemoteCard.map((createdCard: any)=>{
-                    return createCard(accessToken, createdCard.desk_id, createdCard.vocab, createdCard.sentence, createdCard.description)
-                      .then(response=>{
-                        //update remote_id in local card;
-                      });
-                  }),
-                  ...listUpdatedRemoteCard.map((updatedCard: any)=>{
-                    return updateCardToRemote(accessToken, updatedCard);
-                  }),
-                ]
-              );
+              if (onlineState){
+                
+                Promise.all(
+                  [
+                    ...listDeletedRemoteCard.map((deletedCard: any)=>{
+                      return deleteCardInRemote(accessToken, deletedCard);
+                    }),
+                    ...listCreatedRemoteCard.map((createdCard: any)=>{
+                      return createCard(accessToken, createdCard.desk_id, createdCard.vocab, createdCard.sentence, createdCard.description)
+                        .then(response=>{
+                          //update remote_id in local card;
+                        });
+                    }),
+                    ...listUpdatedRemoteCard.map((updatedCard: any)=>{
+                      return updateCardToRemote(accessToken, updatedCard);
+                    }),
+                  ]
+                );
+              }
               // filter deskid of changed cards, update cards to local
               Promise.all(
                 [
@@ -167,7 +174,8 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
             }
             mergedDesks = mergeDesk(listLocalDesk, listRemoteDesk);
             console.log("[MERGE DESK LIST]", mergedDesks);
-            return await Promise.all(
+            let listUpdatedDesks = [];
+            listUpdatedDesks =  await Promise.all(
               mergedDesks.map((desk, index)=>{
                 return getAllCurrentCardsOfDesk(desk.remote_id)
                   .then(listCurrentCards=>{
@@ -194,18 +202,19 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                   });
               })
             );
+            return {listUpdatedDesks: listUpdatedDesks, listLocalDesk: listLocalDesk, listRemoteDesk: listRemoteDesk};
           })
           // sync local and remote desks with merged desks
-          .then(listUpdatedDesks=>{
+          .then(({listUpdatedDesks, listLocalDesk, listRemoteDesk}:any)=>{
             //update redux state
             dispatch(updateCurrentDesks(JSON.parse(JSON.stringify(listUpdatedDesks))));
+            dispatch(setLoading(false));
             Promise.allSettled(
               [
-                syncDesksToRemote(),
-                syncDesksToLocal(),
+                onlineState ? syncDesksToRemote(listRemoteDesk, listUpdatedDesks, accessToken) : Promise.reject(),
+                syncDesksToLocal(listLocalDesk, listUpdatedDesks, accessToken),
               ]
             );
-
           })
           .catch(error=>{
             console.log("Sync flow error with message:", error);
@@ -258,6 +267,7 @@ const mergeDesk = (localDesks: any[], remoteDesks: any[]) : any[] =>{
             // do nothing
             // Delete desk in local
             // do nothing
+            mergedList.push(localDesks[localIndex]);
         } else{
           if (Date.parse(localDesks[localIndex].modified_time) < Date.parse(remoteDesks[remoteIndex].modified_time)){
             // update local
@@ -271,6 +281,8 @@ const mergeDesk = (localDesks: any[], remoteDesks: any[]) : any[] =>{
             if (localDesks[localIndex].active_status === ActiveStatus){
               // update local desk to Remote Status
               mergedList.push({...localDesks[localIndex], active_status: RemoteStatus});
+            } else if (localDesks[localIndex].active_status === RemoteStatus){
+              mergedList.push({...localDesks[localIndex]});
             }
           }
         }
@@ -446,137 +458,94 @@ const syncCards = (localCards:any[], remoteCards: any[]): any[] =>{
   }
   return [listDeletedLocalCard, listCreatedLocalCard, listUpdatedLocalCard, listDeletedRemoteCard, listCreatedRemoteCard, listUpdatedRemoteCard];
 };
-export async function syncDesks (localDesks: any[], remoteDesks:any[]){
-  let listDeletedLocalDesk = [];
-  let listCreatedLocalDesk = [];
-  let listUpdatedLocalDesk = [];
-  let listDeletedRemoteDesk = [];
-  let listCreatedRemoteDesk = [];
-  let listUpdatedRemoteDesk = [];
-  localDesks = localDesks.sort((itemA:any, itemB: any)=>{
-    return itemA.remote_id < itemB.remote_id ? 1 : -1;
+
+export async function syncDesksToRemote(listRemoteDesk:any[], listUpdatedDesks:any[], accessToken:string){
+  //todo
+  listRemoteDesk.sort((item1:any, item2:any)=>{
+    return item1._id < item2._id ? 1 : -1;
   });
-  remoteDesks = remoteDesks.sort((itemA:any, itemB: any)=>{
-    return itemA._id < itemB._id ? 1 : -1;
+  listUpdatedDesks.sort((item1:any, item2:any)=>{
+    return item1.remote_id < item2.remote_id ? 1 : -1;
   });
-  console.log('[Local Desk]', localDesks);
-  console.log('[Remote Desk]', remoteDesks);
+  // Chỉ handle 3 trường hợp: Remote thiêú thì tạo, Remote dư thì xóa, Remote cũ thì cập nhậtnhật
   let remoteIndex = 0;
-  // case remote desk is empty
-  if (remoteDesks.length===0){
-    // post all local desks to remote
-    for (let localIndex = 0; localIndex<localDesks.length; localIndex++){
-      if (localDesks[localIndex].active_status === DeletedStatus){
-        // delete local desk
-        listDeletedLocalDesk.push(localDesks[localIndex])
+  for (let updatedIndex = 0; updatedIndex < listUpdatedDesks.length; updatedIndex++){
+    while (remoteIndex < listRemoteDesk.length && listRemoteDesk[remoteIndex]._id > listUpdatedDesks[updatedIndex].remote_id){
+      // Remote dư thì xóa
+      deleteDeskInRemote(accessToken, listRemoteDesk[remoteIndex]._id);
+      remoteIndex++;
+    }
+    if (remoteIndex >= listRemoteDesk.length){
+      // Remote thiếu thì tạo
+      createDeskInRemote(listUpdatedDesks[updatedIndex].title, listUpdatedDesks[updatedIndex].primary_color, listUpdatedDesks[updatedIndex].description, listUpdatedDesks[updatedIndex].modified_time, listUpdatedDesks[updatedIndex].access_status, accessToken)
+        .then((newDesk:any)=>{
+          updateDesk({...listUpdatedDesks[updatedIndex], active_status: RemoteStatus, remote_id: newDesk._id, original_id: newDesk._id});
+        });
+    }
+    if (remoteIndex < listRemoteDesk.length && listRemoteDesk[remoteIndex]._id < listUpdatedDesks[updatedIndex].remote_id){
+      // Remote thiêú thì tạo
+      createDeskInRemote(listUpdatedDesks[updatedIndex].title, listUpdatedDesks[updatedIndex].primary_color, listUpdatedDesks[updatedIndex].description, listUpdatedDesks[updatedIndex].modified_time, listUpdatedDesks[updatedIndex].access_status, accessToken)
+        .then((newDesk:any)=>{
+          updateDesk({...listUpdatedDesks[updatedIndex], active_status: RemoteStatus, remote_id: newDesk._id, original_id: newDesk._id});
+        });
+    }
+    if (remoteIndex < listRemoteDesk.length && listRemoteDesk[remoteIndex]._id === listUpdatedDesks[updatedIndex].remote_id){
+      if (listUpdatedDesks[updatedIndex].active_status === DeletedStatus){
+        deleteDeskInRemote(accessToken, listUpdatedDesks[updatedIndex].remote_id);
       } else
-      if (localDesks[localIndex].active_status === ActiveStatus){
-        // create remote desk
-        listCreatedRemoteDesk.push(localDesks[localIndex]);
+      // Remote củ thì update
+      if (Date.parse(listRemoteDesk[remoteIndex].modified_time) < Date.parse(listUpdatedDesks[updatedIndex].modified_time)){
+        updateDeskToRemote(accessToken, listUpdatedDesks[updatedIndex].remote_id, listUpdatedDesks[updatedIndex]);
       }
-    }
-  } else
-  // case both local desks and remote desks have data
-  if (remoteDesks.length!==0 && localDesks.length!==0){
-    for (let localIndex = 0; localIndex < localDesks.length; localIndex++){
-      while (remoteIndex < remoteDesks.length && remoteDesks[remoteIndex]._id > localDesks[localIndex].remote_id){
-        // when two desk in remote and local is valid and we found new desk in remote (it cannot in case local deleted but remote haven't, because local and remote desk delete in one time)
-        if(remoteDesks[remoteIndex] && localDesks[localIndex] && localDesks[localIndex].remote_id < remoteDesks[remoteIndex]._id){
-          // create local desk
-          const deskElement = remoteDesks[remoteIndex];
-          const localId = uuid.v4();
-          const newDesk = new Desk("localId", deskElement.user_id, deskElement.author_id, deskElement.original_id, deskElement.access_status, deskElement.title, deskElement.description, deskElement.primary_color, deskElement.new_card, deskElement.inprogress_card, deskElement.preview_card, deskElement.modified_time, RemoteStatus, deskElement._id);
-          listCreatedLocalDesk.push(newDesk);
-          remoteIndex++;
-        }
-      }
-      if (remoteIndex < remoteDesks.length && remoteDesks[remoteIndex]._id === localDesks[localIndex].remote_id){
-        // when two desk have same id. we need to decide to update in remote or local
-        if (localDesks[localIndex].active_status === DeletedStatus){
-            // Delete desk in remote
-            listDeletedRemoteDesk.push(localDesks[localIndex]);
-            // Delete desk in local
-            listDeletedLocalDesk.push(localDesks[localIndex]);
-        } else{
-          if (Date.parse(localDesks[localIndex].modified_time) < Date.parse(remoteDesks[remoteIndex].modified_time)){
-            // update local
-            const deskElement = remoteDesks[remoteIndex];
-            const newDesk = new Desk(localDesks[localIndex].remote_id, deskElement.user_id, deskElement.author_id, deskElement.original_id, deskElement.access_status, deskElement.title, deskElement.description, deskElement.primary_color, deskElement.new_card, deskElement.inprogress_card, deskElement.preview_card, deskElement.modified_time, RemoteStatus, deskElement._id);
-            listUpdatedLocalDesk.push(newDesk);
-          } else if (Date.parse(localDesks[localIndex].modified_time) > Date.parse(remoteDesks[remoteIndex].modified_time)){
-            // update remote
-            listUpdatedRemoteDesk.push(localDesks[localIndex]);
-          } else{
-            if (localDesks[localIndex].active_status === ActiveStatus){
-              // update local desk to Remote Status
-              listUpdatedLocalDesk.push({...localDesks[localIndex], active_status: RemoteStatus});
-            }
-          }
-        }
-        remoteIndex++;
-        continue;
-      }
-      if (remoteIndex < remoteDesks.length && remoteDesks[remoteIndex]._id < localDesks[localIndex].remote_id){
-        if (localDesks[localIndex].active_status === ActiveStatus){
-          //create remote desk
-          listCreatedRemoteDesk.push(localDesks[localIndex]);
-        } else if (localDesks[localIndex].active_status === RemoteStatus){
-          //delete local desk
-          listDeletedLocalDesk.push(localDesks[localIndex]);
-        }
-        continue;
-      }        
-
-      // after looping all remote desks, but still have local desk not handled
-      if (remoteIndex>=remoteDesks.length){
-        // post all retain local desk to remote
-        if (localDesks[localIndex].active_status === DeletedStatus){
-          // delete local desk
-          listDeletedLocalDesk.push(localDesks[localIndex])
-        } else
-        if (localDesks[localIndex].active_status === ActiveStatus){
-          // create remote desk
-          listCreatedRemoteDesk.push(localDesks[localIndex]);
-        }
-      }
-    }
-    // after looping all local desks but we still have remote desk not handled
-    if (remoteIndex<remoteDesks.length){
-      // pull all retain remote desk to local
-      for (let index = remoteIndex; index < remoteDesks.length; index++){
-        const deskElement = remoteDesks[index];
-        const localId = uuid.v4();
-        const newDesk = new Desk("localId", deskElement.user_id, deskElement.author_id, deskElement.original_id, deskElement.access_status, deskElement.title, deskElement.description, deskElement.primary_color, deskElement.new_card, deskElement.inprogress_card, deskElement.preview_card, deskElement.modified_time, RemoteStatus, deskElement._id);
-
-        listCreatedLocalDesk.push(remoteDesks[index]);
-      }
-    }
-  } else
-  // case local desk empty
-  if (localDesks.length ===0){
-    for (let index = 0; index < remoteDesks.length; index++){
-      const deskElement = remoteDesks[index];
-      const localId = uuid.v4();
-      const newDesk = new Desk(localId, deskElement.user_id, deskElement.author_id, deskElement.original_id, deskElement.access_status, deskElement.title, deskElement.description, deskElement.primary_color, deskElement.new_card, deskElement.inprogress_card, deskElement.preview_card, deskElement.modified_time, RemoteStatus, deskElement._id);
-
-      listCreatedLocalDesk.push(remoteDesks[index]);
+      remoteIndex++;
+      continue;
     }
   }
-  console.log("Create Remote", listCreatedRemoteDesk);
-  console.log("Create Local", listCreatedLocalDesk);
-  console.log("Update Remote", listUpdatedRemoteDesk);
-  console.log("Update Local", listUpdatedLocalDesk);
-  console.log("Delete Remote", listDeletedRemoteDesk);
-  console.log("Delete Local", listDeletedLocalDesk);
-
-  return Promise.resolve();
 }
-
-export async function syncDesksToRemote(){
+export async function syncDesksToLocal(listLocalDesk:any[], listUpdatedDesks:any[], accessToken:string){
   //todo
-}
-export async function syncDesksToLocal(){
-  //todo
+  listLocalDesk.sort((item1:any, item2:any)=>{
+    return item1.remote_id < item2.remote_id ? 1 : -1;
+  });
+  listUpdatedDesks.sort((item1:any, item2:any)=>{
+    return item1.remote_id < item2.remote_id ? 1 : -1;
+  });
+  // Chỉ handle 3 trường hợp: Remote thiêú thì tạo, Remote dư thì xóa, Remote cũ thì cập nhật
+  let localIndex = 0;
+  if (listUpdatedDesks.length === 0){
+    Promise.all(
+      listLocalDesk.map((desk:any)=>{
+        return removeDesk(desk._id);
+      })
+    );
+  }
+  for (let updatedIndex = 0; updatedIndex < listUpdatedDesks.length; updatedIndex++){
+    while (localIndex < listLocalDesk.length && listLocalDesk[localIndex].remote_id > listUpdatedDesks[updatedIndex].remote_id){
+      // Local dư thì xóa
+      removeDesk(listLocalDesk[localIndex]._id);
+      localIndex++;
+    }
+    if (localIndex >= listLocalDesk.length){
+      console.log("Create");
+      createNewDesk(listUpdatedDesks[updatedIndex]);
+    }
+    if (localIndex < listLocalDesk.length && listLocalDesk[localIndex].remote_id < listUpdatedDesks[updatedIndex].remote_id){
+      // Local thiêú thì tạo
+      console.log("Crete")
+      createNewDesk(listUpdatedDesks[updatedIndex]);
+    }
+    if (localIndex < listLocalDesk.length && listLocalDesk[localIndex].remote_id === listUpdatedDesks[updatedIndex].remote_id){
+      if (listUpdatedDesks[updatedIndex].active_status === DeletedStatus){
+        removeDesk(listUpdatedDesks[updatedIndex]._id);
+      } else
+      // Local củ thì update
+      if (Date.parse(listLocalDesk[localIndex].modified_time) < Date.parse(listUpdatedDesks[updatedIndex].modified_time)){
+        updateDesk(listUpdatedDesks[updatedIndex]);
+      }
+      localIndex++;
+      continue;
+    }
+  }
 }
 
 
