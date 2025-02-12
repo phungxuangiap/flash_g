@@ -1,6 +1,5 @@
 import axios from 'axios';
 import {REACT_APP_URL} from '../../enviroment';
-import {refresh} from './refreshAccessToken';
 
 export async function updateDeskToRemote(accessToken, desk_remote_id, desk) {
   axios
@@ -20,9 +19,9 @@ export async function updateDeskToRemote(accessToken, desk_remote_id, desk) {
     });
 }
 
-export async function updateCardToRemote(accessToken, card, dispatch) {
+export async function updateCardToRemote(accessToken, card) {
   axios
-    .put(`http://${REACT_APP_URL}/api/card/${card._id}`, card, {
+    .put(`http://${REACT_APP_URL}/api/card/${card.remote_id}`, card, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -31,7 +30,6 @@ export async function updateCardToRemote(accessToken, card, dispatch) {
       console.log('Update data successfully');
     })
     .catch(err => {
-      refresh(dispatch);
       console.log('Update card to remote error with message:', err);
     });
 }
@@ -53,7 +51,7 @@ export async function deleteDeskInRemote(accessToken, deskId) {
 
 export async function deleteCardInRemote(accessToken, card, dispatch) {
   axios
-    .delete(`http://${REACT_APP_URL}/api/card/${card._id}`, {
+    .delete(`http://${REACT_APP_URL}/api/card/${card.remote_id}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -62,7 +60,6 @@ export async function deleteCardInRemote(accessToken, card, dispatch) {
       console.log('Update data successfully');
     })
     .catch(err => {
-      refresh(dispatch);
       console.log('Update card to remote error with message:', err);
     });
 }

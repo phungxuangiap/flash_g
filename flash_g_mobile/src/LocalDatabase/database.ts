@@ -2,7 +2,7 @@ import {enablePromise, openDatabase} from 'react-native-sqlite-storage';
 import SQLite from "react-native-sqlite-storage";
 import { Desk, Card, User, Image } from './model';
 import { getLocalDatabase } from './databaseInitialization';
-import { card, cleanAllCardQuery, cleanAllDeskQuery, cleanAllUserQuery, cleanUpQuery, createNewCardQuery, createNewDeskQuery, createNewImageQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, deleteImageQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getAllDesksQuery, getAllImageQuery, getDeskQuery, getImageQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, removeCardQuery, removeDeskQuery, updateCardQuery, updateDeskQuery, updateImageQuery } from './dbQueries';
+import { card, cleanAllCardQuery, cleanAllDeskQuery, cleanAllUserQuery, cleanUpQuery, createNewCardQuery, createNewDeskQuery, createNewImageQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, deleteImageQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getAllDesksQuery, getAllImageQuery, getDeskOfRemoteDeskIdQuery, getDeskQuery, getImageQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, removeCardOfRemoteIdQuery, removeCardQuery, removeDeskQuery, updateCardOfRemoteIdQuery, updateCardQuery, updateDeskQuery, updateImageQuery } from './dbQueries';
 import { store } from '../redux/store';
 import { original } from '@reduxjs/toolkit';
 
@@ -30,6 +30,8 @@ export interface Database {
   updateImage: (image:Image)=>Promise<any>;
   deleteImage: (original_id:string)=>Promise<any>;
   getAllLocalImage: ()=>Promise<any>;
+  getDeskOfRemoteDeskId: (remoteId: string) => Promise<any>;
+  removeCardOfRemoteId: (remoteId: string) => Promise<any>;
 
 }
 
@@ -54,7 +56,7 @@ export async function updateDesk(desk: Desk): Promise<any> {
 export async function getDesk(desk_id: string): Promise<any> {
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      return await db.executeSql(getAllDesksQuery, [desk_id]).then((res:any)=>{
+      return await db.executeSql(getDeskQuery, [desk_id]).then((res:any)=>{
         let listDesk: any[] = [];
         res?.forEach((result:any) => {
           for (let index = 0; index < result.rows.length; index++) {
@@ -115,7 +117,27 @@ export async function getAllDesks(): Promise<any>{
 export async function createNewCard(card: Card): Promise<any> {
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
-      await db.executeSql(createNewCardQuery, [card._id, card.desk_id, card.user_id, card.author_id, card.original_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type, card.modified_time, card.active_status, card.remote_id]);
+      await db.executeSql(createNewCardQuery,
+        [
+          card._id,
+          card.desk_id,
+          card.user_id,
+          card.author_id,
+          card.original_id,
+          card.status,
+          card.level,
+          card.last_preview,
+          card.vocab,
+          card.description,
+          card.sentence,
+          card.vocab_audio,
+          card.sentence_audio,
+          card.type,
+          card.modified_time,
+          card.active_status,
+          card.remote_id,
+          card.remote_desk_id,
+        ]);
     })
     .catch((error) => {
       console.log(error);
@@ -200,7 +222,7 @@ export async function getAllCards(): Promise<any>{
 export async function updateCard(card: Card): Promise<any> {
   return await getLocalDatabase()
     .then(async (db:SQLite.SQLiteDatabase) =>{
-      await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.user_id, card.author_id, card.original_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type, card.modified_time, card.active_status, card.remote_id]);
+      await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.user_id, card.author_id, card.original_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type, card.modified_time, card.active_status, card.remote_id, card.remote_desk_id]);
       console.log("Update card successfully")
     })
     .catch((error) => {
@@ -350,6 +372,35 @@ export function getAllLocalImage(){
           return listLocalImageOfDesk;
     });
 }
+
+export function getDeskOfRemoteDeskId(deskId:string){
+  return getLocalDatabase()
+    .then(async(db:SQLite.SQLiteDatabase)=>{
+      const response = await db.executeSql(getDeskOfRemoteDeskIdQuery, [deskId]);
+      let listDeskResponse: any[] = [];
+          response?.forEach((item:any) => {
+            for (let index = 0; index < item.rows.length; index++) {
+              listDeskResponse.push(item.rows.item(index));
+            }
+          });
+          return listDeskResponse[0] ? listDeskResponse[0] : undefined;
+    });
+    
+}
+
+export function updateCardOfRemoteId(remoteId:string){
+  return getLocalDatabase()
+    .then(async(db:SQLite.SQLiteDatabase)=>{
+      return await db.executeSql(updateCardOfRemoteIdQuery, [remoteId]);
+    });
+}
+export function removeCardOfRemoteId(remoteId: string){
+  return getLocalDatabase()
+    .then(async(db:SQLite.SQLiteDatabase)=>{
+      return await db.executeSql(removeCardOfRemoteIdQuery, [remoteId]);
+    });
+}
+
 export const database: Database = {
   createNewDesk,
   updateDesk,
@@ -373,4 +424,6 @@ export const database: Database = {
   updateImage,
   deleteImage,
   getAllLocalImage,
+  getDeskOfRemoteDeskId,
+  removeCardOfRemoteId,
 };

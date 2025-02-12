@@ -5,7 +5,7 @@ const generateAccessToken = (user) => {
   let token;
   if (user) {
     token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: "5m",
+      expiresIn: "30s",
     });
   }
   return token ? token : undefined;

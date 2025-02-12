@@ -67,15 +67,7 @@ const createCard = asyncHandler(async (req, res, next) => {
     last_preview,
     modified_time,
   } = req.body;
-  if (
-    !vocab ||
-    !description ||
-    !sentence ||
-    !vocab_audio ||
-    !sentence_audio ||
-    !last_preview ||
-    !modified_time
-  ) {
+  if (!vocab || !description || !sentence || !last_preview || !modified_time) {
     res.status(Constants.NOT_FOUND);
     throw new Error("Cannot create card because of missing field!");
   } else {

@@ -51,7 +51,8 @@ const card = `
         type TEXT,
         modified_time TEXT,
         active_status TEXT DEFAULT 'active',
-        remote_id TEXT DEFAULT ''
+        remote_id TEXT DEFAULT '',
+        remote_desk_id TEXT DEFAULT ''
    )
 `;
 const image = `
@@ -182,6 +183,9 @@ const getAllCardsQuery = `
 const getAllCardsOfDeskQuery = `
     SELECT * FROM Card WHERE desk_id = ?
 `;
+const getDeskOfRemoteDeskIdQuery = `
+    SELECT * FROM Desk WHERE remote_id = ?
+`;
 const createNewCardQuery = `
     INSERT INTO Card (
         _id,
@@ -200,7 +204,8 @@ const createNewCardQuery = `
         type,
         modified_time,
         active_status,
-        remote_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        remote_id, 
+        remote_desk_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 const updateCardQuery = `
     INSERT INTO Card (
@@ -220,8 +225,9 @@ const updateCardQuery = `
         type,
         modified_time,
         active_status,
-        remote_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        remote_id,
+        remote_desk_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(_id) DO UPDATE SET
         _id = excluded._id,
         desk_id = excluded.desk_id,
@@ -239,17 +245,64 @@ const updateCardQuery = `
         type = excluded.type,
         modified_time = excluded.modified_time,
         active_status = excluded.active_status,
-        remote_id = excluded.remote_id
+        remote_id = excluded.remote_id,
+        remote_desk_id = excluded.remote_desk_id
+`;
+
+const updateCardOfRemoteIdQuery = `
+    INSERT INTO Card (
+        _id,
+        desk_id,
+        user_id,
+        author_id,
+        original_id,
+        status,
+        level,
+        last_preview,
+        vocab,
+        description,
+        sentence,
+        vocab_audio,
+        sentence_audio,
+        type,
+        modified_time,
+        active_status,
+        remote_id,
+        remote_desk_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(remote_id) DO UPDATE SET
+        _id = excluded._id,
+        desk_id = excluded.desk_id,
+        user_id = excluded.user_id,
+        author_id = excluded.author_id,
+        original_id = excluded.original_id,
+        status = excluded.status,
+        level = excluded.level,
+        last_preview = excluded.last_preview,
+        vocab = excluded.vocab,
+        description = excluded.description,
+        sentence = excluded.sentence,
+        vocab_audio = excluded.vocab_audio,
+        sentence_audio = excluded.sentence_audio,
+        type = excluded.type,
+        modified_time = excluded.modified_time,
+        active_status = excluded.active_status,
+        remote_id = excluded.remote_id,
+        remote_desk_id = excluded.remote_desk_id
 `;
 
 const deleteCardQuery = `
     UPDATE Card
     SET active_status = 'deleted',
         modified_time = ?
-    WHERE remote_id = ?
+    WHERE _id = ?
 `;
 const removeCardQuery = `
     DELETE FROM Card WHERE _id = ?
+`
+
+const removeCardOfRemoteIdQuery = `
+    DELETE FROM Card WHERE remote_id = ? AND _id = ""
 `
 const removeDeskQuery = `
     DELETE FROM Desk WHERE _id = ?
@@ -288,6 +341,9 @@ export {
     getAllImageQuery,
     getAllDesksQuery,
     getDeskQuery,
+    getDeskOfRemoteDeskIdQuery,
+    updateCardOfRemoteIdQuery,
+    removeCardOfRemoteIdQuery,
 };
 
 

@@ -5,25 +5,19 @@ import {setLoading} from '../redux/slices/stateSlice';
 import {refresh} from './refreshAccessToken';
 import {REACT_APP_URL} from '../../enviroment';
 
-export default async function createCard(
-  accessToken,
-  deskId,
-  vocab,
-  sentence,
-  description,
-) {
+export default async function createCard(accessToken, deskId, card) {
   console.log(REACT_APP_URL);
-  await axios
+  return await axios
     .post(
       `http://${REACT_APP_URL}/api/card/${deskId}`,
       {
-        vocab,
-        description,
-        sentence,
+        vocab: card.vocab,
+        description: card.description,
+        sentence: card.sentence,
         vocab_audio: null,
         sentence_audio: null,
-        last_preview: JSON.stringify(new Date()).slice(1, -1),
-        modified_time: JSON.stringify(new Date()).slice(1, -1),
+        last_preview: card.last_preview,
+        modified_time: card.modified_time,
       },
       {
         headers: {
@@ -33,6 +27,8 @@ export default async function createCard(
     )
     .then(res => {
       console.log('Create card successfully');
+      console.log('NEWCARD', res.data);
+      return res.data;
     })
     .catch(async err => {
       console.log('Create new card error with message:', err);

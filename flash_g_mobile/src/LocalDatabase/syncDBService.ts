@@ -1,12 +1,12 @@
 
 import { useDispatch } from "react-redux";
-import { ActiveStatus, DeletedStatus, Login, RemoteStatus } from "../constants";
+import { ActiveStatus, Auth, DeletedStatus, Login, RemoteStatus } from "../constants";
 import { setUser } from "../redux/slices/authSlice";
 import { updateCurrentDesks } from "../redux/slices/gameSlice";
 import { setLoading } from "../redux/slices/stateSlice";
 import { fetchAllCards, fetchCurrentUser, fetchListDesks } from "../service/fetchRemoteData";
 import { deleteCardInRemote, deleteDeskInRemote, updateCardToRemote, updateDeskToRemote } from "../service/postToRemote";
-import { createNewCard, createNewDesk, createNewImage, createNewUser, deleteCard, deleteDesk, deleteImage, getAllCards, getAllCurrentCardsOfDesk, getAllDesks, getAllLocalImage, getDesk, getImageOfDesk, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, getUser, removeCard, removeDesk, updateCard, updateDesk } from "./database";
+import { createNewCard, createNewDesk, createNewImage, createNewUser, deleteCard, deleteDesk, deleteImage, getAllCards, getAllCurrentCardsOfDesk, getAllDesks, getAllLocalImage, getDesk, getDeskOfRemoteDeskId, getImageOfDesk, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, getUser, removeCard, removeCardOfRemoteId, removeDesk, updateCard, updateCardOfRemoteId, updateDesk } from "./database";
 import { Desk, Card } from "./model";
 import { Dispatch, UnknownAction } from "@reduxjs/toolkit";
 import { addImageToCloudinary, createImage, fetchImageOfDesk } from "../service/imageService";
@@ -76,20 +76,27 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
             if (onlineState){
               // It'll have a responsibility to check current user, available accesstoken and refresh token for next requests below.
               user = await fetchCurrentUser(accessToken);
+              console.log('USER', user);
               if (user){
                 dispatch(setUser(user));
                 createNewUser(user);
               } else{
                 console.log("Fetch user error, try refreshing to get a new token...");
-                await refresh(dispatch);
-                throw new Error("Access Token is out of order");
+                await refresh(dispatch)
+                  .catch(err=>{
+                    console.log("Refresh access token error with message:", err)
+                    dispatch(setLoading(false));
+                    navigation.navigate(Auth);
+                  });
               }
             }else {
               user = await getUser();
               if (user){
+                    dispatch(setLoading(false));
+
                 dispatch(setUser(user));
               } else{
-                navigation.navigate(Login);
+                navigation.navigate(Auth);
               }
             }
             return user;
@@ -117,8 +124,15 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
               listDeletedRemoteCard,
               listCreatedRemoteCard,
               listUpdatedRemoteCard,
-              ] = syncCards(listLocalCard, listRemoteCard);
+              ] = syncCards(listLocalCard, listRemoteCard, remoteResponse.status === 'fulfilled' ? true : false);
+              console.log("CREATE LOCAL CARD", listCreatedLocalCard);
+              console.log("UPDATE LOCAL CARD", listUpdatedLocalCard);
+              console.log("DELETE LOCAL CARD", listDeletedLocalCard);
+              console.log("CREATE REMOTE CARD", listCreatedRemoteCard);
+              console.log("UPDATE REMOTE CARD", listUpdatedRemoteCard);
+              console.log("DELETE REMOTE CARD", listDeletedRemoteCard);
               // update cards to remote
+
               if (onlineState){
                 
                 Promise.all(
@@ -126,12 +140,12 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                     ...listDeletedRemoteCard.map((deletedCard: any)=>{
                       return deleteCardInRemote(accessToken, deletedCard);
                     }),
-                    ...listCreatedRemoteCard.map((createdCard: any)=>{
-                      return createCard(accessToken, createdCard.desk_id, createdCard.vocab, createdCard.sentence, createdCard.description)
-                        .then(response=>{
-                          //update remote_id in local card;
-                        });
-                    }),
+                    // ...listCreatedRemoteCard.map((createdCard: any)=>{
+                    //   return createCard(accessToken, createdCard.desk_id, createdCard.vocab, createdCard.sentence, createdCard.description)
+                    //     .then(response=>{
+                    //       //update remote_id in local card;
+                    //     });
+                    // }),
                     ...listUpdatedRemoteCard.map((updatedCard: any)=>{
                       return updateCardToRemote(accessToken, updatedCard);
                     }),
@@ -142,23 +156,21 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
               Promise.all(
                 [
                   ...listDeletedLocalCard.map((deletedCard: any)=>{
-                    return deleteCard(deletedCard.remote_id);
-                  }),
-                  ...listCreatedLocalCard.map((createdCard: any)=>{
-                    return createNewCard(createdCard);
+
+                    return removeCard(deletedCard._id);
                   }),
                   ...listUpdatedLocalCard.map((updatedCard: any)=>{
                     return updateCard(updatedCard);
                   }),
                 ]
               );
-              return user;
+              return {listCreatedRemoteCard: listCreatedRemoteCard, listCreatedLocalCard:listCreatedLocalCard};
             } else {
               return false;
             }
           })
           // handle remote and local desks
-          .then(async user => {
+          .then(async ({listCreatedRemoteCard, listCreatedLocalCard}) => {
             let mergedDesks = [];
             let listLocalDesk = [];
             let listRemoteDesk = [];
@@ -172,12 +184,12 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
             if (remoteResponse.status === "fulfilled"){
               listRemoteDesk = remoteResponse.value;
             }
-            mergedDesks = mergeDesk(listLocalDesk, listRemoteDesk);
+            mergedDesks = mergeDesk(listLocalDesk, listRemoteDesk, remoteResponse.status === 'fulfilled' ? true : false);
             console.log("[MERGE DESK LIST]", mergedDesks);
             let listUpdatedDesks = [];
             listUpdatedDesks =  await Promise.all(
               mergedDesks.map((desk, index)=>{
-                return getAllCurrentCardsOfDesk(desk.remote_id)
+                return getAllCurrentCardsOfDesk(desk._id)
                   .then(listCurrentCards=>{
                     let newCard = 0;
                     let inProgressCard = 0;
@@ -191,6 +203,17 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                         previewCard++;
                       }
                     });
+                    listCreatedLocalCard.forEach(card=>{
+                      if (card.remote_desk_id === desk.remote_id){
+                        if (card.status === 'new'){
+                          newCard++;
+                        } else if (card.status === 'inprogress'){
+                          inProgressCard++;
+                        } else {
+                          previewCard++;
+                        }
+                      }
+                    })
                     let newDesk = desk;
                     newDesk.new_card = newCard;
                     newDesk.inprogress_card = inProgressCard;
@@ -202,17 +225,51 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                   });
               })
             );
-            return {listUpdatedDesks: listUpdatedDesks, listLocalDesk: listLocalDesk, listRemoteDesk: listRemoteDesk};
+            return {listUpdatedDesks: listUpdatedDesks, listLocalDesk: listLocalDesk, listRemoteDesk: listRemoteDesk, listCreatedRemoteCard: listCreatedRemoteCard, listCreatedLocalCard:listCreatedLocalCard};
           })
           // sync local and remote desks with merged desks
-          .then(({listUpdatedDesks, listLocalDesk, listRemoteDesk}:any)=>{
+          .then(({listUpdatedDesks, listLocalDesk, listRemoteDesk, listCreatedRemoteCard, listCreatedLocalCard}:any)=>{
             //update redux state
             dispatch(updateCurrentDesks(JSON.parse(JSON.stringify(listUpdatedDesks))));
             dispatch(setLoading(false));
             Promise.allSettled(
               [
-                onlineState ? syncDesksToRemote(listRemoteDesk, listUpdatedDesks, accessToken) : Promise.reject(),
-                syncDesksToLocal(listLocalDesk, listUpdatedDesks, accessToken),
+                onlineState ?
+                syncDesksToRemote(listRemoteDesk, listUpdatedDesks, accessToken)
+                  .then(res=>{
+                    // after having remote_id, let's set it to card id
+                    Promise.allSettled(
+                      listCreatedRemoteCard.map((card:any)=>{
+                        getDesk(card.desk_id)
+                          .then(async (desk : any)=>{
+                            console.log('DESKKKKKKK', desk);
+                            console.log('CARDDDDD', card);
+                            return await createCard(accessToken, desk.remote_id, card);
+                          })
+                          .then(newCard=>{
+                            //update remote_id and remote_desk_id of card in local
+                            updateCard({...card, remote_id: newCard._id, remote_desk_id: newCard.desk_id, active_status: RemoteStatus, original_id: newCard._id});
+                          });
+                      })
+                    )
+                  })
+                  .catch(err=>{
+                    console.log("Sync desk to remote error with message:", err);
+                  })
+                 : Promise.reject(),
+                syncDesksToLocal(listLocalDesk, listUpdatedDesks, accessToken)
+                  .then(res=>{
+                    Promise.all(
+                      listCreatedLocalCard.map(card=>{
+                        return getDeskOfRemoteDeskId(card.remote_desk_id)
+                          .then(res=>{
+                            updateCard({...card, _id: uuid.v4(), desk_id: res._id});
+                            removeCardOfRemoteId(card.remote_id);
+                            
+                          });
+                      })
+                    )
+                  }),
               ]
             );
           })
@@ -222,7 +279,7 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
 }
 
 
-const mergeDesk = (localDesks: any[], remoteDesks: any[]) : any[] =>{
+const mergeDesk = (localDesks: any[], remoteDesks: any[], onlineState: boolean) : any[] =>{
   let mergedList:any[] = [];
   localDesks = localDesks.sort((itemA:any, itemB: any)=>{
     return itemA.remote_id < itemB.remote_id ? 1 : -1;
@@ -232,6 +289,11 @@ const mergeDesk = (localDesks: any[], remoteDesks: any[]) : any[] =>{
   });
   console.log('[Local Desk]', localDesks);
   console.log('[Remote Desk]', remoteDesks);
+  // if you don't have internet, let's use data in local;
+  if (!onlineState){
+    console.log("ahihi")
+    return localDesks;
+  }
   let remoteIndex = 0;
   // case remote desk is empty
   if (remoteDesks.length===0){
@@ -247,6 +309,7 @@ const mergeDesk = (localDesks: any[], remoteDesks: any[]) : any[] =>{
     }
   } else
   // case both local desks and remote desks have data
+
   if (remoteDesks.length !== 0 && localDesks.length !== 0){
     for (let localIndex = 0; localIndex < localDesks.length; localIndex++){
       while (remoteIndex < remoteDesks.length && remoteDesks[remoteIndex]._id > localDesks[localIndex].remote_id){
@@ -339,7 +402,7 @@ const mergeDesk = (localDesks: any[], remoteDesks: any[]) : any[] =>{
 };
 
 
-const syncCards = (localCards:any[], remoteCards: any[]): any[] =>{
+const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean): any[] =>{
   console.log('[Local Card]', localCards);
   console.log('[Remote Card]', remoteCards);
   let listDeletedLocalCard:any[] = [];
@@ -354,7 +417,10 @@ const syncCards = (localCards:any[], remoteCards: any[]): any[] =>{
   remoteCards = remoteCards.sort((itemA:any, itemB: any)=>{
     return itemA._id < itemB._id ? 1 : -1;
   });
-  
+  // in case offline, just return empty arrays 
+  if (!onlineState){
+    return [listDeletedLocalCard, listCreatedLocalCard, listUpdatedLocalCard, listDeletedRemoteCard, listCreatedRemoteCard, listUpdatedRemoteCard];
+  }
   let remoteIndex = 0;
   // case remote cards is empty
   if (remoteCards.length===0){
@@ -367,6 +433,8 @@ const syncCards = (localCards:any[], remoteCards: any[]): any[] =>{
       if (localCards[localIndex].active_status === ActiveStatus){
         // create remote card
         listCreatedRemoteCard.push(localCards[localIndex]);
+      } else{
+        listDeletedLocalCard.push(localCards[localIndex]);
       }
     }
   } else
@@ -379,7 +447,7 @@ const syncCards = (localCards:any[], remoteCards: any[]): any[] =>{
           // create local card
           const cardElement = remoteCards[remoteIndex];
           const localId = uuid.v4();
-          const newCard = new Card(localId, cardElement.desk_id, cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id);
+          const newCard = new Card("", "", cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, cardElement.desk_id);
           listCreatedLocalCard.push(newCard);
           remoteIndex++;
         }
@@ -395,7 +463,7 @@ const syncCards = (localCards:any[], remoteCards: any[]): any[] =>{
           if (Date.parse(localCards[localIndex].modified_time) < Date.parse(remoteCards[remoteIndex].modified_time)){
             // update local
             const cardElement = remoteCards[remoteIndex];
-            const newCard = new Card(localCards[localIndex].remote_id, cardElement.desk_id, cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id);
+            const newCard = new Card(localCards[localIndex]._id, localCards[localIndex].desk_id, cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, localCards[localIndex].remote_desk_id);
             listUpdatedLocalCard.push(newCard);
           } else if (Date.parse(localCards[localIndex].modified_time) > Date.parse(remoteCards[remoteIndex].modified_time)){
             // update remote
@@ -440,7 +508,7 @@ const syncCards = (localCards:any[], remoteCards: any[]): any[] =>{
       for (let index = remoteIndex; index < remoteCards.length; index++){
         const cardElement = remoteCards[index];
         const localId = uuid.v4();
-        const newCard = new Card(localId, cardElement.desk_id, cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id);
+        const newCard = new Card("", "", cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, cardElement.desk_id);
         listCreatedLocalCard.push(newCard);
       }
     }
@@ -450,9 +518,7 @@ const syncCards = (localCards:any[], remoteCards: any[]): any[] =>{
     for (let index = 0; index < remoteCards.length; index++){
       const cardElement = remoteCards[index];
       const localId = uuid.v4();
-      const newCard = new Card(localId, cardElement.desk_id, cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id);
-
-
+      const newCard = new Card("", "", cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, cardElement.desk_id);
       listCreatedLocalCard.push(newCard);
     }
   }
@@ -477,14 +543,14 @@ export async function syncDesksToRemote(listRemoteDesk:any[], listUpdatedDesks:a
     }
     if (remoteIndex >= listRemoteDesk.length){
       // Remote thiếu thì tạo
-      createDeskInRemote(listUpdatedDesks[updatedIndex].title, listUpdatedDesks[updatedIndex].primary_color, listUpdatedDesks[updatedIndex].description, listUpdatedDesks[updatedIndex].modified_time, listUpdatedDesks[updatedIndex].access_status, accessToken)
+      await createDeskInRemote(listUpdatedDesks[updatedIndex].title, listUpdatedDesks[updatedIndex].primary_color, listUpdatedDesks[updatedIndex].description, listUpdatedDesks[updatedIndex].modified_time, listUpdatedDesks[updatedIndex].access_status, accessToken)
         .then((newDesk:any)=>{
           updateDesk({...listUpdatedDesks[updatedIndex], active_status: RemoteStatus, remote_id: newDesk._id, original_id: newDesk._id});
         });
     }
     if (remoteIndex < listRemoteDesk.length && listRemoteDesk[remoteIndex]._id < listUpdatedDesks[updatedIndex].remote_id){
       // Remote thiêú thì tạo
-      createDeskInRemote(listUpdatedDesks[updatedIndex].title, listUpdatedDesks[updatedIndex].primary_color, listUpdatedDesks[updatedIndex].description, listUpdatedDesks[updatedIndex].modified_time, listUpdatedDesks[updatedIndex].access_status, accessToken)
+      await createDeskInRemote(listUpdatedDesks[updatedIndex].title, listUpdatedDesks[updatedIndex].primary_color, listUpdatedDesks[updatedIndex].description, listUpdatedDesks[updatedIndex].modified_time, listUpdatedDesks[updatedIndex].access_status, accessToken)
         .then((newDesk:any)=>{
           updateDesk({...listUpdatedDesks[updatedIndex], active_status: RemoteStatus, remote_id: newDesk._id, original_id: newDesk._id});
         });
@@ -527,12 +593,12 @@ export async function syncDesksToLocal(listLocalDesk:any[], listUpdatedDesks:any
     }
     if (localIndex >= listLocalDesk.length){
       console.log("Create");
-      createNewDesk(listUpdatedDesks[updatedIndex]);
+      await createNewDesk(listUpdatedDesks[updatedIndex]);
     }
     if (localIndex < listLocalDesk.length && listLocalDesk[localIndex].remote_id < listUpdatedDesks[updatedIndex].remote_id){
       // Local thiêú thì tạo
       console.log("Crete")
-      createNewDesk(listUpdatedDesks[updatedIndex]);
+      await createNewDesk(listUpdatedDesks[updatedIndex]);
     }
     if (localIndex < listLocalDesk.length && listLocalDesk[localIndex].remote_id === listUpdatedDesks[updatedIndex].remote_id){
       if (listUpdatedDesks[updatedIndex].active_status === DeletedStatus){

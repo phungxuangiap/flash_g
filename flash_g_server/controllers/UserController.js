@@ -40,6 +40,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
         httpOnly: true,
         secure: false,
         sameSite: "none",
+        maxAge: 315360000,
       });
       res.status(200).json({ access_token });
     } else {
@@ -123,6 +124,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
         httpOnly: true,
         secure: false,
         sameSite: "none",
+        maxAge: 315360000,
       });
       console.log(newUser);
       res.status(200).json({ access_token });

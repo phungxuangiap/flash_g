@@ -66,7 +66,8 @@ export class Card {
     modified_time: string;
     active_status:string;
     remote_id: string;
-    constructor(_id:string, desk_id: string, user_id:string, author_id:string, original_id:string, status: string, level: number, last_preview: string, vocab: string, description: string, sentence: string, vocab_audio: string, sentence_audio: string, type: string, modified_time:string, active_status:string = ActiveStatus, remote_id:string = ""){
+    remote_desk_id: string;
+    constructor(_id:string, desk_id: string, user_id:string, author_id:string, original_id:string, status: string, level: number, last_preview: string, vocab: string, description: string, sentence: string, vocab_audio: string, sentence_audio: string, type: string, modified_time:string, active_status:string = ActiveStatus, remote_id:string = "", remote_desk_id: string = ""){
         this._id = _id;
         this.desk_id = desk_id;
         this.user_id = user_id;
@@ -84,6 +85,7 @@ export class Card {
         this.modified_time = modified_time;
         this.active_status = active_status;
         this.remote_id = remote_id;
+        this.remote_desk_id = remote_desk_id;
     }
 }
 

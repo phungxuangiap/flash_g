@@ -33,7 +33,7 @@ import {
   updateCurrentDesks,
 } from '../../redux/slices/gameSlice';
 import {
-  getListCurrentCardsOfDesk,
+  getAllCurrentCardsOfDesk,
   updateCard,
 } from '../../LocalDatabase/database';
 import {Card} from '../../LocalDatabase/model';
@@ -110,7 +110,7 @@ export default function CardScreen() {
 
   useEffect(() => {
     dispatch(setLoading(true));
-    getListCurrentCardsOfDesk(desk._id)
+    getAllCurrentCardsOfDesk(desk._id)
       .then(listCards => {
         dispatch(
           updateCurrentCards(
@@ -210,15 +210,6 @@ export default function CardScreen() {
             }}
             create={async () => {
               dispatch(setLoading(true));
-              // await createCard(
-              //   accessToken,
-              //   desk,
-              //   vocab,
-              //   sentence,
-              //   description,
-              //   data,
-              //   setData,
-              // );
               const id = uuid.v4();
               const newCard = new Card(
                 id,
@@ -238,6 +229,7 @@ export default function CardScreen() {
                 JSON.stringify(new Date()).slice(1, -1),
                 ActiveStatus,
               );
+              console.log('NEW CARD', newCard);
               await updateCard(newCard)
                 .then(res => {
                   console.log('Create card');
