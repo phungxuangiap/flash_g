@@ -25,6 +25,9 @@ const onlineStateSelector = state => {
 const authStateSelector = state => {
   return state.auth.authState;
 };
+const imageStateSelector = state => {
+  return state.state.images;
+};
 export {
   loadingSelector,
   accessTokenSelector,
@@ -35,4 +38,5 @@ export {
   getLocalDatabaseSelector,
   onlineStateSelector,
   authStateSelector,
+  imageStateSelector,
 };

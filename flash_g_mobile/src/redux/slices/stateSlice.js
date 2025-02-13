@@ -4,6 +4,7 @@ const initialState = {
   loading: false,
   db: null,
   online: true,
+  images: {},
 };
 
 const stateSlice = createSlice({
@@ -19,7 +20,11 @@ const stateSlice = createSlice({
     setOnline: (state, actions) => {
       state.online = actions.payload;
     },
+    setImages: (state, actions) => {
+      state.images = actions.payload;
+    },
   },
 });
 export default stateSlice;
-export const {setLoading, setDatabase, setOnline} = stateSlice.actions;
+export const {setLoading, setDatabase, setOnline, setImages} =
+  stateSlice.actions;

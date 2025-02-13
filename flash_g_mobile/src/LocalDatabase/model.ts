@@ -92,15 +92,19 @@ export class Card {
 
 export class Image {
     _id: string;
+    remote_id: string;
+    remote_desk_id: string;
     desk_id: string;
-    file: string;
-    status: string;
+    type: string;
+    img_url: string;
     modified_time: string;
-    constructor(_id:string, desk_id: string, file:string, status:string, modified_time:string){
+    constructor(_id:string, remote_id: string, remote_desk_id: string, desk_id: string, type:string, img_url:string, modified_time:string){
         this._id = _id;
+        this.remote_id = remote_id;
+        this.remote_desk_id = remote_desk_id;
         this.desk_id = desk_id;
-        this.file = file;
-        this.status = status;
+        this.type = type;
+        this.img_url = img_url;
         this.modified_time = modified_time;
     }
 

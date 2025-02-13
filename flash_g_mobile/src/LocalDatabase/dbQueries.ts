@@ -58,20 +58,26 @@ const card = `
 const image = `
     CREATE TABLE IF NOT EXISTS Image (
         _id TEXT PRIMARY KEY,
+        remote_id TEXT,
+        remote_desk_id TEXT,
         desk_id TEXT,
-        file TEXT,
+        type TEXT,
+        img_url TEXT,
         modified_time TEXT
     )
 `;
 const createNewImageQuery = `
     INSERT INTO Image (
         _id,
+        remote_id,
+        remote_desk_id,
         desk_id,
-        file,
-        modified_time) VALUES (?, ?, ?, ?)    
+        type,
+        img_url,
+        modified_time) VALUES (?, ?, ?, ?, ?, ?, ?)    
 `;
 const getImageQuery = `
-    SELECT * FROM Image WHERE desk_id = ?
+    SELECT * FROM Image WHERE original_id = ?
 `;
 const getAllImageQuery = `
     SELECT * FROM Image
@@ -79,14 +85,20 @@ const getAllImageQuery = `
 const updateImageQuery = `
     INSERT INTO Image (
         _id,
+        remote_id,
+        remote_desk_id,
         desk_id,
-        file,
+        type,
+        img_url,
         modified_time
-    ) VALUES(?, ?, ?, ?)
+    ) VALUES(?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(_id) DO UPDATE SET 
         _id = excluded._id,
-        desk_id = excluded._id,
-        file = excluded.file,
+        remote_id = excluded.remote_id,
+        remote_desk_id = excluded.remote_desk_id,
+        desk_id = excluded.desk_id,
+        type = excluded.type,
+        img_url = excluded.img_url,
         modified_time = excluded.modified_time
 `;
 const deleteImageQuery = `

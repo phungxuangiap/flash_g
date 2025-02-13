@@ -13,6 +13,10 @@ const imageSchema = mongoose.Schema({
     type: String,
     require: [true, "Please provide enough field for ImageModel"],
   },
+  type: {
+    type: String,
+    require: [true, "Please provide enough field for ImageModel"],
+  },
   modified_time: {
     type: String,
     require: [true],

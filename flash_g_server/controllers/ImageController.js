@@ -24,10 +24,9 @@ const getImageOfDeskId = asyncHandler(async (req, res, next) => {
 //@route POST api/image/:desk_id
 //@access Private
 const addImageOfDeskId = asyncHandler(async (req, res, next) => {
-  console.log("Upload here");
   const desk = await Desk.findById(req.params.desk_id);
 
-  if (!req.body.img_url) {
+  if (!req.body.img_url || !req.body.type) {
     res.status(Constants.NOT_FOUND);
     throw new Error("You missing field");
   } else {
@@ -43,6 +42,7 @@ const addImageOfDeskId = asyncHandler(async (req, res, next) => {
             _id: image[0]._id,
             desk_id: image[0].desk_id,
             img_url: req.body.img_url,
+            type: req.body.type,
             modified_time: req.body.modified_time,
           });
           if (updatedImage) {
@@ -58,6 +58,7 @@ const addImageOfDeskId = asyncHandler(async (req, res, next) => {
             _id: imgId,
             desk_id: req.params.desk_id,
             img_url: req.body.img_url,
+            type: req.body.type,
             modified_time: req.body.modified_time,
           });
           if (newImage) {
@@ -94,8 +95,73 @@ const deleteImageOfDesk = asyncHandler(async (req, res, next) => {
   }
 });
 
+//@desc Update Image of Desk
+//@route DELETE api/image/:desk_id
+//@access Private
+const updateImageOfDesk = asyncHandler(async (req, res, next) => {
+  const desk_id = req.params.desk_id;
+  if (desk_id) {
+    const image = await Image.find({ desk_id: req.params.desk_id });
+    if (image[0]) {
+      console.log("Image", image[0]._id);
+      await Image.findByIdAndUpdate(
+        image[0]._id,
+        {
+          desk_id: req.body.desk_id,
+          img_url: req.body.img_url,
+          type: req.body.type,
+          modified_time: req.body.modified_time,
+        },
+        { new: true }
+      )
+        .then((response) => {
+          console.log(response.data);
+          res.status(200).json(response);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      res.status(Constants.NOT_FOUND);
+      throw new Error("Image is not valid");
+    }
+  }
+});
+
+//@desc Get all images of provided desks
+//@route GET api/image/?multiple_desk=true
+//@access Private
+const getImagesOfDesks = asyncHandler(async (req, res, next) => {
+  const isMultipleDesks = req.query.multiple_desk;
+  let listImages = [];
+  if (isMultipleDesks) {
+    const desks = req.body.list_desk;
+    if (desks.length !== 0) {
+      res.json(
+        await Promise.all(
+          desks.map((deskId) => {
+            return Image.find({ desk_id: deskId }).then((response) => {
+              if (response[0]) {
+                return response[0];
+              } else {
+                return undefined;
+              }
+            });
+          })
+        )
+      );
+    } else {
+      res.json("List Desk id is empty");
+    }
+  } else {
+    next();
+  }
+});
+
 module.exports = {
   getImageOfDeskId,
   addImageOfDeskId,
   deleteImageOfDesk,
+  getImagesOfDesks,
+  updateImageOfDesk,
 };

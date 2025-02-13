@@ -4,13 +4,14 @@ import {
   accessTokenSelector,
   authStateSelector,
   currentDesks,
+  imageStateSelector,
   loadingSelector,
   onlineStateSelector,
   userSelector,
 } from '../../redux/selectors';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {Alert, ScrollView, View} from 'react-native';
-import {setLoading} from '../../redux/slices/stateSlice';
+import {setImages, setLoading} from '../../redux/slices/stateSlice';
 import uuid from 'react-native-uuid';
 import {
   CircleButton,
@@ -68,6 +69,7 @@ export default function DeskBoardScreen() {
   const currentUser = useSelector(userSelector);
   const online = useSelector(onlineStateSelector);
   const auth = useSelector(authStateSelector);
+  const images = useSelector(imageStateSelector);
   useFocusEffect(
     useCallback(() => {
       handleLocalAndRemoteData(online, actk, dispatch, navigation);
@@ -165,7 +167,7 @@ export default function DeskBoardScreen() {
                         dispatch(
                           updateCurrentDesks(
                             data.filter(deskDeleted => {
-                              return deskDeleted._id != item._id;
+                              return deskDeleted._id !== item._id;
                             }),
                           ),
                         );
@@ -226,18 +228,26 @@ export default function DeskBoardScreen() {
                 JSON.stringify(new Date()).slice(1, -1),
                 'active',
               );
-              console.log(fileImage, 'FILEIMAGE');
               if (fileImage) {
                 const newImage = new Image(
                   uuid.v4(),
-                  newDesk._id,
-                  JSON.stringify(fileImage),
+                  '',
+                  '',
+                  id,
+                  fileImage.type,
+                  fileImage.uri,
                   JSON.stringify(new Date()).slice(1, -1),
                 );
                 createNewImage(newImage);
+                setFileImage(undefined);
+                dispatch(
+                  setImages({
+                    ...images,
+                    id: JSON.parse(JSON.stringify(newImage)),
+                  }),
+                );
               }
               await createNewDesk(newDesk);
-              // const img_link = await addImageToCloudinary(file, actk);
               dispatch(
                 updateCurrentDesks([
                   ...listCurrentDesks,
@@ -264,6 +274,8 @@ export default function DeskBoardScreen() {
             setDescription={setDescriptionUpdateDesk}
             accessStatus={accessStatusUpdateDesk}
             setAccessStatus={setAccessStatusUpdateDesk}
+            fileImage={fileImage}
+            setFileImage={setFileImage}
             close={() => {
               setindexUpdatedDesk(undefined);
             }}

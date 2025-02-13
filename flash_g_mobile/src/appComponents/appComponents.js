@@ -440,6 +440,7 @@ export const MyCheckbox = ({checked, setChecked}) => {
     </View>
   );
 };
+
 export function CreateNewDeskPopUp({
   input,
   setInput,
@@ -562,10 +563,29 @@ export function UpdateDeskPopUp({
   setDescription,
   accessStatus,
   setAccessStatus,
+  fileImage,
+  setFileImage,
   close,
   update,
   desk,
 }) {
+  const pickImage = () => {
+    const options = {
+      mediaType: 'photo',
+      maxWidth: 800,
+      maxHeight: 600,
+      quality: 0.8,
+    };
+    launchImageLibrary(options, response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        console.log('Image Picker Error: ', response.errorMessage);
+      } else {
+        setFileImage(response.assets[0]); // Lưu đường dẫn hình ảnh
+      }
+    });
+  };
   return (
     <View
       style={{
@@ -585,6 +605,17 @@ export function UpdateDeskPopUp({
             marginBottom: 12,
           }}>
           <Text style={{...ComponentStyle.largeWhiteTitle}}>Update Desk</Text>
+          <TouchableOpacity
+            onPress={pickImage}
+            style={{backgroundColor: 'blue', padding: 20, borderRadius: 10}}>
+            <Text>Choose Image</Text>
+          </TouchableOpacity>
+          {fileImage && (
+            <Image
+              source={{uri: fileImage.uri}}
+              style={{width: 300, height: 300, marginTop: 20}}
+            />
+          )}
           <InputTag
             placeholder={'Your Desk'}
             content={input}

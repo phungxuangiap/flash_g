@@ -6,10 +6,10 @@ import { updateCurrentDesks } from "../redux/slices/gameSlice";
 import { setLoading } from "../redux/slices/stateSlice";
 import { fetchAllCards, fetchCurrentUser, fetchListDesks } from "../service/fetchRemoteData";
 import { deleteCardInRemote, deleteDeskInRemote, updateCardToRemote, updateDeskToRemote } from "../service/postToRemote";
-import { createNewCard, createNewDesk, createNewImage, createNewUser, deleteCard, deleteDesk, deleteImage, getAllCards, getAllCurrentCardsOfDesk, getAllDesks, getAllLocalImage, getDesk, getDeskOfRemoteDeskId, getImageOfDesk, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, getUser, removeCard, removeCardOfRemoteId, removeDesk, updateCard, updateCardOfRemoteId, updateDesk } from "./database";
-import { Desk, Card } from "./model";
+import { createNewCard, createNewDesk, createNewImage, createNewUser, deleteCard, deleteDesk, deleteImage, getAllCards, getAllCurrentCardsOfDesk, getAllDesks, getAllLocalImage, getDesk, getDeskOfRemoteDeskId, getImageOfDesk, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, getUser, removeCard, removeCardOfRemoteId, removeDesk, updateCard, updateCardOfRemoteId, updateDesk, updateImage } from "./database";
+import { Desk, Card, Image } from "./model";
 import { Dispatch, UnknownAction } from "@reduxjs/toolkit";
-import { addImageToCloudinary, createImage, fetchImageOfDesk } from "../service/imageService";
+import { addImageToCloudinary, createImage, fetchImageOfDesk, fetchImagesOfDesks, updateImageOfDesk } from "../service/imageService";
 import uuid from 'react-native-uuid';
 import { refresh } from "../service/refreshAccessToken";
 import createCard from "../service/createCard";
@@ -140,12 +140,6 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                     ...listDeletedRemoteCard.map((deletedCard: any)=>{
                       return deleteCardInRemote(accessToken, deletedCard);
                     }),
-                    // ...listCreatedRemoteCard.map((createdCard: any)=>{
-                    //   return createCard(accessToken, createdCard.desk_id, createdCard.vocab, createdCard.sentence, createdCard.description)
-                    //     .then(response=>{
-                    //       //update remote_id in local card;
-                    //     });
-                    // }),
                     ...listUpdatedRemoteCard.map((updatedCard: any)=>{
                       return updateCardToRemote(accessToken, updatedCard);
                     }),
@@ -242,8 +236,6 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                       listCreatedRemoteCard.map((card:any)=>{
                         getDesk(card.desk_id)
                           .then(async (desk : any)=>{
-                            console.log('DESKKKKKKK', desk);
-                            console.log('CARDDDDD', card);
                             return await createCard(accessToken, desk.remote_id, card);
                           })
                           .then(newCard=>{
@@ -272,6 +264,10 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                   }),
               ]
             );
+          })
+          //handle image
+          .then(res=>{
+            uploadImage(onlineState, accessToken);
           })
           .catch(error=>{
             console.log("Sync flow error with message:", error);
@@ -401,6 +397,152 @@ const mergeDesk = (localDesks: any[], remoteDesks: any[], onlineState: boolean) 
   return mergedList;
 };
 
+// const syncImage = async (onlineState: boolean, accessToken:string) => {
+//   let syncedList:any[] = [];
+//   let localImages : any[] = [];
+//   let remoteImages : any[] = [];
+//   let mergedDeskIds: any[] = [];
+//   getAllDesks()
+//     .then((allDesks:any[])=>{
+//       mergedDeskIds = allDesks.map(desk=>{
+//         return desk.remote_id;
+//       });
+//       Promise.allSettled(
+//         [
+//           getAllLocalImage().then(res=>{
+//             localImages = res;
+//           }),
+//           onlineState ? fetchImagesOfDesks(accessToken, mergedDeskIds).then(res=>{
+//             remoteImages = res;
+//           }) : Promise.resolve([]),
+//         ]
+//       ).then(res=>{
+//         localImages.sort((itemA:any, itemB:any)=>{
+//           return itemA.remote_id < itemB.remote_id ? 1 : -1;
+//         });
+//         remoteImages.sort((itemA:any, itemB:any)=>{
+//           return itemA.remote_id < itemB.remote_id ? 1 : -1;
+//         });
+//         //case only have remote images
+//         if (localImages.length === 0 && remoteImages.length !== 0){
+//           Promise.all(remoteImages.map(image =>{
+//             return getDeskOfRemoteDeskId(image.desk_id)
+//               .then(localDesk=>{
+//                 const newLocalImage = new Image(uuid.v4(), image._id, image.desk_id, localDesk._id, image.type, image.img_url, image.modified_time);
+//                 createNewImage(newLocalImage);
+//               })
+//               .catch(error=>{
+//                 console.log("cannot find desk having id:", image.desk_id, error);
+//               });
+//           }));
+//         } else
+//         if (localImages.length !== 0 && remoteImages.length !== 0){
+//           // merge
+//           let remoteIndex = 0;
+//           for (let localIndex = 0; localIndex < localImages.length; localIndex++){
+//             while (remoteIndex < remoteImages.length && remoteImages[remoteIndex]._id > localImages[localIndex].remote_id){
+//               // if remote have new image, let create in local
+//               getDeskOfRemoteDeskId(remoteImages[remoteIndex].desk_id)
+//                 .then(localDesk=>{
+//                   const newLocalImage = new Image(uuid.v4(), remoteImages[remoteIndex]._id, remoteImages[remoteIndex].desk_id, localDesk._id, remoteImages[remoteIndex].type, remoteImages[remoteIndex].img_url, remoteImages[remoteIndex].modified_time);
+//                   createNewImage(newLocalImage);
+//                 })
+//                 .catch(error=>{
+//                   console.log("cannot find desk having id:", remoteImages[remoteIndex].desk_id, error);
+//                 });
+//               remoteIndex++;
+//             }
+//             if (remoteIndex < remoteImages.length && remoteImages[remoteIndex]._id === localImages[localIndex].remote_id){
+//               if (remoteImages[remoteIndex].modified_time < localImages[localIndex].modified_time){
+//                 const formData = new FormData();
+//                 formData.append("image", {
+//                   uri: localImages[localIndex].img_url,
+//                   type: localImages[localIndex].type,
+//                   name: `${uuid.v4()}.jpg`,
+//                 });
+//                 addImageToCloudinary(formData, accessToken).then(res=>{
+//                   console.log(res);
+//                   console.log(res.path);
+//                   console.log("To Cloudinary successfully!");
+//                   updateImageOfDesk(accessToken, localImages[localIndex].remote_desk_id, {img_url: res.path, type: localImages[localIndex].type, modified_time: localImages[localIndex].modified_time});
+//                 });
+                
+//               } else
+//               if (remoteImages[remoteIndex].modified_time > localImages[localIndex].modified_time){
+//                 // update image in local
+//                 getDeskOfRemoteDeskId(remoteImages[remoteIndex].desk_id)
+//                   .then(localDesk=>{
+//                     const newLocalImage = new Image(uuid.v4(), remoteImages[remoteIndex]._id, remoteImages[remoteIndex].desk_id, localDesk._id, remoteImages[remoteIndex].type, remoteImages[remoteIndex].img_url, remoteImages[remoteIndex].modified_time);
+//                     updateImage(newLocalImage);
+//                   })
+//               }
+//               remoteIndex++;
+//             } else
+//             if (remoteIndex < remoteImages.length && remoteImages[remoteIndex]._id < localImages[localIndex].remote_id){
+//               // add to cloudinary and create new image in remote
+//               const formData = new FormData();
+//               formData.append("image", {
+//                 uri: localImages[localIndex].img_url,
+//                 type: localImages[localIndex].type,
+//                 name: `${uuid.v4()}.jpg`,
+//               });
+//               addImageToCloudinary(formData, accessToken)
+//                 .then(response=>{
+//                   getDesk(localImages[localIndex].desk_id)
+//                     .then(desk=>{
+//                       return createImage({img_url: response.path, type: localImages[localIndex].type, modified_time: localImages[localIndex].modified_time}, desk.remote_id, accessToken);
+//                     })
+//                     .then(newDesk=>{
+//                       updateImage()
+//                     })
+//                 })
+              
+//             } else
+//             if (remoteIndex > remoteImages.length){
+//               // create remote image and update remote id of local image
+//             }
+//           }
+//         } else
+//         if (localImages.length !== 0 && remoteImages.length === 0){
+//           // add to cloudinary and create new image in remote
+//         }
+//       });
+//     });
+// };
+
+const uploadImage = async (onlineState:boolean, accessToken: string) => {
+  if (onlineState){
+    getAllLocalImage()
+      .then(listLocalImage =>{
+        Promise.all(
+          listLocalImage.map(async localImage=>{
+            const file = new FormData();
+            file.append("image", {
+              uri: localImage.img_url,
+              type: localImage.type,
+              name: `${uuid.v4()}.jpg`,
+            });
+            const imageResponse = await addImageToCloudinary(file, accessToken);
+            const desk = await getDesk(localImage.desk_id);
+            if (desk){
+              createImage(
+                {
+                  img_url: imageResponse.path,
+                  type: imageResponse.mimetype,
+                  modified_time: localImage.modified_time,
+                },
+                desk.remote_id,
+                accessToken
+              );
+              deleteImage(localImage.desk_id);
+            } else{
+              console.log("Cannot find desk");
+            }
+          })
+        );
+      });
+  }
+};
 
 const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean): any[] =>{
   console.log('[Local Card]', localCards);
@@ -447,7 +589,7 @@ const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean):
           // create local card
           const cardElement = remoteCards[remoteIndex];
           const localId = uuid.v4();
-          const newCard = new Card("", "", cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, cardElement.desk_id);
+          const newCard = new Card(localId, "", cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, cardElement.desk_id);
           listCreatedLocalCard.push(newCard);
           remoteIndex++;
         }
@@ -508,7 +650,7 @@ const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean):
       for (let index = remoteIndex; index < remoteCards.length; index++){
         const cardElement = remoteCards[index];
         const localId = uuid.v4();
-        const newCard = new Card("", "", cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, cardElement.desk_id);
+        const newCard = new Card(localId, "", cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, cardElement.desk_id);
         listCreatedLocalCard.push(newCard);
       }
     }
@@ -518,7 +660,7 @@ const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean):
     for (let index = 0; index < remoteCards.length; index++){
       const cardElement = remoteCards[index];
       const localId = uuid.v4();
-      const newCard = new Card("", "", cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, cardElement.desk_id);
+      const newCard = new Card(localId, "", cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, cardElement.desk_id);
       listCreatedLocalCard.push(newCard);
     }
   }
@@ -613,75 +755,4 @@ export async function syncDesksToLocal(listLocalDesk:any[], listUpdatedDesks:any
     }
   }
 }
-
-
-export async function syncAllDesks(listRemoteDesks: any[]): Promise<any>{
-    return await getListDesks()
-        .then(res=>{
-            let listLocalDesks: any[] = [];
-             res?.forEach((result:any) => {
-                for (let index = 0; index < result.rows.length; index++) {
-                    listLocalDesks.push(result.rows.item(index));
-                }
-            });
-            const mergedListDesks = mergeLocalAndRemoteData(listRemoteDesks, listLocalDesks);
-            return mergedListDesks;
-        })
-        .catch(err=>{
-            console.log(err);
-        });
-}
-
-
-
-function mergeLocalAndRemoteData(remoteList:any[], localList:any[]):any[]{
-    let mergedList: any[] = [];
-    remoteList = remoteList.map(item=>{
-        return {...item, active_status : "active"};
-    });
-    
-    if (remoteList && localList){
-        mergedList = remoteList.concat(localList);
-        mergedList.sort((itemA, itemB)=>{
-            if (itemA._id < itemB._id){
-                return -1;
-            }else{
-                return 1;
-            }
-        });
-        let i = 0;
-        while(i<mergedList.length-1){
-            if (!mergedList[i].active_status){
-                mergedList.splice(i, 1);
-                continue;
-            };
-            if ((mergedList[i]._id === mergedList[i + 1]._id)){
-                if (mergedList[i].active_status === ActiveStatus && mergedList[i+1].active_status === DeletedStatus){
-
-                    mergedList.splice(i, 1);
-                } else
-                if (mergedList[i].active_status === DeletedStatus && mergedList[i+1].active_status === ActiveStatus){
-
-                    mergedList.splice(i + 1, 1);
-                } else{
-                    if ((Date.parse(mergedList[i].modified_time) < Date.parse(mergedList[i + 1].modified_time))){
-                        mergedList.splice(i, 1);
-                    }else {
-                        mergedList.splice(i + 1, 1);
-                    }
-                }
-                continue;
-            }
-            i++;
-        }
-        // mergedList = mergedList.filter((item, index)=>{
-        //     return item.active_status === 'active';
-        // });
-    }else {
-        mergedList = remoteList ? remoteList : localList;
-    }
-    return mergedList;
-}
-
-
 

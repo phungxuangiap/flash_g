@@ -314,7 +314,7 @@ export function cleanUp():Promise<any>{
 export function createNewImage(image:Image):Promise<any>{
   return getLocalDatabase()
     .then(async (db:SQLite.SQLiteDatabase)=>{
-      return await db.executeSql(createNewImageQuery, [image._id, image.desk_id, image.file, image.modified_time]);
+      return await db.executeSql(createNewImageQuery, [image._id, image.remote_id, image.remote_desk_id, image.desk_id, image.type, image.img_url, image.modified_time]);
     })
     .catch(err=>{
       console.log("Create new Image at local error with message:", err);
@@ -341,7 +341,7 @@ export function getImageOfDesk(original_id: string){
 export function updateImage(image:Image){
   return getLocalDatabase()
     .then(async(db:SQLite.SQLiteDatabase)=>{
-      return await db.executeSql(updateImageQuery, [image._id, image.desk_id, image.file, image.modified_time]);
+      return await db.executeSql(updateImageQuery, [image._id, image.remote_id, image.remote_desk_id, image.desk_id, image.type, image.img_url, image.modified_time]);
     })
     .catch(err=>{
       console.log("Update Image error with message:", err);
