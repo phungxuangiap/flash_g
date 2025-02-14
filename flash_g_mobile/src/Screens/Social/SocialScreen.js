@@ -21,19 +21,19 @@ export function SocialScreen() {
       refresh(dispatch);
     });
     setGlobalDesks(data);
-    if (data) {
-      await Promise.all(
-        data.map(desk => {
-          return fetchImageOfDesk(accessToken, desk._id).then(img_url => {
-            setDeskImageRelationship(pre => {
-              let obj = pre;
-              obj[desk._id] = img_url;
-              return obj;
-            });
-          });
-        }),
-      );
-    }
+    // if (data) {
+    //   await Promise.all(
+    //     data.map(desk => {
+    //       return fetchImageOfDesk(accessToken, desk._id).then(img_url => {
+    //         setDeskImageRelationship(pre => {
+    //           let obj = pre;
+    //           obj[desk._id] = img_url;
+    //           return obj;
+    //         });
+    //       });
+    //     }),
+    //   );
+    // }
   }
   useFocusEffect(
     useCallback(() => {

@@ -329,6 +329,9 @@ const cleanAllCardQuery = `
 const cleanAllUserQuery = `
     DELETE FROM User
 `;
+const cleanImageQuery = `
+    DELETE FROM Image
+`;
 
 export {
     card, desk, user, image, userPreferencesQuery
@@ -356,6 +359,7 @@ export {
     getDeskOfRemoteDeskIdQuery,
     updateCardOfRemoteIdQuery,
     removeCardOfRemoteIdQuery,
+    cleanImageQuery,
 };
 
 

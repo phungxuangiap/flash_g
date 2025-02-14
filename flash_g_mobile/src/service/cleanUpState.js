@@ -8,7 +8,12 @@ import {
   updateCurrentDesk,
   updateCurrentDesks,
 } from '../redux/slices/gameSlice';
-import {setDatabase, setLoading, setOnline} from '../redux/slices/stateSlice';
+import {
+  setDatabase,
+  setImages,
+  setLoading,
+  setOnline,
+} from '../redux/slices/stateSlice';
 import {store} from '../redux/store';
 
 export function cleanUpStateAfterLoggingOut() {
@@ -21,4 +26,5 @@ export function cleanUpStateAfterLoggingOut() {
   store.dispatch(setOnline(true));
   store.dispatch(refreshAccessToken(null));
   store.dispatch(setDatabase(null));
+  store.dispatch(setImages({}));
 }

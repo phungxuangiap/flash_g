@@ -30,14 +30,21 @@ export default function ProfileScreen() {
         content={'Sign Out'}
         onClick={async () => {
           dispatch(setLoading(true));
-          await handleLocalAndRemoteData(onlineState, accessToken, dispatch);
-          await logout(accessToken);
-          dispatch(setLoading(false));
+          await handleLocalAndRemoteData(
+            onlineState,
+            accessToken,
+            dispatch,
+            navigation,
+            true,
+          ).then(res => {
+            logout(accessToken);
+          });
           // Reset navigation stack
           navigation.reset({
             index: 0,
             routes: [{name: Auth}],
           });
+          dispatch(setLoading(false));
         }}
       />
       {loading ? <LoadingOverlay /> : <></>}

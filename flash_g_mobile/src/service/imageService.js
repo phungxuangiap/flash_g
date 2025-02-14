@@ -50,7 +50,7 @@ export const fetchImageOfDesk = async function (accessToken, deskId) {
       },
     })
     .then(res => {
-      return res.data.img_url;
+      return res.data;
     })
     .catch(err => {
       console.log('Fetch image of desk error with message:', err);
@@ -72,6 +72,7 @@ export const fetchImagesOfDesks = async function (accessToken, listDeskIds) {
       },
     )
     .then(response => {
+      console.log(response);
       return response.data;
     })
     .catch(error => {

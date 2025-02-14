@@ -22,6 +22,7 @@ import {useSelector} from 'react-redux';
 import {
   accessTokenSelector,
   currentDesks,
+  imageStateSelector,
   onlineStateSelector,
 } from '../redux/selectors';
 import axios from 'axios';
@@ -155,6 +156,7 @@ export function AvataBaseWordComponent({full_name}) {
 
 export function DeskComponent({
   id,
+  remote_id,
   original_id,
   user,
   title,
@@ -170,6 +172,8 @@ export function DeskComponent({
   const onlineState = useSelector(onlineStateSelector);
   const accessToken = useSelector(accessTokenSelector);
   const [image, setImage] = useState(undefined);
+  const avata = useSelector(imageStateSelector);
+  console.log(avata, original_id, avata[original_id]);
   // useEffect(() => {
   //   fetchImageOfDesk(accessToken, original_id).then(response => {
   //     setImage(response);
@@ -196,9 +200,9 @@ export function DeskComponent({
             alignSelf: 'center',
             backgroundColor: 'white',
           }}>
-          {image ? (
+          {avata[id] || avata[original_id] ? (
             <Image
-              source={{uri: image}}
+              source={{uri: avata[id] || avata[original_id]}}
               style={{resizeMode: 'cover', flex: 1, aspectRatio: 1}}
             />
           ) : (

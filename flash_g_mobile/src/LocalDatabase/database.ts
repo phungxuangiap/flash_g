@@ -2,7 +2,7 @@ import {enablePromise, openDatabase} from 'react-native-sqlite-storage';
 import SQLite from "react-native-sqlite-storage";
 import { Desk, Card, User, Image } from './model';
 import { getLocalDatabase } from './databaseInitialization';
-import { card, cleanAllCardQuery, cleanAllDeskQuery, cleanAllUserQuery, cleanUpQuery, createNewCardQuery, createNewDeskQuery, createNewImageQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, deleteImageQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getAllDesksQuery, getAllImageQuery, getDeskOfRemoteDeskIdQuery, getDeskQuery, getImageQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, removeCardOfRemoteIdQuery, removeCardQuery, removeDeskQuery, updateCardOfRemoteIdQuery, updateCardQuery, updateDeskQuery, updateImageQuery } from './dbQueries';
+import { card, cleanAllCardQuery, cleanAllDeskQuery, cleanAllUserQuery, cleanImageQuery, cleanUpQuery, createNewCardQuery, createNewDeskQuery, createNewImageQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, deleteImageQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getAllDesksQuery, getAllImageQuery, getDeskOfRemoteDeskIdQuery, getDeskQuery, getImageQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, removeCardOfRemoteIdQuery, removeCardQuery, removeDeskQuery, updateCardOfRemoteIdQuery, updateCardQuery, updateDeskQuery, updateImageQuery } from './dbQueries';
 import { store } from '../redux/store';
 import { original } from '@reduxjs/toolkit';
 
@@ -295,15 +295,14 @@ function checkIsCurrent(last_preview:string, level:number): boolean{
 export function cleanUp():Promise<any>{
   return getLocalDatabase()
     .then(async (db:SQLite.SQLiteDatabase)=>{
-      await db.executeSql(cleanAllDeskQuery);
-      return db;
-    })
-    .then(async (db:SQLite.SQLiteDatabase)=>{
-      await db.executeSql(cleanAllUserQuery);
-      return db;
-    })
-    .then(async (db:SQLite.SQLiteDatabase)=>{
-      return await db.executeSql(cleanAllCardQuery);
+      return await Promise.allSettled(
+        [
+          db.executeSql(cleanAllDeskQuery),
+          db.executeSql(cleanAllUserQuery),
+          db.executeSql(cleanAllCardQuery),
+          db.executeSql(cleanImageQuery),
+        ]
+      );
     })
     .catch(err=>{
       console.log("Clean up local database error with message:", err);

@@ -39,6 +39,7 @@ import {
   updateDeskToRemote,
 } from '../../service/postToRemote';
 import {addImageToCloudinary} from '../../service/imageService';
+import {image} from '../../LocalDatabase/dbQueries';
 
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
@@ -72,7 +73,7 @@ export default function DeskBoardScreen() {
   const images = useSelector(imageStateSelector);
   useFocusEffect(
     useCallback(() => {
-      handleLocalAndRemoteData(online, actk, dispatch, navigation);
+      handleLocalAndRemoteData(online, actk, dispatch, navigation, false);
     }, [actk, online, authState]),
   );
   return loading ? (
@@ -112,6 +113,7 @@ export default function DeskBoardScreen() {
                     <DeskComponent
                       key={uuid.v4()}
                       id={item._id}
+                      remote_id={item.remote_id}
                       original_id={item.original_id}
                       user={user}
                       title={item.title}
@@ -157,6 +159,7 @@ export default function DeskBoardScreen() {
                     <DeskComponent
                       key={uuid.v4()}
                       id={item._id}
+                      remote_id={item.remote_id}
                       original_id={item.original_id}
                       title={item.title}
                       primaryColor={item.primary_color}
@@ -243,7 +246,7 @@ export default function DeskBoardScreen() {
                 dispatch(
                   setImages({
                     ...images,
-                    id: JSON.parse(JSON.stringify(newImage)),
+                    [id]: JSON.parse(JSON.stringify(newImage.img_url)),
                   }),
                 );
               }
@@ -315,6 +318,27 @@ export default function DeskBoardScreen() {
                 .catch(err => {
                   Alert.alert('Update Desk Fail with error:', err);
                 });
+              if (fileImage) {
+                const newImage = new Image(
+                  uuid.v4(),
+                  '',
+                  '',
+                  data[indexUpdatedDesk]._id,
+                  fileImage.type,
+                  fileImage.uri,
+                  JSON.stringify(new Date()).slice(1, -1),
+                );
+                createNewImage(newImage);
+                setFileImage(undefined);
+                dispatch(
+                  setImages({
+                    ...images,
+                    [data[indexUpdatedDesk]._id]: JSON.parse(
+                      JSON.stringify(newImage.img_url),
+                    ),
+                  }),
+                );
+              }
             }}
             desk={listCurrentDesks[indexUpdatedDesk]}
           />
