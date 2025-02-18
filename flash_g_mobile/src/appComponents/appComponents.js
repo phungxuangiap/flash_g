@@ -30,17 +30,31 @@ import {fetchUserById} from '../service/fetchUserById';
 import {cloneDesk} from '../service/cloneDesk';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {fetchImageOfDesk} from '../service/imageService';
+import {
+  icon_secondary,
+  opposite,
+  text_primary,
+  text_secondary,
+} from '../assets/colors/colors';
+import {NewIcon} from '../assets/icons/NewIcon';
+import ProgressIcon from '../assets/icons/ProgressIcon';
+import PreviewIcon from '../assets/icons/PreviewIcon';
+import EditIcon from '../assets/icons/EditIcon';
+import TrashIcon from '../assets/icons/TrashIcon';
+import PlusIcon from '../assets/icons/PlusIcon';
+import ExitIcon from '../assets/icons/ExitIcon';
+
 export function InputTag({placeholder, value, onValueChange}) {
   return (
-    <TextInput
-      style={ComponentStyle.inputStyle}
-      placeholder={placeholder}
-      placeholderTextColor={'black'}
-      value={value}
-      onChangeText={newValue => {
-        onValueChange(newValue);
-      }}
-    />
+    <View>
+      <TextInput
+        style={{...ComponentStyle.inputStyle}}
+        value={value}
+        onChangeText={newValue => {
+          onValueChange(newValue);
+        }}
+      />
+    </View>
   );
 }
 
@@ -140,8 +154,8 @@ export function AvataBaseWordComponent({full_name}) {
   return (
     <View
       style={{
-        width: 50,
-        height: 50,
+        width: 40,
+        height: 40,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 2,
@@ -149,7 +163,7 @@ export function AvataBaseWordComponent({full_name}) {
         borderRadius: 50,
         backgroundColor: '#444',
       }}>
-      <Text>{userNameShortHand}</Text>
+      <Text style={{fontSize: 12}}>{userNameShortHand}</Text>
     </View>
   );
 }
@@ -185,95 +199,153 @@ export function DeskComponent({
       onPress={() => {
         onClick();
       }}
-      style={{...ComponentStyle.deskContainer, backgroundColor: primaryColor}}>
+      style={{...ComponentStyle.deskContainer, backgroundColor: 'white'}}>
       <View
         style={{
           justifyContent: 'space-between',
           flexDirection: 'column',
+          position: 'relative',
         }}>
         <View
           style={{
-            width: 200,
-            height: 200,
+            width: '100%',
+            aspectRatio: 1,
             justifyContent: 'center',
             alignItems: 'center',
             alignSelf: 'center',
             backgroundColor: 'white',
+            borderRadius: 16,
+            padding: 8,
           }}>
           {avata[id] || avata[original_id] ? (
             <Image
               source={{uri: avata[id] || avata[original_id]}}
-              style={{resizeMode: 'cover', flex: 1, aspectRatio: 1}}
+              style={{
+                resizeMode: 'cover',
+                flex: 1,
+                aspectRatio: 1,
+                borderRadius: 12,
+              }}
             />
           ) : (
             <Text style={{color: 'black'}}>Image</Text>
           )}
         </View>
-        <Text style={{...ComponentStyle.largeWhiteTitle}}>{title}</Text>
-        {/* <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            flexDirection: 'row',
+          }}>
+          {user ? (
+            <TouchableOpacity
+              style={{
+                backgroundColor: 'white',
+                padding: 6,
+                marginRight: 8,
+                borderBottomRightRadius: 12,
+                borderBottomLeftRadius: 12,
+              }}
+              onPress={() => {
+                onEdit();
+              }}>
+              <EditIcon width={24} height={24} />
+            </TouchableOpacity>
+          ) : (
+            <></>
+          )}
+
           <TouchableOpacity
             style={{
-              padding: 10,
-              borderWidth: 1,
-              borderRadius: 20,
-              borderColor: 'yellow',
+              backgroundColor: 'white',
+              padding: 6,
+              borderBottomLeftRadius: 12,
+              borderTopRightRadius: 12,
             }}
             onPress={async () => {
               await deleteDesk(id);
               onDelete();
               console.log('delete desk');
             }}>
-            <Text style={{color: 'white'}}>x</Text>
+            <TrashIcon width={24} height={24} />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              padding: 10,
-              borderWidth: 1,
-              borderRadius: 20,
-              borderColor: 'yellow',
-            }}
-            onPress={() => {
-              onEdit();
-            }}>
-            <Text style={{color: 'white'}}>Edit</Text>
-          </TouchableOpacity>
-        </View> */}
+        </View>
       </View>
-      <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-        <TextCircleBorder content={`${news} N`} color={'#C12450'} />
-        <TextCircleBorder content={`${progress} I`} color={'#444444'} />
-        <TextCircleBorder content={`${preview} P`} color={'#6CDDAB'} />
-      </View>
-      <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        <AvataBaseWordComponent full_name={user ? user.full_name : 'Owner'} />
-        <Text>{user ? user.full_name : 'Owner'}</Text>
-      </View>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'flex-end',
-        }}>
-        <TouchableOpacity
-          style={{backgroundColor: 'black', padding: 12}}
-          onPress={async () => {
-            await deleteDesk(id);
-            onDelete();
-            console.log('delete desk');
+      <View style={{marginLeft: 8, marginRight: 8}}>
+        <Text
+          style={{
+            ...ComponentStyle.mediumBlackTitle,
+            textAlign: 'center',
+            justifyContent: 'center',
+            alignItems: 'center',
           }}>
-          <Text>Delete</Text>
-        </TouchableOpacity>
-        {user ? (
-          <TouchableOpacity
-            style={{backgroundColor: '#444', padding: 12, marginLeft: 12}}
-            onPress={() => {
-              onEdit();
+          {title}
+        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+            marginTop: 4,
+          }}>
+          <TextAndSmallNewIcon text={news} />
+          <TextAndSmallInProgressIcon text={progress} />
+          <TextAndSmallPreviewIcon text={preview} />
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginTop: 4,
+            marginBottom: 12,
+          }}>
+          <AvataBaseWordComponent full_name={user ? user.full_name : 'Owner'} />
+          <Text
+            style={{
+              color: 'black',
+              fontWeight: '500',
+              marginLeft: 4,
+              fontSize: 12,
             }}>
-            <Text>Edit</Text>
-          </TouchableOpacity>
-        ) : (
-          <></>
-        )}
+            By
+          </Text>
+          <Text
+            style={{
+              color: text_primary,
+              fontWeight: 'bold',
+              marginLeft: 2,
+              fontSize: 12,
+            }}>
+            {user ? user.full_name : 'Owner'}
+          </Text>
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+          }}></View>
       </View>
+    </TouchableOpacity>
+  );
+}
+
+export function ButtonImage({onPress, style}) {
+  return (
+    <TouchableOpacity onPress={onPress()} style={style}>
+      <Image
+        style={{width: 34, height: 34}}
+        source={require('../assets/images/search.png')}
+      />
+    </TouchableOpacity>
+  );
+}
+export function CountryFlag({onPress, style}) {
+  return (
+    <TouchableOpacity onPress={onPress()} style={style}>
+      <Image
+        style={{width: 34, height: 34}}
+        source={require('../assets/images/flag.png')}
+      />
     </TouchableOpacity>
   );
 }
@@ -329,7 +401,7 @@ export function DeskComponentType2({
             />
           ) : (
             <Image
-              source={require('../assets/noimage.jpg')}
+              source={require('../assets/images/noimage.jpg')}
               style={{resizeMode: 'cover', flex: 1, aspectRatio: 1}}
             />
           )}
@@ -380,32 +452,85 @@ export function TextCircleBorder({content, color}) {
     </View>
   );
 }
-
+export function TextAndSmallNewIcon({text, style}) {
+  return (
+    <View
+      style={{
+        ...style,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+      <Text style={{color: text_secondary}}>{text}</Text>
+      <NewIcon width={24} height={24} color={icon_secondary} />
+    </View>
+  );
+}
+export function TextAndSmallInProgressIcon({text, style}) {
+  return (
+    <View
+      style={{
+        ...style,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+      <Text style={{color: text_secondary}}>{text}</Text>
+      <ProgressIcon width={24} height={24} color={icon_secondary} />
+    </View>
+  );
+}
+export function TextAndSmallPreviewIcon({text, style}) {
+  return (
+    <View
+      style={{
+        ...style,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+      <Text style={{color: text_secondary}}>{text}</Text>
+      <PreviewIcon width={24} height={24} color={icon_secondary} />
+    </View>
+  );
+}
 export function CircleButton({content, onClick, style}) {
   return (
     <View style={{...style, alignSelf: 'center'}}>
       <TouchableOpacity
         style={{
           margin: 'auto',
-          backgroundColor: '#6CDDAB',
+          backgroundColor: text_primary,
           alignSelf: 'baseline',
           justifyContent: 'center',
           borderRadius: 50,
-          width: 60,
-          height: 60,
+          padding: 12,
         }}
         onPress={() => {
           onClick();
         }}>
-        <Text
-          style={{
-            alignSelf: 'baseline',
-            fontSize: 42,
-            margin: 'auto',
-            color: 'white',
-          }}>
-          {content}
-        </Text>
+        <PlusIcon width={50} height={50} />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+export function ExitButton({onClick, style}) {
+  return (
+    <View>
+      <TouchableOpacity
+        style={{
+          margin: 'auto',
+          backgroundColor: opposite,
+          alignSelf: 'baseline',
+          justifyContent: 'center',
+          borderRadius: 50,
+          padding: 12,
+        }}
+        onPress={() => {
+          onClick();
+        }}>
+        <ExitIcon width={50} height={50} />
       </TouchableOpacity>
     </View>
   );
@@ -439,7 +564,7 @@ export const MyCheckbox = ({checked, setChecked}) => {
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        {checked && <Text style={{fontSize: 18}}>✔</Text>}
+        {checked && <Text style={{fontSize: 18, color: 'black'}}>✔</Text>}
       </Pressable>
     </View>
   );
@@ -486,45 +611,67 @@ export function CreateNewDeskPopUp({
         left: 0,
         right: 0,
       }}>
-      <View style={{margin: 'auto'}}>
+      <View style={{margin: 'auto', position: 'relative'}}>
         <View
           style={{
-            backgroundColor: '#6CDDAB',
+            backgroundColor: 'white',
             borderRadius: 24,
-            padding: 24,
+            padding: 36,
             marginBottom: 12,
           }}>
-          <Text style={{...ComponentStyle.largeWhiteTitle}}>
-            Create New Desk
-          </Text>
-          <TouchableOpacity
-            onPress={pickImage}
-            style={{backgroundColor: 'blue', padding: 20, borderRadius: 10}}>
-            <Text>Choose Image</Text>
-          </TouchableOpacity>
-          {fileImage && (
-            <Image
-              source={{uri: fileImage.uri}}
-              style={{width: 300, height: 300, marginTop: 20}}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            {fileImage ? (
+              <Image
+                source={{uri: fileImage.uri}}
+                style={{width: 128, height: 128, borderRadius: 12}}
+              />
+            ) : (
+              <Image source={require('../assets/images/blank_picture.png')} />
+            )}
+            <TouchableOpacity onPress={pickImage} style={{}}>
+              <Text
+                style={{
+                  color: text_secondary,
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                }}>
+                Add Image
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{marginBottom: 12}}>
+            <Text style={{color: text_secondary, marginBottom: 6}}>
+              Desk Title
+            </Text>
+            <InputTag
+              placeholder={'Title'}
+              content={input}
+              onValueChange={value => {
+                setInput(value);
+              }}
             />
-          )}
-          <InputTag
-            placeholder={'Title'}
-            content={input}
-            onValueChange={value => {
-              setInput(value);
-            }}
-          />
-
-          <InputTag
-            placeholder={'Description'}
-            content={description}
-            onValueChange={value => {
-              setDescription(value);
-            }}
-          />
+          </View>
+          <View style={{marginBottom: 12}}>
+            <Text style={{color: text_secondary, marginBottom: 6}}>
+              Description
+            </Text>
+            <InputTag
+              placeholder={'Description'}
+              content={description}
+              onValueChange={value => {
+                setDescription(value);
+              }}
+            />
+          </View>
           <View style={{flexDirection: 'row'}}>
-            <Text>Public?</Text>
+            <Text style={{color: text_secondary, marginRight: 12}}>
+              Public?
+            </Text>
             <MyCheckbox
               checked={accessStatus === 'PUBLIC'}
               setChecked={() => {
@@ -534,23 +681,30 @@ export function CreateNewDeskPopUp({
               }}
             />
           </View>
-          <View style={{flexDirection: 'row-reverse'}}>
+          <View
+            style={{
+              flexDirection: 'row-reverse',
+              justifyContent: 'center',
+              marginTop: 24,
+            }}>
             <TouchableOpacity
               style={{
-                backgroundColor: '#444',
-                padding: 12,
-                borderRadius: 24,
+                backgroundColor: text_primary,
+                padding: 16,
+                borderRadius: 28,
                 margin: 4,
               }}
               onPress={() => {
                 create();
               }}>
-              <Text>Create</Text>
+              <Text style={{color: 'white', fontWeight: 'bold', fontSize: 18}}>
+                Create
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
-        <CircleButton
-          style={{position: 'absolute', bottom: -60}}
+        <ExitButton
+          style={{position: 'absolute', top: 0, right: 0}}
           content={'x'}
           onClick={() => {
             close();
@@ -603,61 +757,98 @@ export function UpdateDeskPopUp({
       <View style={{margin: 'auto'}}>
         <View
           style={{
-            backgroundColor: '#6CDDAB',
+            backgroundColor: 'white',
             borderRadius: 24,
-            padding: 24,
+            padding: 36,
             marginBottom: 12,
           }}>
-          <Text style={{...ComponentStyle.largeWhiteTitle}}>Update Desk</Text>
-          <TouchableOpacity
-            onPress={pickImage}
-            style={{backgroundColor: 'blue', padding: 20, borderRadius: 10}}>
-            <Text>Choose Image</Text>
-          </TouchableOpacity>
-          {fileImage && (
-            <Image
-              source={{uri: fileImage.uri}}
-              style={{width: 300, height: 300, marginTop: 20}}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            {fileImage ? (
+              <Image
+                source={{uri: fileImage.uri}}
+                style={{width: 128, height: 128, borderRadius: 12}}
+              />
+            ) : (
+              <Image source={require('../assets/images/blank_picture.png')} />
+            )}
+            <TouchableOpacity onPress={pickImage} style={{}}>
+              <Text
+                style={{
+                  color: text_secondary,
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                }}>
+                Add Image
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{marginBottom: 12}}>
+            <Text style={{color: text_secondary, marginBottom: 6}}>
+              Desk Title
+            </Text>
+            <InputTag
+              placeholder={'Title'}
+              content={input}
+              onValueChange={value => {
+                setInput(value);
+              }}
             />
-          )}
-          <InputTag
-            placeholder={'Your Desk'}
-            content={input}
-            onValueChange={value => {
-              setInput(value);
-            }}
-          />
+          </View>
+          <View style={{marginBottom: 12}}>
+            <Text style={{color: text_secondary, marginBottom: 6}}>
+              Description
+            </Text>
+            <InputTag
+              placeholder={'Description'}
+              content={description}
+              onValueChange={value => {
+                setDescription(value);
+              }}
+            />
+          </View>
 
-          <InputTag
-            placeholder={'Your Description'}
-            content={description}
-            onValueChange={value => {
-              setDescription(value);
-            }}
-          />
-          <MyCheckbox
-            checked={accessStatus === 'PUBLIC'}
-            setChecked={() => {
-              setAccessStatus(accessStatus === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC');
-            }}
-          />
-          <View style={{flexDirection: 'row-reverse'}}>
+          <View style={{flexDirection: 'row'}}>
+            <Text style={{color: text_secondary, marginRight: 12}}>
+              Public?
+            </Text>
+            <MyCheckbox
+              checked={accessStatus === 'PUBLIC'}
+              setChecked={() => {
+                setAccessStatus(
+                  accessStatus === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC',
+                );
+              }}
+            />
+          </View>
+          <View
+            style={{
+              flexDirection: 'row-reverse',
+              justifyContent: 'center',
+              marginTop: 24,
+            }}>
             <TouchableOpacity
               style={{
-                backgroundColor: '#444',
-                padding: 12,
-                borderRadius: 24,
+                backgroundColor: text_primary,
+                padding: 16,
+                borderRadius: 28,
                 margin: 4,
               }}
               onPress={() => {
                 update();
               }}>
-              <Text>Update</Text>
+              <Text style={{color: 'white', fontWeight: 'bold', fontSize: 18}}>
+                Update
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
-        <CircleButton
-          style={{position: 'absolute', bottom: -60}}
+        <ExitButton
+          style={{position: 'absolute', top: 0, right: 0}}
           content={'x'}
           onClick={() => {
             close();

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {REACT_APP_URL} from '../../enviroment';
+import {REACT_APP_URL} from '../../env';
 import {Alert} from 'react-native';
 
 export const cloneDesk = function (accessToken, deskId) {

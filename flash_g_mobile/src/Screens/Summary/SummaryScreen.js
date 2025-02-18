@@ -25,7 +25,7 @@ export default function SummaryScreen() {
         }}>
         <Image
           style={{width: 150, height: 150}}
-          source={require('../../assets/trophy.png')}
+          source={require('../../assets/images/trophy.png')}
         />
         <Text style={{fontSize: 24, color: 'black', fontWeight: 'bold'}}>
           247 days streak

@@ -3,7 +3,7 @@ import {store} from '../redux/store';
 import {changeAuth, refreshAccessToken} from '../redux/slices/authSlice';
 import {setLoading} from '../redux/slices/stateSlice';
 import {refresh} from './refreshAccessToken';
-import {REACT_APP_URL} from '../../enviroment';
+import {REACT_APP_URL} from '../../env';
 
 export default async function createCard(accessToken, deskId, card) {
   console.log(REACT_APP_URL);

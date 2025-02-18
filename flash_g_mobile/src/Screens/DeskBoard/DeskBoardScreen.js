@@ -10,11 +10,19 @@ import {
   userSelector,
 } from '../../redux/selectors';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import {Alert, ScrollView, View} from 'react-native';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {setImages, setLoading} from '../../redux/slices/stateSlice';
 import uuid from 'react-native-uuid';
 import {
+  ButtonImage,
   CircleButton,
+  CountryFlag,
   CreateNewDeskPopUp,
   DeskComponent,
   LoadingOverlay,
@@ -32,7 +40,7 @@ import {
 } from '../../LocalDatabase/database';
 import {handleLocalAndRemoteData} from '../../LocalDatabase/syncDBService';
 import {Desk, Image} from '../../LocalDatabase/model';
-import {DeletedStatus, MainGame} from '../../constants';
+import {AppPadding, DeletedStatus, MainGame} from '../../constants';
 import {Text} from '@react-navigation/elements';
 import {
   deleteDeskInRemote,
@@ -40,6 +48,7 @@ import {
 } from '../../service/postToRemote';
 import {addImageToCloudinary} from '../../service/imageService';
 import {image} from '../../LocalDatabase/dbQueries';
+import {back_primary, text_primary} from '../../assets/colors/colors';
 
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
@@ -82,27 +91,35 @@ export default function DeskBoardScreen() {
     <View
       style={{
         flex: 1,
-        paddingBottom: 24,
-        paddingLeft: 12,
-        paddingRight: 12,
-        paddingTop: 24,
+        padding: AppPadding,
+        paddingBottom: 0,
+        backgroundColor: back_primary,
       }}>
       {/* Header */}
-      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-        <Text style={{fontSize: 36, fontWeight: 'bold'}}>Library</Text>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+        }}>
+        <Text style={{fontSize: 36, fontWeight: 'bold', color: text_primary}}>
+          Library
+        </Text>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Text>Search</Text>
-          <Text>Flag</Text>
+          <ButtonImage onPress={() => {}} style={{marginRight: 12}} />
+          <CountryFlag onPress={() => {}} />
         </View>
       </View>
       {/*List all your desk*/}
       <ScrollView>
         {/* Your Desks */}
         <View style={{flexDirection: 'column'}}>
-          <Text style={{paddingTop: 24, fontSize: 18, fontWeight: 'bold'}}>
+          <Text style={{paddingTop: 24, fontSize: 20, fontWeight: '900'}}>
             Your Desks
           </Text>
-          <ScrollView horizontal={true} scrollEnabled={true}>
+          <ScrollView
+            horizontal={true}
+            scrollEnabled={true}
+            style={{marginLeft: -8, marginRight: -8}}>
             {data &&
               data.map((item, index) => {
                 if (
@@ -145,10 +162,13 @@ export default function DeskBoardScreen() {
         </View>
         {/* Your Saved Desks */}
         <View style={{flexDirection: 'column'}}>
-          <Text style={{paddingTop: 24, fontSize: 18, fontWeight: 'bold'}}>
+          <Text style={{paddingTop: 24, fontSize: 20, fontWeight: '900'}}>
             Saved Desks
           </Text>
-          <ScrollView horizontal={true} scrollEnabled={true}>
+          <ScrollView
+            horizontal={true}
+            scrollEnabled={true}
+            style={{marginLeft: -8, marginRight: -8}}>
             {data &&
               data.map((item, index) => {
                 if (

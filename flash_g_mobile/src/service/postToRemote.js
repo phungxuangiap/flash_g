@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {REACT_APP_URL} from '../../enviroment';
+import {REACT_APP_URL} from '../../env';
 
 export async function updateDeskToRemote(accessToken, desk_remote_id, desk) {
   axios

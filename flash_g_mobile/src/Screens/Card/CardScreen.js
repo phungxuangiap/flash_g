@@ -27,7 +27,6 @@ import {refresh} from '../../service/refreshAccessToken';
 import {useNavigation} from '@react-navigation/native';
 import uuid from 'react-native-uuid';
 
-import {REACT_APP_URL} from '@env';
 import {
   updateCurrentCards,
   updateCurrentDesks,
@@ -39,6 +38,7 @@ import {
 import {Card} from '../../LocalDatabase/model';
 import {ActiveStatus, DeletedStatus, Game, MainGame} from '../../constants';
 import {updateCardToRemote} from '../../service/postToRemote';
+import {REACT_APP_URL} from '../../../env';
 
 export default function CardScreen() {
   const desk = useSelector(gameSelector);

@@ -2,7 +2,7 @@ import axios from 'axios';
 import {storeData} from './asyncStorageService';
 import {setUser} from '../redux/slices/authSlice';
 import {refresh} from './refreshAccessToken';
-import {REACT_APP_URL} from '../../enviroment';
+import {REACT_APP_URL} from '../../env';
 
 // Fetch current user and store in local storage, update redux state
 export function fetchCurrentUser(accessToken) {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {REACT_APP_URL} from '../../enviroment';
+import {REACT_APP_URL} from '../../env';
 
 export const addImageToCloudinary = async function (file, accessToken) {
   return axios

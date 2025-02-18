@@ -15,3 +15,4 @@ export const MainGame = 'main_game';
 export const ActiveStatus = 'active';
 export const DeletedStatus = 'deleted';
 export const RemoteStatus = 'remote';
+export const AppPadding = 24;

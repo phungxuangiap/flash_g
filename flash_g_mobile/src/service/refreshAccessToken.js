@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {store} from '../redux/store';
 import {refreshAccessToken} from '../redux/slices/authSlice';
-import {REACT_APP_URL} from '../../enviroment';
+import {REACT_APP_URL} from '../../env';
 
 const refresh = async dispatch => {
   console.log('DISPATCH', dispatch);

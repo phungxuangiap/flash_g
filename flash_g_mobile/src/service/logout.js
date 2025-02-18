@@ -5,7 +5,7 @@ import {refresh} from './refreshAccessToken';
 import {getLocalDatabase} from '../LocalDatabase/databaseInitialization';
 import {cleanUp} from '../LocalDatabase/database';
 import {cleanUpStateAfterLoggingOut} from './cleanUpState';
-import {REACT_APP_URL} from '../../enviroment';
+import {REACT_APP_URL} from '../../env';
 
 const logout = async accessToken => {
   console.log(REACT_APP_URL);

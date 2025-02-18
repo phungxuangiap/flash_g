@@ -4,7 +4,7 @@ import {changeAuth, refreshAccessToken} from '../redux/slices/authSlice';
 import {setLoading} from '../redux/slices/stateSlice';
 import {refresh} from './refreshAccessToken';
 import {updateCurrentDesks} from '../redux/slices/gameSlice';
-import {REACT_APP_URL} from '../../enviroment';
+import {REACT_APP_URL} from '../../env';
 
 export default async function createDeskInRemote(
   title,

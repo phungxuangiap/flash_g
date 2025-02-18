@@ -3,7 +3,7 @@ import {changeAuth, refreshAccessToken} from '../redux/slices/authSlice';
 import {store} from '../redux/store';
 import {setLoading} from '../redux/slices/stateSlice';
 import {Alert} from 'react-native';
-import {REACT_APP_URL} from '../../enviroment';
+import {REACT_APP_URL} from '../../env';
 
 const login = async (email, password) => {
   console.log(REACT_APP_URL);

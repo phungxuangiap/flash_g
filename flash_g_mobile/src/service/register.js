@@ -3,7 +3,7 @@ import {Alert} from 'react-native';
 import {store} from '../redux/store';
 import {changeAuth, refreshAccessToken} from '../redux/slices/authSlice';
 import {setLoading} from '../redux/slices/stateSlice';
-import {REACT_APP_URL} from '../../enviroment';
+import {REACT_APP_URL} from '../../env';
 
 const register = async (email, password, user_name, full_name) => {
   console.log(REACT_APP_URL);
