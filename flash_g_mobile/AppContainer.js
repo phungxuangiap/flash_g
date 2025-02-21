@@ -3,7 +3,11 @@ import {View} from 'react-native';
 import React from 'react';
 import {Provider, useDispatch, useSelector} from 'react-redux';
 import {getUser} from './src/LocalDatabase/database';
-import {setDatabase, setOnline} from './src/redux/slices/stateSlice';
+import {
+  setDatabase,
+  setLoading,
+  setOnline,
+} from './src/redux/slices/stateSlice';
 import MainNavigation from './src/navigation/mainNavigation';
 import {setUser} from './src/redux/slices/authSlice';
 import {onlineStateSelector, userSelector} from './src/redux/selectors';
@@ -25,6 +29,7 @@ export function AppContainer() {
       getUser().then(userRes => {
         if (userRes) {
           dispatch(setUser(JSON.parse(JSON.stringify(userRes))));
+          dispatch(setLoading(true));
         } else {
           dispatch(setUser(undefined));
         }

@@ -1,5 +1,5 @@
 import {StyleSheet, TextInput} from 'react-native';
-import {input_back} from '../assets/colors/colors';
+import {input_back, text_primary} from '../assets/colors/colors';
 
 export const ComponentStyle = StyleSheet.create({
   inputStyle: {
@@ -7,8 +7,6 @@ export const ComponentStyle = StyleSheet.create({
     paddingLeft: 20,
     minWidth: 300,
     borderRadius: 24,
-    color: 'blue',
-    backgroundColor: input_back,
   },
   button: {
     padding: 12,
@@ -34,14 +32,13 @@ export const ComponentStyle = StyleSheet.create({
     left: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#333',
+    backgroundColor: 'black',
     opacity: 0.7,
   },
   deskContainer: {
     // flex: 1,
     justifyContent: 'space-between',
     borderRadius: 16,
-    width: 200,
     margin: 8,
   },
   largeWhiteTitle: {
@@ -52,6 +49,5 @@ export const ComponentStyle = StyleSheet.create({
   mediumBlackTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: 'black',
   },
 });

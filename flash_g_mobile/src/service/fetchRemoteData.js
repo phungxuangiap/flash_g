@@ -3,6 +3,7 @@ import {storeData} from './asyncStorageService';
 import {setUser} from '../redux/slices/authSlice';
 import {refresh} from './refreshAccessToken';
 import {REACT_APP_URL} from '../../env';
+import {store} from '../redux/store';
 
 // Fetch current user and store in local storage, update redux state
 export function fetchCurrentUser(accessToken) {
@@ -86,8 +87,5 @@ export async function fetchAllGlobalDesks(accessToken) {
     .then(res => {
       console.log('Get all global desks successfully!', res.data);
       return res.data;
-    })
-    .catch(error => {
-      console.log(error);
     });
 }

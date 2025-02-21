@@ -6,6 +6,7 @@ import {
   currentDesks,
   imageStateSelector,
   loadingSelector,
+  modeStateSelector,
   onlineStateSelector,
   userSelector,
 } from '../../redux/selectors';
@@ -17,7 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {setImages, setLoading} from '../../redux/slices/stateSlice';
+import {setImages, setLoading, setMode} from '../../redux/slices/stateSlice';
 import uuid from 'react-native-uuid';
 import {
   ButtonImage,
@@ -40,7 +41,13 @@ import {
 } from '../../LocalDatabase/database';
 import {handleLocalAndRemoteData} from '../../LocalDatabase/syncDBService';
 import {Desk, Image} from '../../LocalDatabase/model';
-import {AppPadding, DeletedStatus, MainGame} from '../../constants';
+import {
+  AppPadding,
+  DarkMode,
+  DeletedStatus,
+  LightMode,
+  MainGame,
+} from '../../constants';
 import {Text} from '@react-navigation/elements';
 import {
   deleteDeskInRemote,
@@ -48,7 +55,18 @@ import {
 } from '../../service/postToRemote';
 import {addImageToCloudinary} from '../../service/imageService';
 import {image} from '../../LocalDatabase/dbQueries';
-import {back_primary, text_primary} from '../../assets/colors/colors';
+import {
+  back_dark,
+  back_desk_dark,
+  back_primary,
+  icon_secondary,
+  text_primary,
+  text_primary_dark,
+  text_secondary,
+} from '../../assets/colors/colors';
+import LightIcon from '../../assets/icons/LightIcon';
+import NightIcon from '../../assets/icons/NightIcon';
+import SearchIcon from '../../assets/icons/SearchIcon';
 
 export default function DeskBoardScreen() {
   const dispatch = useDispatch();
@@ -80,20 +98,20 @@ export default function DeskBoardScreen() {
   const online = useSelector(onlineStateSelector);
   const auth = useSelector(authStateSelector);
   const images = useSelector(imageStateSelector);
+  const mode = useSelector(modeStateSelector);
   useFocusEffect(
     useCallback(() => {
       handleLocalAndRemoteData(online, actk, dispatch, navigation, false);
     }, [actk, online, authState]),
   );
-  return loading ? (
-    <LoadingOverlay />
-  ) : (
+  return (
     <View
       style={{
         flex: 1,
         padding: AppPadding,
         paddingBottom: 0,
-        backgroundColor: back_primary,
+        backgroundColor: mode === LightMode ? back_primary : back_dark,
+        position: 'relative',
       }}>
       {/* Header */}
       <View
@@ -101,19 +119,48 @@ export default function DeskBoardScreen() {
           flexDirection: 'row',
           justifyContent: 'space-between',
         }}>
-        <Text style={{fontSize: 36, fontWeight: 'bold', color: text_primary}}>
+        <Text
+          style={{
+            fontSize: 36,
+            fontWeight: 'bold',
+            color: mode === LightMode ? text_primary : text_primary_dark,
+          }}>
           Library
         </Text>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <ButtonImage onPress={() => {}} style={{marginRight: 12}} />
-          <CountryFlag onPress={() => {}} />
+          {/* <ButtonImage onPress={() => {}} style={{marginRight: 12}} /> */}
+          <TouchableOpacity onPress={() => {}} style={{marginRight: 20}}>
+            <SearchIcon
+              color={mode === LightMode ? text_primary : text_primary_dark}
+              width={36}
+              height={36}
+              borderColor={mode === LightMode ? 'black' : icon_secondary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              dispatch(setMode(mode === LightMode ? DarkMode : LightMode));
+            }}>
+            {mode === LightMode ? (
+              <LightIcon width={36} height={36} color={'black'} />
+            ) : (
+              <NightIcon width={36} height={36} color={text_primary_dark} />
+            )}
+          </TouchableOpacity>
+          {/* <CountryFlag onPress={() => {}} /> */}
         </View>
       </View>
       {/*List all your desk*/}
       <ScrollView>
         {/* Your Desks */}
         <View style={{flexDirection: 'column'}}>
-          <Text style={{paddingTop: 24, fontSize: 20, fontWeight: '900'}}>
+          <Text
+            style={{
+              paddingTop: 24,
+              fontSize: 20,
+              fontWeight: '900',
+              color: mode === LightMode ? 'black' : icon_secondary,
+            }}>
             Your Desks
           </Text>
           <ScrollView
@@ -152,6 +199,11 @@ export default function DeskBoardScreen() {
                         navigation.navigate(MainGame);
                       }}
                       onEdit={() => {
+                        console.log(images[item.original_id]);
+                        setInputUpdateDesk(item.title);
+                        setDescriptionUpdateDesk(item.description);
+                        setAccessStatusUpdateDesk(item.access_status);
+                        setFileImage({uri: images[item.original_id]});
                         setindexUpdatedDesk(index);
                       }}
                     />
@@ -162,7 +214,13 @@ export default function DeskBoardScreen() {
         </View>
         {/* Your Saved Desks */}
         <View style={{flexDirection: 'column'}}>
-          <Text style={{paddingTop: 24, fontSize: 20, fontWeight: '900'}}>
+          <Text
+            style={{
+              paddingTop: 24,
+              fontSize: 20,
+              fontWeight: '900',
+              color: mode === LightMode ? 'black' : icon_secondary,
+            }}>
             Saved Desks
           </Text>
           <ScrollView
@@ -199,9 +257,7 @@ export default function DeskBoardScreen() {
                         dispatch(updateCurrentDesk(item));
                         navigation.navigate(MainGame);
                       }}
-                      onEdit={() => {
-                        setindexUpdatedDesk(index);
-                      }}
+                      onEdit={() => {}}
                     />
                   );
                 }
@@ -215,6 +271,7 @@ export default function DeskBoardScreen() {
         onClick={() => {
           setShowCreateDesk(preState => !preState);
         }}
+        isLightMode={mode === LightMode}
       />
       {showCreateDesk ? (
         <>
@@ -281,12 +338,12 @@ export default function DeskBoardScreen() {
               dispatch(setLoading(false));
               setShowCreateDesk(false);
             }}
+            isLightMode={mode === LightMode}
           />
         </>
       ) : (
         <></>
       )}
-
       {indexUpdatedDesk === 0 || indexUpdatedDesk ? (
         <>
           <OverLay />
@@ -300,6 +357,7 @@ export default function DeskBoardScreen() {
             fileImage={fileImage}
             setFileImage={setFileImage}
             close={() => {
+              setFileImage(undefined);
               setindexUpdatedDesk(undefined);
             }}
             update={async () => {
@@ -361,11 +419,13 @@ export default function DeskBoardScreen() {
               }
             }}
             desk={listCurrentDesks[indexUpdatedDesk]}
+            isLightMode={mode === LightMode}
           />
         </>
       ) : (
         <></>
       )}
+      {loading ? <LoadingOverlay /> : <></>}
     </View>
   );
 }

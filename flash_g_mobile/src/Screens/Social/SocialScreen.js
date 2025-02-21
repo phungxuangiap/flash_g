@@ -1,7 +1,11 @@
 import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {DeskComponentType2} from '../../appComponents/appComponents';
 import {useDispatch, useSelector} from 'react-redux';
-import {accessTokenSelector, onlineStateSelector} from '../../redux/selectors';
+import {
+  accessTokenSelector,
+  modeStateSelector,
+  onlineStateSelector,
+} from '../../redux/selectors';
 import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {fetchAllGlobalDesks} from '../../service/fetchRemoteData';
 import {useFocusEffect} from '@react-navigation/native';
@@ -9,41 +13,63 @@ import uuid from 'react-native-uuid';
 import React from 'react';
 import {fetchImageOfDesk} from '../../service/imageService';
 import {refresh} from '../../service/refreshAccessToken';
+import {store} from '../../redux/store';
+import {LightMode} from '../../constants';
+import {
+  back_dark,
+  back_primary,
+  text_primary,
+  text_primary_dark,
+} from '../../assets/colors/colors';
 
 export function SocialScreen() {
   const dispatch = useDispatch();
   const onlineState = useSelector(onlineStateSelector);
+  const mode = useSelector(modeStateSelector);
   const accessToken = useSelector(accessTokenSelector);
   const [globalDesks, setGlobalDesks] = useState([]);
   const [deskImageRelationship, setDeskImageRelationship] = useState({});
   async function handleData(accessToken) {
-    const data = await fetchAllGlobalDesks(accessToken).catch(err => {
-      refresh(dispatch);
+    const data = await fetchAllGlobalDesks(accessToken).catch(error => {
+      if (error.status === 401) {
+        refresh(dispatch).then(actk => {
+          fetchAllGlobalDesks(actk, dispatch);
+        });
+      }
     });
     setGlobalDesks(data);
-    // if (data) {
-    //   await Promise.all(
-    //     data.map(desk => {
-    //       return fetchImageOfDesk(accessToken, desk._id).then(img_url => {
-    //         setDeskImageRelationship(pre => {
-    //           let obj = pre;
-    //           obj[desk._id] = img_url;
-    //           return obj;
-    //         });
-    //       });
-    //     }),
-    //   );
-    // }
+    if (data) {
+      await Promise.all(
+        data.map(desk => {
+          return fetchImageOfDesk(accessToken, desk._id).then(img_url => {
+            setDeskImageRelationship(pre => {
+              let obj = pre;
+              obj[desk._id] = img_url;
+              return obj;
+            });
+          });
+        }),
+      );
+    }
   }
   useFocusEffect(
     useCallback(() => {
       handleData(accessToken);
     }, [onlineState, accessToken]),
   );
-  console.log('LIST MAP', deskImageRelationship);
   return onlineState ? (
-    <View style={{padding: 24}}>
-      <Text style={{fontSize: 36, color: 'black', fontWeight: 'bold'}}>
+    <View
+      style={{
+        padding: 24,
+        flex: 1,
+        backgroundColor: mode === LightMode ? back_primary : back_dark,
+      }}>
+      <Text
+        style={{
+          fontSize: 36,
+          color: mode === LightMode ? text_primary : text_primary_dark,
+          fontWeight: 'bold',
+        }}>
         Society
       </Text>
       <ScrollView scrollEnabled={true}>
@@ -54,7 +80,7 @@ export function SocialScreen() {
                 key={uuid.v4()}
                 id={desk._id}
                 title={desk.title}
-                img_url={deskImageRelationship}
+                img_url={deskImageRelationship[desk.original_id]?.img_url}
                 primaryColor={desk.primary_color}
                 description={desk.description}
                 numCard={
@@ -75,6 +101,7 @@ export function SocialScreen() {
                   });
                 }}
                 accessToken={accessToken}
+                isLightMode={mode === LightMode}
               />
             );
           })}

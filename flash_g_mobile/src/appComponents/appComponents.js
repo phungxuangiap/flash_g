@@ -17,12 +17,13 @@ import {
   updateCurrentDesks,
 } from '../redux/slices/gameSlice';
 import {desk} from '../LocalDatabase/dbQueries';
-import {DeletedStatus} from '../constants';
+import {DeletedStatus, LightMode} from '../constants';
 import {useSelector} from 'react-redux';
 import {
   accessTokenSelector,
   currentDesks,
   imageStateSelector,
+  modeStateSelector,
   onlineStateSelector,
 } from '../redux/selectors';
 import axios from 'axios';
@@ -31,9 +32,14 @@ import {cloneDesk} from '../service/cloneDesk';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {fetchImageOfDesk} from '../service/imageService';
 import {
+  back_desk_dark,
+  back_primary,
   icon_secondary,
+  input_back,
+  input_back_dark,
   opposite,
   text_primary,
+  text_primary_dark,
   text_secondary,
 } from '../assets/colors/colors';
 import {NewIcon} from '../assets/icons/NewIcon';
@@ -43,12 +49,19 @@ import EditIcon from '../assets/icons/EditIcon';
 import TrashIcon from '../assets/icons/TrashIcon';
 import PlusIcon from '../assets/icons/PlusIcon';
 import ExitIcon from '../assets/icons/ExitIcon';
+import HeartIcon from '../assets/icons/HeartIcon';
+import CommentIcon from '../assets/icons/CommentIcon';
+import PullIcon from '../assets/icons/PullIcon';
 
-export function InputTag({placeholder, value, onValueChange}) {
+export function InputTag({placeholder, value, onValueChange, isLightMode}) {
   return (
     <View>
       <TextInput
-        style={{...ComponentStyle.inputStyle}}
+        style={{
+          ...ComponentStyle.inputStyle,
+          backgroundColor: isLightMode ? input_back : input_back_dark,
+          color: isLightMode ? text_primary : text_primary_dark,
+        }}
         value={value}
         onChangeText={newValue => {
           onValueChange(newValue);
@@ -84,7 +97,13 @@ export function ClickableText({content, onClick}) {
 export function LoadingOverlay() {
   return (
     <View style={ComponentStyle.loadingOverLay}>
-      <Text style={{alignSelf: 'center', color: 'white'}}>Loading...</Text>
+      <Text
+        style={{
+          alignSelf: 'center',
+          color: 'white',
+        }}>
+        Loading...
+      </Text>
     </View>
   );
 }
@@ -144,7 +163,7 @@ export function CardComponent({
   );
 }
 
-export function AvataBaseWordComponent({full_name}) {
+export function AvataBaseWordComponent({full_name, isLightMode}) {
   const userNameShortHand = (full_name ? full_name : 'Owner')
     .split(' ')
     .map(word => {
@@ -158,10 +177,8 @@ export function AvataBaseWordComponent({full_name}) {
         height: 40,
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 2,
-        borderColor: 'black',
         borderRadius: 50,
-        backgroundColor: '#444',
+        backgroundColor: isLightMode ? '#444' : '#555',
       }}>
       <Text style={{fontSize: 12}}>{userNameShortHand}</Text>
     </View>
@@ -186,8 +203,9 @@ export function DeskComponent({
   const onlineState = useSelector(onlineStateSelector);
   const accessToken = useSelector(accessTokenSelector);
   const [image, setImage] = useState(undefined);
+  const mode = useSelector(modeStateSelector);
   const avata = useSelector(imageStateSelector);
-  console.log(avata, original_id, avata[original_id]);
+  // console.log(avata, original_id, avata[original_id]);
   // useEffect(() => {
   //   fetchImageOfDesk(accessToken, original_id).then(response => {
   //     setImage(response);
@@ -199,7 +217,11 @@ export function DeskComponent({
       onPress={() => {
         onClick();
       }}
-      style={{...ComponentStyle.deskContainer, backgroundColor: 'white'}}>
+      style={{
+        ...ComponentStyle.deskContainer,
+        width: 200,
+        backgroundColor: mode === LightMode ? 'white' : back_desk_dark,
+      }}>
       <View
         style={{
           justifyContent: 'space-between',
@@ -213,7 +235,7 @@ export function DeskComponent({
             justifyContent: 'center',
             alignItems: 'center',
             alignSelf: 'center',
-            backgroundColor: 'white',
+            backgroundColor: mode === LightMode ? 'white' : back_desk_dark,
             borderRadius: 16,
             padding: 8,
           }}>
@@ -241,7 +263,7 @@ export function DeskComponent({
           {user ? (
             <TouchableOpacity
               style={{
-                backgroundColor: 'white',
+                backgroundColor: mode === LightMode ? 'white' : back_desk_dark,
                 padding: 6,
                 marginRight: 8,
                 borderBottomRightRadius: 12,
@@ -258,7 +280,7 @@ export function DeskComponent({
 
           <TouchableOpacity
             style={{
-              backgroundColor: 'white',
+              backgroundColor: mode === LightMode ? 'white' : back_desk_dark,
               padding: 6,
               borderBottomLeftRadius: 12,
               borderTopRightRadius: 12,
@@ -276,6 +298,7 @@ export function DeskComponent({
         <Text
           style={{
             ...ComponentStyle.mediumBlackTitle,
+            color: mode === LightMode ? 'black' : 'white',
             textAlign: 'center',
             justifyContent: 'center',
             alignItems: 'center',
@@ -288,9 +311,15 @@ export function DeskComponent({
             justifyContent: 'space-around',
             marginTop: 4,
           }}>
-          <TextAndSmallNewIcon text={news} />
-          <TextAndSmallInProgressIcon text={progress} />
-          <TextAndSmallPreviewIcon text={preview} />
+          <TextAndSmallNewIcon text={news} isLightMode={mode === LightMode} />
+          <TextAndSmallInProgressIcon
+            text={progress}
+            isLightMode={mode === LightMode}
+          />
+          <TextAndSmallPreviewIcon
+            text={preview}
+            isLightMode={mode === LightMode}
+          />
         </View>
         <View
           style={{
@@ -299,10 +328,13 @@ export function DeskComponent({
             marginTop: 4,
             marginBottom: 12,
           }}>
-          <AvataBaseWordComponent full_name={user ? user.full_name : 'Owner'} />
+          <AvataBaseWordComponent
+            full_name={user ? user.full_name : 'Owner'}
+            isLightMode={mode === LightMode}
+          />
           <Text
             style={{
-              color: 'black',
+              color: mode === LightMode ? 'black' : 'white',
               fontWeight: '500',
               marginLeft: 4,
               fontSize: 12,
@@ -311,7 +343,7 @@ export function DeskComponent({
           </Text>
           <Text
             style={{
-              color: text_primary,
+              color: mode === LightMode ? text_primary : text_primary_dark,
               fontWeight: 'bold',
               marginLeft: 2,
               fontSize: 12,
@@ -363,6 +395,7 @@ export function DeskComponentType2({
   onEdit,
   onPull,
   accessToken,
+  isLightMode,
 }) {
   const [authorName, setAuthorName] = useState('');
   useEffect(() => {
@@ -377,67 +410,131 @@ export function DeskComponentType2({
       onPress={() => {
         onClick();
       }}
-      style={{...ComponentStyle.deskContainer, backgroundColor: primaryColor}}>
+      style={{
+        ...ComponentStyle.deskContainer,
+        backgroundColor: isLightMode ? 'white' : back_desk_dark,
+        flexDirection: 'column',
+        // height: 600,
+        padding: 24,
+        paddingBottom: 0,
+      }}>
+      <View style={{flex: 1}}>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <AvataBaseWordComponent full_name={authorName} />
+          <Text
+            style={{
+              marginLeft: 12,
+              color: isLightMode ? 'black' : icon_secondary,
+              fontWeight: 900,
+            }}>
+            {authorName}
+          </Text>
+        </View>
+        {/* <Text style={{...ComponentStyle.largeWhiteTitle}} numberOfLines={1}>
+          {title}
+        </Text> */}
+        <Text
+          style={{
+            color: isLightMode ? text_secondary : 'white',
+            paddingTop: 12,
+            paddingBottom: 12,
+          }}>
+          {description}
+        </Text>
+      </View>
       <View
         style={{
-          flexDirection: 'row',
-          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',
+          aspectRatio: 1,
+          backgroundColor: 'blue',
+          position: 'relative',
         }}>
+        {img_url ? (
+          <Image
+            source={{
+              uri: img_url,
+            }}
+            style={{
+              flex: 1,
+              aspectRatio: 1,
+            }}
+            blurRadius={3}
+          />
+        ) : (
+          <Image
+            source={require('../assets/images/noimage.jpg')}
+            style={{
+              flex: 1,
+              aspectRatio: 1,
+            }}
+            blurRadius={3}
+          />
+        )}
         <View
           style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            alignSelf: 'center',
+            position: 'absolute',
             flex: 1,
-            aspectRatio: 1,
-            backgroundColor: 'white',
+            padding: 24,
           }}>
-          {img_url[id] ? (
-            <Image
-              source={{
-                uri: img_url[id],
-              }}
-              style={{resizeMode: 'crop', flex: 1, aspectRatio: 1}}
-            />
-          ) : (
-            <Image
-              source={require('../assets/images/noimage.jpg')}
-              style={{resizeMode: 'cover', flex: 1, aspectRatio: 1}}
-            />
-          )}
-        </View>
-        <View style={{flex: 2}}>
-          <Text style={{...ComponentStyle.largeWhiteTitle}} numberOfLines={1}>
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: 'black',
+              opacity: 0.4,
+              borderRadius: 20,
+            }}></View>
+          <Text
+            style={{
+              ...ComponentStyle.largeWhiteTitle,
+              maxWidth: 300,
+              textAlign: 'center',
+              paddingBottom: 12,
+            }}
+            numberOfLines={2}>
             {title}
           </Text>
-          <Text style={{color: 'white'}}>{description}</Text>
-          <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-            <TextCircleBorder
-              content={`Total cards: ${numCard}`}
-              color={'#C12450'}
-            />
-          </View>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <View
-              style={{width: 50, height: 50, backgroundColor: 'white'}}></View>
-            <Text>{authorName}</Text>
+          <View
+            style={{
+              alignSelf: 'center',
+            }}>
+            <Text
+              style={{
+                padding: 12,
+                borderRadius: 50,
+                backgroundColor: isLightMode ? text_primary : text_primary_dark,
+                color: 'white',
+              }}>
+              {numCard} Cards
+            </Text>
           </View>
         </View>
+      </View>
+      <View
+        style={{
+          width: '100%',
+          // height: 10,
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+        }}>
+        <TouchableOpacity style={{padding: 24}}>
+          <HeartIcon width={34} height={34} color={icon_secondary} />
+        </TouchableOpacity>
+        <TouchableOpacity style={{padding: 24}}>
+          <CommentIcon width={34} height={34} color={icon_secondary} />
+        </TouchableOpacity>
         <TouchableOpacity
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'black',
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: 50,
-            alignSelf: 'flex-end',
-          }}
+          style={{padding: 24}}
           onPress={() => {
             onPull();
             cloneDesk(accessToken, id);
           }}>
-          <Text>PULL</Text>
+          <PullIcon width={34} height={34} color={icon_secondary} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -452,7 +549,7 @@ export function TextCircleBorder({content, color}) {
     </View>
   );
 }
-export function TextAndSmallNewIcon({text, style}) {
+export function TextAndSmallNewIcon({text, style, isLightMode}) {
   return (
     <View
       style={{
@@ -461,12 +558,12 @@ export function TextAndSmallNewIcon({text, style}) {
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-      <Text style={{color: text_secondary}}>{text}</Text>
+      <Text style={{color: isLightMode ? text_secondary : '#999'}}>{text}</Text>
       <NewIcon width={24} height={24} color={icon_secondary} />
     </View>
   );
 }
-export function TextAndSmallInProgressIcon({text, style}) {
+export function TextAndSmallInProgressIcon({text, style, isLightMode}) {
   return (
     <View
       style={{
@@ -475,12 +572,12 @@ export function TextAndSmallInProgressIcon({text, style}) {
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-      <Text style={{color: text_secondary}}>{text}</Text>
+      <Text style={{color: isLightMode ? text_secondary : '#999'}}>{text}</Text>
       <ProgressIcon width={24} height={24} color={icon_secondary} />
     </View>
   );
 }
-export function TextAndSmallPreviewIcon({text, style}) {
+export function TextAndSmallPreviewIcon({text, style, isLightMode}) {
   return (
     <View
       style={{
@@ -489,18 +586,18 @@ export function TextAndSmallPreviewIcon({text, style}) {
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-      <Text style={{color: text_secondary}}>{text}</Text>
+      <Text style={{color: isLightMode ? text_secondary : '#999'}}>{text}</Text>
       <PreviewIcon width={24} height={24} color={icon_secondary} />
     </View>
   );
 }
-export function CircleButton({content, onClick, style}) {
+export function CircleButton({content, onClick, style, isLightMode}) {
   return (
     <View style={{...style, alignSelf: 'center'}}>
       <TouchableOpacity
         style={{
           margin: 'auto',
-          backgroundColor: text_primary,
+          backgroundColor: isLightMode ? text_primary : text_primary_dark,
           alignSelf: 'baseline',
           justifyContent: 'center',
           borderRadius: 50,
@@ -551,7 +648,7 @@ export function OverLay() {
       }}></View>
   );
 }
-export const MyCheckbox = ({checked, setChecked}) => {
+export const MyCheckbox = ({checked, setChecked, isLightMode}) => {
   return (
     <View>
       <Pressable
@@ -560,11 +657,19 @@ export const MyCheckbox = ({checked, setChecked}) => {
           width: 25,
           height: 25,
           borderWidth: 2,
-          borderColor: 'black',
+          borderColor: isLightMode ? 'black' : icon_secondary,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        {checked && <Text style={{fontSize: 18, color: 'black'}}>✔</Text>}
+        {checked && (
+          <Text
+            style={{
+              fontSize: 18,
+              color: isLightMode ? 'black' : icon_secondary,
+            }}>
+            ✔
+          </Text>
+        )}
       </Pressable>
     </View>
   );
@@ -583,6 +688,7 @@ export function CreateNewDeskPopUp({
   setAccessStatus,
   close,
   create,
+  isLightMode,
 }) {
   const pickImage = () => {
     const options = {
@@ -614,7 +720,7 @@ export function CreateNewDeskPopUp({
       <View style={{margin: 'auto', position: 'relative'}}>
         <View
           style={{
-            backgroundColor: 'white',
+            backgroundColor: isLightMode ? 'white' : back_desk_dark,
             borderRadius: 24,
             padding: 36,
             marginBottom: 12,
@@ -636,7 +742,7 @@ export function CreateNewDeskPopUp({
             <TouchableOpacity onPress={pickImage} style={{}}>
               <Text
                 style={{
-                  color: text_secondary,
+                  color: isLightMode ? text_secondary : icon_secondary,
                   fontSize: 18,
                   fontWeight: 'bold',
                 }}>
@@ -645,7 +751,11 @@ export function CreateNewDeskPopUp({
             </TouchableOpacity>
           </View>
           <View style={{marginBottom: 12}}>
-            <Text style={{color: text_secondary, marginBottom: 6}}>
+            <Text
+              style={{
+                color: isLightMode ? text_secondary : icon_secondary,
+                marginBottom: 6,
+              }}>
               Desk Title
             </Text>
             <InputTag
@@ -654,10 +764,15 @@ export function CreateNewDeskPopUp({
               onValueChange={value => {
                 setInput(value);
               }}
+              isLightMode={isLightMode}
             />
           </View>
           <View style={{marginBottom: 12}}>
-            <Text style={{color: text_secondary, marginBottom: 6}}>
+            <Text
+              style={{
+                color: isLightMode ? text_secondary : icon_secondary,
+                marginBottom: 6,
+              }}>
               Description
             </Text>
             <InputTag
@@ -666,10 +781,15 @@ export function CreateNewDeskPopUp({
               onValueChange={value => {
                 setDescription(value);
               }}
+              isLightMode={isLightMode}
             />
           </View>
           <View style={{flexDirection: 'row'}}>
-            <Text style={{color: text_secondary, marginRight: 12}}>
+            <Text
+              style={{
+                color: isLightMode ? text_secondary : icon_secondary,
+                marginRight: 12,
+              }}>
               Public?
             </Text>
             <MyCheckbox
@@ -679,6 +799,7 @@ export function CreateNewDeskPopUp({
                   accessStatus === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC',
                 );
               }}
+              isLightMode={isLightMode}
             />
           </View>
           <View
@@ -689,7 +810,7 @@ export function CreateNewDeskPopUp({
             }}>
             <TouchableOpacity
               style={{
-                backgroundColor: text_primary,
+                backgroundColor: isLightMode ? text_primary : text_primary_dark,
                 padding: 16,
                 borderRadius: 28,
                 margin: 4,
@@ -697,7 +818,12 @@ export function CreateNewDeskPopUp({
               onPress={() => {
                 create();
               }}>
-              <Text style={{color: 'white', fontWeight: 'bold', fontSize: 18}}>
+              <Text
+                style={{
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: 18,
+                }}>
                 Create
               </Text>
             </TouchableOpacity>
@@ -726,6 +852,7 @@ export function UpdateDeskPopUp({
   close,
   update,
   desk,
+  isLightMode,
 }) {
   const pickImage = () => {
     const options = {
@@ -740,6 +867,7 @@ export function UpdateDeskPopUp({
       } else if (response.errorCode) {
         console.log('Image Picker Error: ', response.errorMessage);
       } else {
+        console.log(response.assets[0]);
         setFileImage(response.assets[0]); // Lưu đường dẫn hình ảnh
       }
     });
@@ -757,7 +885,7 @@ export function UpdateDeskPopUp({
       <View style={{margin: 'auto'}}>
         <View
           style={{
-            backgroundColor: 'white',
+            backgroundColor: isLightMode ? 'white' : back_desk_dark,
             borderRadius: 24,
             padding: 36,
             marginBottom: 12,
@@ -779,7 +907,7 @@ export function UpdateDeskPopUp({
             <TouchableOpacity onPress={pickImage} style={{}}>
               <Text
                 style={{
-                  color: text_secondary,
+                  color: isLightMode ? text_secondary : icon_secondary,
                   fontSize: 18,
                   fontWeight: 'bold',
                 }}>
@@ -788,24 +916,34 @@ export function UpdateDeskPopUp({
             </TouchableOpacity>
           </View>
           <View style={{marginBottom: 12}}>
-            <Text style={{color: text_secondary, marginBottom: 6}}>
+            <Text
+              style={{
+                color: isLightMode ? text_secondary : icon_secondary,
+                marginBottom: 6,
+              }}>
               Desk Title
             </Text>
             <InputTag
               placeholder={'Title'}
               content={input}
+              value={input}
               onValueChange={value => {
                 setInput(value);
               }}
             />
           </View>
           <View style={{marginBottom: 12}}>
-            <Text style={{color: text_secondary, marginBottom: 6}}>
+            <Text
+              style={{
+                color: isLightMode ? text_secondary : icon_secondary,
+                marginBottom: 6,
+              }}>
               Description
             </Text>
             <InputTag
               placeholder={'Description'}
               content={description}
+              value={description}
               onValueChange={value => {
                 setDescription(value);
               }}
@@ -813,7 +951,11 @@ export function UpdateDeskPopUp({
           </View>
 
           <View style={{flexDirection: 'row'}}>
-            <Text style={{color: text_secondary, marginRight: 12}}>
+            <Text
+              style={{
+                color: isLightMode ? text_secondary : icon_secondary,
+                marginRight: 12,
+              }}>
               Public?
             </Text>
             <MyCheckbox
@@ -833,7 +975,7 @@ export function UpdateDeskPopUp({
             }}>
             <TouchableOpacity
               style={{
-                backgroundColor: text_primary,
+                backgroundColor: isLightMode ? text_primary : text_primary_dark,
                 padding: 16,
                 borderRadius: 28,
                 margin: 4,
@@ -858,7 +1000,6 @@ export function UpdateDeskPopUp({
     </View>
   );
 }
-
 export function RadiusRetangleButton({content, onClick}) {
   return (
     <TouchableOpacity

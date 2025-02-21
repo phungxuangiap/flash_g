@@ -1,10 +1,12 @@
 import {createSlice} from '@reduxjs/toolkit';
+import {LightMode} from '../../constants';
 
 const initialState = {
   loading: false,
   db: null,
   online: true,
   images: {},
+  mode: LightMode,
 };
 
 const stateSlice = createSlice({
@@ -23,8 +25,11 @@ const stateSlice = createSlice({
     setImages: (state, actions) => {
       state.images = actions.payload;
     },
+    setMode: (state, actions) => {
+      state.mode = actions.payload;
+    },
   },
 });
 export default stateSlice;
-export const {setLoading, setDatabase, setOnline, setImages} =
+export const {setLoading, setDatabase, setOnline, setImages, setMode} =
   stateSlice.actions;

@@ -21,9 +21,9 @@ import { store } from "../redux/store";
 export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:string, dispatch:Dispatch<UnknownAction>, navigation:any, syncBeforeLogout:boolean){
 
     return await Promise.resolve()
-          .then(() => {
-            dispatch(setLoading(true));
-          })
+          // .then(() => {
+          //   dispatch(setLoading(true));
+          // })
           // Fetch current user
           .then(async () => {
 
@@ -83,12 +83,12 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
               listCreatedRemoteCard,
               listUpdatedRemoteCard,
               ] = syncCards(listLocalCard, listRemoteCard, remoteResponse.status === 'fulfilled' ? true : false);
-              console.log("CREATE LOCAL CARD", listCreatedLocalCard);
-              console.log("UPDATE LOCAL CARD", listUpdatedLocalCard);
-              console.log("DELETE LOCAL CARD", listDeletedLocalCard);
-              console.log("CREATE REMOTE CARD", listCreatedRemoteCard);
-              console.log("UPDATE REMOTE CARD", listUpdatedRemoteCard);
-              console.log("DELETE REMOTE CARD", listDeletedRemoteCard);
+              // console.log("CREATE LOCAL CARD", listCreatedLocalCard);
+              // console.log("UPDATE LOCAL CARD", listUpdatedLocalCard);
+              // console.log("DELETE LOCAL CARD", listDeletedLocalCard);
+              // console.log("CREATE REMOTE CARD", listCreatedRemoteCard);
+              // console.log("UPDATE REMOTE CARD", listUpdatedRemoteCard);
+              // console.log("DELETE REMOTE CARD", listDeletedRemoteCard);
               // update cards to remote
 
               if (onlineState){
@@ -137,7 +137,7 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
               listRemoteDesk = remoteResponse.value;
             }
             mergedDesks = mergeDesk(listLocalDesk, listRemoteDesk, remoteResponse.status === 'fulfilled' ? true : false);
-            console.log("[MERGE DESK LIST]", mergedDesks);
+            // console.log("[MERGE DESK LIST]", mergedDesks);
             let listUpdatedDesks = [];
             listUpdatedDesks =  await Promise.all(
               mergedDesks.map((desk, index)=>{
@@ -186,7 +186,6 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
             //update redux state
             dispatch(updateCurrentDesks(JSON.parse(JSON.stringify(listUpdatedDesks))));
             if (!syncBeforeLogout){
-
               dispatch(setLoading(false));
             }
             Promise.allSettled(
@@ -254,14 +253,15 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
               })).then(res=>{
                 dispatch(setImages(objectImageId));
               }).catch(error=>{
-                console.log(error)
-              })
+                console.log(error);
+              });
               if (syncBeforeLogout){
                 await uploadImage(onlineState, accessToken);
               } else{
                 uploadImage(onlineState, accessToken);
               }
             }
+            return 0;
           })
           .catch(error=>{
             console.log("Sync flow error with message:", error);
@@ -277,11 +277,10 @@ const mergeDesk = (localDesks: any[], remoteDesks: any[], onlineState: boolean) 
   remoteDesks = remoteDesks.sort((itemA:any, itemB: any)=>{
     return itemA._id < itemB._id ? 1 : -1;
   });
-  console.log('[Local Desk]', localDesks);
-  console.log('[Remote Desk]', remoteDesks);
+  // console.log('[Local Desk]', localDesks);
+  // console.log('[Remote Desk]', remoteDesks);
   // if you don't have internet, let's use data in local;
   if (!onlineState){
-    console.log("ahihi")
     return localDesks;
   }
   let remoteIndex = 0;
@@ -432,8 +431,8 @@ const uploadImage = async (onlineState:boolean, accessToken: string) => {
 };
 
 const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean): any[] =>{
-  console.log('[Local Card]', localCards);
-  console.log('[Remote Card]', remoteCards);
+  // console.log('[Local Card]', localCards);
+  // console.log('[Remote Card]', remoteCards);
   let listDeletedLocalCard:any[] = [];
   let listCreatedLocalCard:any[] = [];
   let listUpdatedLocalCard:any[] = [];

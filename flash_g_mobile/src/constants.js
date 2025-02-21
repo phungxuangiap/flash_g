@@ -16,3 +16,5 @@ export const ActiveStatus = 'active';
 export const DeletedStatus = 'deleted';
 export const RemoteStatus = 'remote';
 export const AppPadding = 24;
+export const LightMode = 'light';
+export const DarkMode = 'dark';

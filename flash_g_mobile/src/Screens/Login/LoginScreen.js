@@ -43,7 +43,7 @@ export default function LoginScreen() {
               console.log('Login successfully !');
               dispatch(changeAuth());
               dispatch(refreshAccessToken(accessToken));
-              dispatch(setLoading(false));
+              // dispatch(setLoading(false));
               navigation.navigate(BottomBar);
             })
             .catch(err => {
