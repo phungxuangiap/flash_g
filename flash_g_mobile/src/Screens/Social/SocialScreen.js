@@ -42,6 +42,7 @@ export function SocialScreen() {
       await Promise.all(
         data.map(desk => {
           return fetchImageOfDesk(accessToken, desk._id).then(img_url => {
+            console.log('IMG URL', img_url);
             setDeskImageRelationship(pre => {
               let obj = pre;
               obj[desk._id] = img_url;
@@ -52,6 +53,7 @@ export function SocialScreen() {
       );
     }
   }
+  console.log(deskImageRelationship);
   useFocusEffect(
     useCallback(() => {
       handleData(accessToken);
@@ -75,6 +77,7 @@ export function SocialScreen() {
       <ScrollView scrollEnabled={true}>
         {globalDesks &&
           globalDesks.map((desk, index) => {
+            console.log(desk);
             return (
               <DeskComponentType2
                 key={uuid.v4()}

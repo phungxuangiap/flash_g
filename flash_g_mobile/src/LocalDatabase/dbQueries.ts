@@ -77,7 +77,7 @@ const createNewImageQuery = `
         modified_time) VALUES (?, ?, ?, ?, ?, ?, ?)    
 `;
 const getImageQuery = `
-    SELECT * FROM Image WHERE original_id = ?
+    SELECT * FROM Image WHERE desk_id = ?
 `;
 const getAllImageQuery = `
     SELECT * FROM Image

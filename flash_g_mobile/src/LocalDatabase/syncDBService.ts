@@ -166,7 +166,7 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                         }
                       }
                     })
-                    let newDesk = desk;
+                    let newDesk = {...desk};
                     newDesk.new_card = newCard;
                     newDesk.inprogress_card = inProgressCard;
                     newDesk.preview_card = previewCard;
@@ -183,6 +183,7 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
           })
           // sync local and remote desks with merged desks
           .then(({listUpdatedDesks, listLocalDesk, listRemoteDesk, listCreatedRemoteCard, listCreatedLocalCard}:any)=>{
+            console.log('UPDATED DESK', listUpdatedDesks)
             //update redux state
             dispatch(updateCurrentDesks(JSON.parse(JSON.stringify(listUpdatedDesks))));
             if (!syncBeforeLogout){

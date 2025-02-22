@@ -320,10 +320,10 @@ export function createNewImage(image:Image):Promise<any>{
     });
 }
 
-export function getImageOfDesk(original_id: string){
+export function getImageOfDesk(desk_id: string){
   return getLocalDatabase()
     .then(async(db: SQLite.SQLiteDatabase)=>{
-      const response = await db.executeSql(getImageQuery, [original_id]);
+      const response = await db.executeSql(getImageQuery, [desk_id]);
       let listLocalImageOfDesk: any[] = [];
           response?.forEach((item:any) => {
             for (let index = 0; index < item.rows.length; index++) {

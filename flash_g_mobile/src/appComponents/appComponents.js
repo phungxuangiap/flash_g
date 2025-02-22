@@ -114,23 +114,48 @@ export function CardComponent({
   listAllCurrentCard,
   setShowUpdatePopUp,
   showUpdatePopUp,
+  isSpecialColor,
+  setVocab,
+  setDescription,
+  setSentence,
 }) {
+  const mode = useSelector(modeStateSelector);
   return (
     <View
       style={{
         justifyContent: 'space-between',
+        padding: 12,
+        backgroundColor: isSpecialColor
+          ? mode === LightMode
+            ? text_primary
+            : text_primary_dark
+          : 'white',
         flexDirection: 'row',
         alignItems: 'center',
       }}>
-      <Text style={{color: 'black'}}>{card.vocab}</Text>
-      <Text style={{color: 'black'}}>{card.description}</Text>
-      <View style={{flexDirection: 'row'}}>
+      <Text
+        style={{
+          color: isSpecialColor ? 'white' : 'black',
+          flex: 1,
+          textAlign: 'center',
+        }}
+        numberOfLines={1}>
+        {card.vocab}
+      </Text>
+      <Text
+        style={{
+          color: isSpecialColor ? 'white' : 'black',
+          flex: 1,
+          textAlign: 'center',
+        }}
+        numberOfLines={1}>
+        {card.description}
+      </Text>
+      <View style={{flexDirection: 'row', flex: 1, justifyContent: 'flex-end'}}>
         <TouchableOpacity
           style={{
-            padding: 10,
-            borderWidth: 1,
-            borderRadius: 20,
-            borderColor: 'black',
+            padding: 6,
+            borderColor: isSpecialColor ? 'white' : 'black',
           }}
           onPress={async () => {
             await deleteCard(card._id).then(() => {
@@ -143,20 +168,29 @@ export function CardComponent({
               );
             });
           }}>
-          <Text style={{color: 'black'}}>x</Text>
+          <TrashIcon
+            width={18}
+            height={18}
+            color={isSpecialColor ? 'white' : 'black'}
+          />
         </TouchableOpacity>
         <View style={{padding: 5}}></View>
         <TouchableOpacity
           style={{
-            padding: 10,
-            borderWidth: 1,
-            borderRadius: 20,
-            borderColor: 'black',
+            padding: 6,
+            borderColor: isSpecialColor ? 'white' : 'black',
           }}
           onPress={() => {
             setShowUpdatePopUp();
+            setVocab(card.vocab);
+            setDescription(card.description);
+            setSentence(card.sentence);
           }}>
-          <Text style={{color: 'black'}}>Edit</Text>
+          <EditIcon
+            width={18}
+            height={18}
+            color={isSpecialColor ? 'white' : 'black'}
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -250,7 +284,15 @@ export function DeskComponent({
               }}
             />
           ) : (
-            <Text style={{color: 'black'}}>Image</Text>
+            <Image
+              source={require('../assets/images/noimage.jpg')}
+              style={{
+                resizeMode: 'cover',
+                flex: 1,
+                aspectRatio: 1,
+                borderRadius: 12,
+              }}
+            />
           )}
         </View>
         <View
@@ -290,7 +332,7 @@ export function DeskComponent({
               onDelete();
               console.log('delete desk');
             }}>
-            <TrashIcon width={24} height={24} />
+            <TrashIcon width={24} height={24} color={icon_secondary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -522,19 +564,37 @@ export function DeskComponentType2({
           justifyContent: 'space-between',
           flexDirection: 'row',
         }}>
-        <TouchableOpacity style={{padding: 24}}>
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
           <HeartIcon width={34} height={34} color={icon_secondary} />
+          <Text style={{color: isLightMode ? text_secondary : icon_secondary}}>
+            12k
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={{padding: 24}}>
+        <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
           <CommentIcon width={34} height={34} color={icon_secondary} />
+          <Text style={{color: isLightMode ? text_secondary : icon_secondary}}>
+            24
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={{padding: 24}}
+          style={{
+            marginBottom: 24,
+            marginTop: 24,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
           onPress={() => {
             onPull();
             cloneDesk(accessToken, id);
           }}>
           <PullIcon width={34} height={34} color={icon_secondary} />
+          <Text style={{color: isLightMode ? text_secondary : icon_secondary}}>
+            1.3k
+          </Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -560,6 +620,22 @@ export function TextAndSmallNewIcon({text, style, isLightMode}) {
       }}>
       <Text style={{color: isLightMode ? text_secondary : '#999'}}>{text}</Text>
       <NewIcon width={24} height={24} color={icon_secondary} />
+    </View>
+  );
+}
+export function TitleAndNumber({title, number, color}) {
+  console.log('color', color);
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        backgroundColor: color || 'black',
+        padding: 12,
+        borderRadius: 24,
+        margin: 6,
+      }}>
+      <Text style={{paddingRight: 6}}>{number}</Text>
+      <Text>{title}</Text>
     </View>
   );
 }
@@ -854,6 +930,7 @@ export function UpdateDeskPopUp({
   desk,
   isLightMode,
 }) {
+  console.log('LIGHT MODE', isLightMode);
   const pickImage = () => {
     const options = {
       mediaType: 'photo',
@@ -930,6 +1007,7 @@ export function UpdateDeskPopUp({
               onValueChange={value => {
                 setInput(value);
               }}
+              isLightMode={isLightMode}
             />
           </View>
           <View style={{marginBottom: 12}}>
@@ -947,6 +1025,7 @@ export function UpdateDeskPopUp({
               onValueChange={value => {
                 setDescription(value);
               }}
+              isLightMode={isLightMode}
             />
           </View>
 
@@ -1001,6 +1080,7 @@ export function UpdateDeskPopUp({
   );
 }
 export function RadiusRetangleButton({content, onClick}) {
+  const mode = useSelector(modeStateSelector);
   return (
     <TouchableOpacity
       onPress={() => {
@@ -1009,7 +1089,7 @@ export function RadiusRetangleButton({content, onClick}) {
       style={{
         width: 40,
         height: 40,
-        backgroundColor: '#6CDDAB',
+        backgroundColor: mode === LightMode ? text_primary : text_primary_dark,
         borderRadius: 10,
       }}>
       <Text style={{fontSize: 30, color: 'white', margin: 'auto'}}>
@@ -1029,6 +1109,7 @@ export function CreateNewCardPopUp({
   close,
   create,
 }) {
+  const mode = useSelector(modeStateSelector);
   return (
     <View
       style={{
@@ -1042,13 +1123,25 @@ export function CreateNewCardPopUp({
       <View style={{margin: 'auto'}}>
         <View
           style={{
-            backgroundColor: '#6CDDAB',
+            backgroundColor: mode === LightMode ? 'white' : back_desk_dark,
             borderRadius: 24,
             padding: 24,
             marginBottom: 12,
           }}>
-          <Text style={{...ComponentStyle.largeWhiteTitle}}>
-            Create New Card
+          <Text
+            style={{
+              ...ComponentStyle.largeWhiteTitle,
+              textAlign: 'center',
+              color: mode === LightMode ? text_primary : text_primary_dark,
+            }}>
+            Create Card
+          </Text>
+          <Text
+            style={{
+              color: icon_secondary,
+              paddingTop: 12,
+            }}>
+            Title
           </Text>
           <InputTag
             placeholder={'Your Vocab'}
@@ -1056,25 +1149,43 @@ export function CreateNewCardPopUp({
             onValueChange={value => {
               setVocab(value);
             }}
+            isLightMode={mode === LightMode}
           />
+          <Text
+            style={{
+              color: icon_secondary,
+              paddingTop: 12,
+            }}>
+            Description
+          </Text>
           <InputTag
             placeholder={'Description'}
             content={description}
             onValueChange={value => {
               setDescription(value);
             }}
+            isLightMode={mode === LightMode}
           />
+          <Text
+            style={{
+              color: icon_secondary,
+              paddingTop: 12,
+            }}>
+            Sentence
+          </Text>
           <InputTag
             placeholder={'Sentences'}
             content={sentence}
             onValueChange={value => {
               setSentence(value);
             }}
+            isLightMode={mode === LightMode}
           />
-          <View style={{flexDirection: 'row-reverse'}}>
+          <View style={{alignSelf: 'center', margin: 12}}>
             <TouchableOpacity
               style={{
-                backgroundColor: '#444',
+                backgroundColor:
+                  mode === LightMode ? text_primary : text_primary_dark,
                 padding: 12,
                 borderRadius: 24,
                 margin: 4,
@@ -1082,12 +1193,12 @@ export function CreateNewCardPopUp({
               onPress={() => {
                 create();
               }}>
-              <Text>Create</Text>
+              <Text style={{color: 'white', fontSize: 18}}>Create</Text>
             </TouchableOpacity>
           </View>
         </View>
-        <CircleButton
-          style={{position: 'absolute', bottom: -60}}
+        <ExitButton
+          style={{position: 'absolute', bottom: -100}}
           content={'x'}
           onClick={() => {
             close();
@@ -1108,6 +1219,8 @@ export function UpdateCardPopUp({
   close,
   update,
 }) {
+  const mode = useSelector(modeStateSelector);
+
   return (
     <View
       style={{
@@ -1121,37 +1234,69 @@ export function UpdateCardPopUp({
       <View style={{margin: 'auto'}}>
         <View
           style={{
-            backgroundColor: '#6CDDAB',
+            backgroundColor: mode === LightMode ? 'white' : back_desk_dark,
             borderRadius: 24,
             padding: 24,
             marginBottom: 12,
           }}>
-          <Text style={{...ComponentStyle.largeWhiteTitle}}>Update Card</Text>
+          <Text
+            style={{
+              ...ComponentStyle.largeWhiteTitle,
+              textAlign: 'center',
+              color: mode === LightMode ? text_primary : text_primary_dark,
+            }}>
+            Update Card
+          </Text>
+          <Text
+            style={{
+              color: icon_secondary,
+              paddingTop: 12,
+            }}>
+            Title
+          </Text>
           <InputTag
             placeholder={'Your Vocab'}
-            content={vocab}
+            value={vocab}
             onValueChange={value => {
               setVocab(value);
             }}
+            isLightMode={mode === LightMode}
           />
+          <Text
+            style={{
+              color: icon_secondary,
+              paddingTop: 12,
+            }}>
+            Description
+          </Text>
           <InputTag
             placeholder={'Description'}
-            content={description}
+            value={description}
             onValueChange={value => {
               setDescription(value);
             }}
+            isLightMode={mode === LightMode}
           />
+          <Text
+            style={{
+              color: icon_secondary,
+              paddingTop: 12,
+            }}>
+            Sentence
+          </Text>
           <InputTag
             placeholder={'Sentences'}
-            content={sentence}
+            value={sentence}
             onValueChange={value => {
               setSentence(value);
             }}
+            isLightMode={mode === LightMode}
           />
-          <View style={{flexDirection: 'row-reverse'}}>
+          <View style={{alignSelf: 'center', margin: 12}}>
             <TouchableOpacity
               style={{
-                backgroundColor: '#444',
+                backgroundColor:
+                  mode === LightMode ? text_primary : text_primary_dark,
                 padding: 12,
                 borderRadius: 24,
                 margin: 4,
@@ -1159,12 +1304,12 @@ export function UpdateCardPopUp({
               onPress={() => {
                 update();
               }}>
-              <Text>Update</Text>
+              <Text style={{color: 'white', fontSize: 18}}>Update</Text>
             </TouchableOpacity>
           </View>
         </View>
-        <CircleButton
-          style={{position: 'absolute', bottom: -60}}
+        <ExitButton
+          style={{position: 'absolute', bottom: -100}}
           content={'x'}
           onClick={() => {
             close();
