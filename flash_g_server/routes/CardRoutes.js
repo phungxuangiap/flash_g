@@ -11,8 +11,9 @@ const {
   createMultipleCards,
 } = require("../controllers/CardController");
 const { route } = require("./DeskRoutes");
-const validationHandler = require("../middlewares/validationHandler");
 const router = express.Router();
+router.route("/:deskId").get(getAllCardsOfDesk);
+const validationHandler = require("../middlewares/validationHandler");
 router.use(validationHandler);
 router.route("/").get(getAllCards);
 router.route("/:deskId").get(getAllCardsOfDesk).post(createCard);

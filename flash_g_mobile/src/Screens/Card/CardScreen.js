@@ -99,7 +99,7 @@ export default function CardScreen() {
           activeCards.push(item);
           if (item.status === 'new') {
             news = news + 1;
-          } else if (item.status === 'in_progress') {
+          } else if (item.status === 'inprogress') {
             in_progress = in_progress + 1;
           } else {
             preview = preview + 1;
@@ -134,11 +134,9 @@ export default function CardScreen() {
   useEffect(() => {
     updateDesk(listAllCurrentCardsOfDesk);
   }, [listAllCurrentCardsOfDesk]);
-  console.log('AVATA', avata, avata ? 'avata' : 'null');
   useEffect(() => {
     dispatch(setLoading(true));
     fetchImageOfDesk(accessToken, desk.original_id).then(res => {
-      console.log(res);
       setAvata(res ? res.img_url : undefined);
     });
 
@@ -252,7 +250,13 @@ export default function CardScreen() {
                 opacity: 0.4,
                 borderRadius: 20,
               }}></View>
-            <Text style={{color: 'white', fontSize: 18, fontWeight: 'bold'}}>
+            <Text
+              style={{
+                color: 'white',
+                fontSize: 18,
+                fontWeight: 'bold',
+                textAlign: 'center',
+              }}>
               {desk.description}
             </Text>
             <View style={{flexDirection: 'row', marginTop: 24}}>
@@ -391,7 +395,6 @@ export default function CardScreen() {
                 JSON.stringify(new Date()).slice(1, -1),
                 ActiveStatus,
               );
-              console.log('NEW CARD', newCard);
               await updateCard(newCard)
                 .then(res => {
                   console.log('Create card');

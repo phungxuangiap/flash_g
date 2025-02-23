@@ -7,7 +7,10 @@ import {
   onlineStateSelector,
 } from '../../redux/selectors';
 import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
-import {fetchAllGlobalDesks} from '../../service/fetchRemoteData';
+import {
+  fetchAllCurrentCardOfDesk,
+  fetchAllGlobalDesks,
+} from '../../service/fetchRemoteData';
 import {useFocusEffect} from '@react-navigation/native';
 import uuid from 'react-native-uuid';
 import React from 'react';
@@ -29,6 +32,7 @@ export function SocialScreen() {
   const accessToken = useSelector(accessTokenSelector);
   const [globalDesks, setGlobalDesks] = useState([]);
   const [deskImageRelationship, setDeskImageRelationship] = useState({});
+  const [deskNumCardRelationship, setDeskNumCardRelationship] = useState({});
   async function handleData(accessToken) {
     const data = await fetchAllGlobalDesks(accessToken).catch(error => {
       if (error.status === 401) {
@@ -41,14 +45,24 @@ export function SocialScreen() {
     if (data) {
       await Promise.all(
         data.map(desk => {
-          return fetchImageOfDesk(accessToken, desk._id).then(img_url => {
-            console.log('IMG URL', img_url);
-            setDeskImageRelationship(pre => {
-              let obj = pre;
-              obj[desk._id] = img_url;
-              return obj;
+          return fetchImageOfDesk(accessToken, desk._id)
+            .then(img_url => {
+              console.log('IMG URL', img_url);
+              setDeskImageRelationship(pre => {
+                let obj = {...pre};
+                obj[desk._id] = img_url;
+                return obj;
+              });
+            })
+            .then(res => {
+              fetchAllCurrentCardOfDesk(desk._id).then(response => {
+                setDeskNumCardRelationship(pre => {
+                  let obj = {...pre};
+                  obj[desk._id] = response.length;
+                  return obj;
+                });
+              });
             });
-          });
         }),
       );
     }
@@ -77,7 +91,6 @@ export function SocialScreen() {
       <ScrollView scrollEnabled={true}>
         {globalDesks &&
           globalDesks.map((desk, index) => {
-            console.log(desk);
             return (
               <DeskComponentType2
                 key={uuid.v4()}
@@ -86,9 +99,7 @@ export function SocialScreen() {
                 img_url={deskImageRelationship[desk.original_id]?.img_url}
                 primaryColor={desk.primary_color}
                 description={desk.description}
-                numCard={
-                  desk.new_card + desk.inprogress_card + desk.preview_card
-                }
+                numCard={deskNumCardRelationship[desk._id] || 0}
                 authorId={desk.author_id}
                 onDelete={() => {}}
                 onClick={() => {}}

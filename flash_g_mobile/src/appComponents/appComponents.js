@@ -624,7 +624,6 @@ export function TextAndSmallNewIcon({text, style, isLightMode}) {
   );
 }
 export function TitleAndNumber({title, number, color}) {
-  console.log('color', color);
   return (
     <View
       style={{

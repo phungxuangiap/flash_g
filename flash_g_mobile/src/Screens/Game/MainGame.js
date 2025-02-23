@@ -20,7 +20,7 @@ export default function GameComponent() {
     }
   }, [listActiveCard]);
   const currentCard = listActiveCard[randomCard];
-  console.log(randomCard, currentCard, listActiveCard);
+  // console.log(randomCard, currentCard, listActiveCard);
 
   return <FlashCard card={currentCard} setRandomCard={setRandomCard} />;
 }

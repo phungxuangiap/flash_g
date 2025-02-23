@@ -6,7 +6,7 @@ import { updateCurrentDesks } from "../redux/slices/gameSlice";
 import { setImages, setLoading } from "../redux/slices/stateSlice";
 import { fetchAllCards, fetchCurrentUser, fetchListDesks } from "../service/fetchRemoteData";
 import { deleteCardInRemote, deleteDeskInRemote, updateCardToRemote, updateDeskToRemote } from "../service/postToRemote";
-import { createNewCard, createNewDesk, createNewImage, createNewUser, deleteCard, deleteDesk, deleteImage, getAllCards, getAllCurrentCardsOfDesk, getAllDesks, getAllLocalImage, getDesk, getDeskOfRemoteDeskId, getImageOfDesk, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, getUser, removeCard, removeCardOfRemoteId, removeDesk, updateCard, updateCardOfRemoteId, updateDesk, updateImage } from "./database";
+import { checkIsCurrent, createNewCard, createNewDesk, createNewImage, createNewUser, deleteCard, deleteDesk, deleteImage, getAllCards, getAllCurrentCardsOfDesk, getAllDesks, getAllLocalImage, getDesk, getDeskOfRemoteDeskId, getImageOfDesk, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, getUser, removeCard, removeCardOfRemoteId, removeDesk, updateCard, updateCardOfRemoteId, updateDesk, updateImage } from "./database";
 import { Desk, Card, Image } from "./model";
 import { Dispatch, UnknownAction } from "@reduxjs/toolkit";
 import { addImageToCloudinary, createImage, fetchImageOfDesk, fetchImagesOfDesks, updateImageOfDesk } from "../service/imageService";
@@ -71,6 +71,7 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
               if (localResponse.status === "fulfilled"){
                 listLocalCard = localResponse.value;
               }
+              console.log("ALL LOCAL CARDS", listLocalCard)
               if (remoteResponse.status === "fulfilled"){
                 listRemoteCard = remoteResponse.value;
               }
@@ -83,12 +84,12 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
               listCreatedRemoteCard,
               listUpdatedRemoteCard,
               ] = syncCards(listLocalCard, listRemoteCard, remoteResponse.status === 'fulfilled' ? true : false);
-              // console.log("CREATE LOCAL CARD", listCreatedLocalCard);
-              // console.log("UPDATE LOCAL CARD", listUpdatedLocalCard);
-              // console.log("DELETE LOCAL CARD", listDeletedLocalCard);
-              // console.log("CREATE REMOTE CARD", listCreatedRemoteCard);
-              // console.log("UPDATE REMOTE CARD", listUpdatedRemoteCard);
-              // console.log("DELETE REMOTE CARD", listDeletedRemoteCard);
+              console.log("CREATE LOCAL CARD", listCreatedLocalCard);
+              console.log("UPDATE LOCAL CARD", listUpdatedLocalCard);
+              console.log("DELETE LOCAL CARD", listDeletedLocalCard);
+              console.log("CREATE REMOTE CARD", listCreatedRemoteCard);
+              console.log("UPDATE REMOTE CARD", listUpdatedRemoteCard);
+              console.log("DELETE REMOTE CARD", listDeletedRemoteCard);
               // update cards to remote
 
               if (onlineState){
@@ -147,16 +148,19 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
                     let inProgressCard = 0;
                     let previewCard = 0;
                     listCurrentCards.forEach(card=>{
-                      if (card.status === 'new'){
-                        newCard++;
-                      } else if (card.status === 'inprogress'){
-                        inProgressCard++;
-                      } else {
-                        previewCard++;
+                      if (checkIsCurrent(card.last_preview, card.level)){
+
+                        if (card.status === 'new'){
+                          newCard++;
+                        } else if (card.status === 'inprogress'){
+                          inProgressCard++;
+                        } else {
+                          previewCard++;
+                        }
                       }
                     });
                     listCreatedLocalCard.forEach(card=>{
-                      if (card.remote_desk_id === desk.remote_id){
+                      if (card.remote_desk_id === desk.remote_id && checkIsCurrent(card.last_preview, card.level)){
                         if (card.status === 'new'){
                           newCard++;
                         } else if (card.status === 'inprogress'){
@@ -183,7 +187,6 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
           })
           // sync local and remote desks with merged desks
           .then(({listUpdatedDesks, listLocalDesk, listRemoteDesk, listCreatedRemoteCard, listCreatedLocalCard}:any)=>{
-            console.log('UPDATED DESK', listUpdatedDesks)
             //update redux state
             dispatch(updateCurrentDesks(JSON.parse(JSON.stringify(listUpdatedDesks))));
             if (!syncBeforeLogout){
@@ -453,6 +456,8 @@ const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean):
   let remoteIndex = 0;
   // case remote cards is empty
   if (remoteCards.length===0){
+    console.log("REMOTE EMPTY CASE", localCards.length);
+
     // post all local cards to remote
     for (let localIndex = 0; localIndex<localCards.length; localIndex++){
       if (localCards[localIndex].active_status === DeletedStatus){
@@ -462,6 +467,7 @@ const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean):
       if (localCards[localIndex].active_status === ActiveStatus){
         // create remote card
         listCreatedRemoteCard.push(localCards[localIndex]);
+        console.log('Create remote 1')
       } else{
         listDeletedLocalCard.push(localCards[localIndex]);
       }
@@ -469,6 +475,8 @@ const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean):
   } else
   // case both local cards and remote cards have data
   if (remoteCards.length!==0 && localCards.length!==0){
+    console.log("NO EMPTY CASE", remoteCards, localCards);
+
     for (let localIndex = 0; localIndex < localCards.length; localIndex++){
       while (remoteIndex < remoteCards.length && remoteCards[remoteIndex]._id > localCards[localIndex].remote_id){
         // when two card in remote and local is valid and we found new card in remote (it cannot in case local deleted but remote haven't, because local and remote card delete in one time)
@@ -478,6 +486,7 @@ const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean):
           const localId = uuid.v4();
           const newCard = new Card(localId, "", cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, cardElement.desk_id);
           listCreatedLocalCard.push(newCard);
+          console.log("Create local 1", remoteCards[remoteIndex], localCards[localIndex])
           remoteIndex++;
         }
       }
@@ -511,6 +520,8 @@ const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean):
         if (localCards[localIndex].active_status === ActiveStatus){
           //create remote card
           listCreatedRemoteCard.push(localCards[localIndex]);
+        console.log('Create remote 2')
+
         } else if (localCards[localIndex].active_status === RemoteStatus){
           //delete local card
           listDeletedLocalCard.push(localCards[localIndex]);
@@ -528,6 +539,8 @@ const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean):
         if (localCards[localIndex].active_status === ActiveStatus){
           // create remote card
           listCreatedRemoteCard.push(localCards[localIndex]);
+        console.log('Create remote 3', localCards[localIndex]);
+
         }
       }
     }
@@ -539,16 +552,21 @@ const syncCards = (localCards:any[], remoteCards: any[], onlineState : boolean):
         const localId = uuid.v4();
         const newCard = new Card(localId, "", cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, cardElement.desk_id);
         listCreatedLocalCard.push(newCard);
+          console.log("Create local 2")
+
       }
     }
   } else
   // case local card empty
   if (localCards.length ===0){
+    console.log("LOCAL EMPTY CASE", remoteCards.length);
     for (let index = 0; index < remoteCards.length; index++){
       const cardElement = remoteCards[index];
       const localId = uuid.v4();
       const newCard = new Card(localId, "", cardElement.user_id, cardElement.author_id, cardElement.original_id, cardElement.status, cardElement.level, cardElement.last_preview, cardElement.vocab, cardElement.description, cardElement.sentence, cardElement.vocab_audio, cardElement.sentence_audio, cardElement.type, cardElement.modified_time, RemoteStatus, cardElement._id, cardElement.desk_id);
       listCreatedLocalCard.push(newCard);
+          console.log("Create local 3")
+
     }
   }
   return [listDeletedLocalCard, listCreatedLocalCard, listUpdatedLocalCard, listDeletedRemoteCard, listCreatedRemoteCard, listUpdatedRemoteCard];

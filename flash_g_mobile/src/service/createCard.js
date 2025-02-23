@@ -6,7 +6,7 @@ import {refresh} from './refreshAccessToken';
 import {REACT_APP_URL} from '../../env';
 
 export default async function createCard(accessToken, deskId, card) {
-  console.log(REACT_APP_URL);
+  console.log('LEVEL', card.level);
   return await axios
     .post(
       `http://${REACT_APP_URL}/api/card/${deskId}`,
@@ -18,6 +18,7 @@ export default async function createCard(accessToken, deskId, card) {
         sentence_audio: null,
         last_preview: card.last_preview,
         modified_time: card.modified_time,
+        level: card.level || 0,
       },
       {
         headers: {

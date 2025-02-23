@@ -57,7 +57,6 @@ const getAllCards = asyncHandler(async (req, res, next) => {
 //@route POST api/card/:deskId
 //@access private
 const createCard = asyncHandler(async (req, res, next) => {
-  console.log("Ahihi");
   const {
     vocab,
     description,
@@ -66,6 +65,7 @@ const createCard = asyncHandler(async (req, res, next) => {
     sentence_audio,
     last_preview,
     modified_time,
+    level,
   } = req.body;
   if (!vocab || !description || !sentence || !last_preview || !modified_time) {
     res.status(Constants.NOT_FOUND);
@@ -75,6 +75,14 @@ const createCard = asyncHandler(async (req, res, next) => {
     const action = req.query.action;
     // action variable here is used for separate clone and create card service.
     // action that don't have value is create method another wise in case clone will be clone
+    let card_status = "new";
+    if (level) {
+      if (level >= 2 && level < 7) {
+        card_status = "inprogress";
+      } else if (level >= 7) {
+        card_status = "preview";
+      }
+    }
     if (!action) {
       const newCard = await Card.create({
         _id: card_id,
@@ -82,8 +90,8 @@ const createCard = asyncHandler(async (req, res, next) => {
         original_id: card_id,
         author_id: req.user._id,
         user_id: req.user._id,
-        status: "new",
-        level: 0,
+        status: card_status,
+        level: level || 0,
         last_preview,
         vocab,
         description,
@@ -137,10 +145,18 @@ const updateCard = asyncHandler(async (req, res, next) => {
   if (card) {
     if (card.author_id === req.user._id) {
       // AUTHOR handling
+      let card_status = "new";
+      if (level) {
+        if (level >= 2 && level < 7) {
+          card_status = "inprogress";
+        } else if (level >= 7) {
+          card_status = "preview";
+        }
+      }
       const updatedCard = await Card.findByIdAndUpdate(
         req.params.cardId,
         {
-          status: req.body.status || card.status,
+          status: card_status || card.status,
           level: req.body.level || card.level,
           last_preview: req.body.last_preview || card.last_preview,
           modified_time: req.body.modified_time || card.modified_time,

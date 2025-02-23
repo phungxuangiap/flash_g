@@ -117,6 +117,14 @@ export async function getAllDesks(): Promise<any>{
 export async function createNewCard(card: Card): Promise<any> {
   return await getLocalDatabase()
     .then(async (db: SQLite.SQLiteDatabase) => {
+      let card_status = 'new';
+      if (card.level){
+        if (card.level >=2 && card.level <7){
+          card_status = 'inprogress';
+        } else if (card.level >=7){
+          card_status = 'preview';
+        }
+      }
       await db.executeSql(createNewCardQuery,
         [
           card._id,
@@ -124,7 +132,7 @@ export async function createNewCard(card: Card): Promise<any> {
           card.user_id,
           card.author_id,
           card.original_id,
-          card.status,
+          card_status,
           card.level,
           card.last_preview,
           card.vocab,
@@ -222,7 +230,15 @@ export async function getAllCards(): Promise<any>{
 export async function updateCard(card: Card): Promise<any> {
   return await getLocalDatabase()
     .then(async (db:SQLite.SQLiteDatabase) =>{
-      await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.user_id, card.author_id, card.original_id, card.status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type, card.modified_time, card.active_status, card.remote_id, card.remote_desk_id]);
+      let card_status = "new";
+      if (card.level) {
+        if (card.level >= 2 && card.level < 7) {
+          card_status = "inprogress";
+        } else if (card.level >= 7) {
+          card_status = "preview";
+        }
+      }
+      await db.executeSql(updateCardQuery, [card._id, card.desk_id, card.user_id, card.author_id, card.original_id, card_status, card.level, card.last_preview, card.vocab, card.description, card.sentence, card.vocab_audio, card.sentence_audio, card.type, card.modified_time, card.active_status, card.remote_id, card.remote_desk_id]);
       console.log("Update card successfully")
     })
     .catch((error) => {
@@ -286,7 +302,7 @@ export async function getUser(): Promise<any> {
       console.log(error);
     });
 } //OK
-function checkIsCurrent(last_preview:string, level:number): boolean{
+export function checkIsCurrent(last_preview:string, level:number): boolean{
   const lastPreviewDate = Date.parse(last_preview);
   const currentDate = (new Date()).getTime();
   return lastPreviewDate + (Math.pow(2, level)-1) * 24 * 60 * 60 * 1000 <= currentDate;

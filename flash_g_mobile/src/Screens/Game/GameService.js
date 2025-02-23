@@ -1,13 +1,23 @@
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Pressable, StyleSheet, TouchableOpacity, View} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {Text} from '@react-navigation/elements';
 import {ComponentStyle} from '../../appComponents/style';
 import {useDispatch, useSelector} from 'react-redux';
-import {currentCardsSelector, gameSelector} from '../../redux/selectors';
+import {
+  currentCardsSelector,
+  gameSelector,
+  modeStateSelector,
+} from '../../redux/selectors';
 import {updateCard} from '../../LocalDatabase/database';
 import {Card} from '../../LocalDatabase/model';
-import {ActiveStatus} from '../../constants';
+import {ActiveStatus, LightMode} from '../../constants';
 import {updateCurrentCards} from '../../redux/slices/gameSlice';
+import {
+  back_dark,
+  back_primary,
+  text_primary,
+  text_primary_dark,
+} from '../../assets/colors/colors';
 
 function Game() {
   this.flashCard = FlashCard;
@@ -26,26 +36,28 @@ function Game() {
       default:
         break;
     }
-    await updateCard(
-      new Card(
-        card._id,
-        card.desk_id,
-        card.user_id,
-        card.author_id,
-        card.original_id,
-        card.status,
-        level,
-        JSON.stringify(new Date()).slice(1, -1),
-        card.vocab,
-        card.description,
-        card.sentence,
-        card.vocab_audio,
-        card.sentence_audio,
-        card.type,
-        JSON.stringify(new Date()).slice(1, -1),
-        ActiveStatus,
-      ),
-    )
+    const updatedCard = new Card(
+      card._id,
+      card.desk_id,
+      card.user_id,
+      card.author_id,
+      card.original_id,
+      card.status,
+      level,
+      JSON.stringify(new Date()).slice(1, -1),
+      card.vocab,
+      card.description,
+      card.sentence,
+      card.vocab_audio,
+      card.sentence_audio,
+      card.type,
+      JSON.stringify(new Date()).slice(1, -1),
+      ActiveStatus,
+      card.remote_id,
+      card.remote_desk_id,
+    );
+    console.log('updated card', updatedCard);
+    await updateCard(updatedCard)
       .then(res => {
         console.log('Done');
       })
@@ -62,6 +74,7 @@ export const FlashCard = function ({card, setRandomCard}) {
   const listCurrentCard = useSelector(currentCardsSelector);
   const currentDesk = useSelector(gameSelector);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const mode = useSelector(modeStateSelector);
   useEffect(() => {
     if (card) {
       setTextShowFlash(card.vocab);
@@ -69,9 +82,32 @@ export const FlashCard = function ({card, setRandomCard}) {
   }, [listCurrentCard]);
   const [showAnswer, setShowAnswer] = useState(false);
   return (
-    <View style={FlashCardStyle.container}>
-      <View style={FlashCardStyle.flash_card}>
-        <Text style={ComponentStyle.textWhite16Medium}>{textShowFlash}</Text>
+    <Pressable
+      style={{
+        ...FlashCardStyle.container,
+        backgroundColor: mode === LightMode ? back_primary : back_dark,
+      }}
+      onPress={() => {
+        setShowAnswer(preState => !preState);
+        setTextShowFlash(preState =>
+          preState === card.description ? card.vocab : card.description,
+        );
+      }}>
+      <View
+        style={{
+          ...FlashCardStyle.flash_card,
+          backgroundColor:
+            mode === LightMode ? text_primary : text_primary_dark,
+        }}>
+        <Text
+          style={{
+            ...ComponentStyle.textWhite16Medium,
+            fontSize: 18,
+            fontWeight: 'bold',
+            textAlign: 'center',
+          }}>
+          {textShowFlash}
+        </Text>
       </View>
       <View style={FlashCardStyle.submit_button}>
         {showAnswer ? (
@@ -154,7 +190,7 @@ export const FlashCard = function ({card, setRandomCard}) {
           </>
         )}
       </View>
-    </View>
+    </Pressable>
   );
 };
 
@@ -167,7 +203,6 @@ const FlashCardStyle = StyleSheet.create({
   flash_card: {
     width: 250,
     height: 250,
-    backgroundColor: 'black',
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
