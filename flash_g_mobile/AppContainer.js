@@ -14,6 +14,7 @@ import {onlineStateSelector, userSelector} from './src/redux/selectors';
 import NetInfo from '@react-native-community/netinfo';
 import {databaseInitialization} from './src/LocalDatabase/databaseInitialization';
 import networkSpeed from 'react-native-network-speed';
+import {LoadingOverlay} from './src/appComponents/appComponents';
 
 const LocalDatabaseContext = createContext();
 export function AppContainer() {
@@ -60,11 +61,11 @@ export function AppContainer() {
 
   return (
     <LocalDatabaseContext.Provider value={database.current}>
-      <View style={{flex: 1}}>
+      <View style={{flex: 1, position: 'relative'}}>
         {user || doneLoad ? (
           <MainNavigation initialRoute={user ? 'bottombar' : 'Auth'} />
         ) : (
-          <View style={{flex: 1, backgroundColor: 'blue'}}></View>
+          <LoadingOverlay />
         )}
       </View>
     </LocalDatabaseContext.Provider>

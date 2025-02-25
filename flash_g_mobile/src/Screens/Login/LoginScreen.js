@@ -22,6 +22,8 @@ import {changeAuth, refreshAccessToken} from '../../redux/slices/authSlice';
 import {BottomBar, LightMode, Login, Register} from '../../constants';
 import {UserPreference} from '../../LocalDatabase/model';
 import {updateUserPreference} from '../../LocalDatabase/database';
+import {text_primary} from '../../assets/colors/colors';
+import Logo from '../../assets/icons/Logo';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,13 +32,39 @@ export default function LoginScreen() {
   const dispatch = useDispatch();
   return (
     <View style={style.container}>
-      <InputTag placeholder={'Email'} value={email} onValueChange={setEmail} />
+      <Text
+        style={{
+          fontSize: 24,
+          color: text_primary,
+          fontWeight: 'bold',
+          paddingBottom: 24,
+        }}>
+        Login
+      </Text>
+      <InputTag
+        placeholder={'Email'}
+        value={email}
+        onValueChange={setEmail}
+        isLightMode={true}
+      />
+      <View style={{padding: 6}}></View>
       <InputTag
         placeholder={'Password'}
         value={password}
         onValueChange={setPassword}
+        isLightMode={true}
       />
+      <View style={{padding: 6}}></View>
+
       <WrapContentButton
+        style={{
+          backgroundColor: text_primary,
+          borderRadius: 20,
+          paddingLeft: 20,
+          paddingRight: 20,
+          marginTop: 24,
+          marginBottom: 6,
+        }}
         content={'Login'}
         onClick={() => {
           dispatch(setLoading(true));

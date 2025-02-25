@@ -9,9 +9,21 @@ const Stack = createNativeStackNavigator();
 export default function AuthNavigator() {
   return (
     <Stack.Navigator initialRouteName={Login}>
-      <Stack.Screen name={Login} component={LoginScreen} />
-      <Stack.Screen name={Register} component={RegisterScreen} />
-      <Stack.Screen name={Pending} component={PendingScreen} />
+      <Stack.Screen
+        name={Login}
+        component={LoginScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name={Register}
+        component={RegisterScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name={Pending}
+        component={PendingScreen}
+        options={{headerShown: false}}
+      />
     </Stack.Navigator>
   );
 }

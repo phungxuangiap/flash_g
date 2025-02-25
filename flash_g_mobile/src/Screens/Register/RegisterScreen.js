@@ -23,6 +23,7 @@ import {BottomBar, LightMode, Login} from '../../constants';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {updateUserPreference} from '../../LocalDatabase/database';
 import {UserPreference} from '../../LocalDatabase/model';
+import {text_primary} from '../../assets/colors/colors';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -35,28 +36,64 @@ export default function RegisterScreen() {
   const dispatch = useDispatch();
   return (
     <View style={style.container}>
-      <InputTag placeholder={'Email'} value={email} onValueChange={setEmail} />
+      <Text
+        style={{
+          fontSize: 24,
+          color: text_primary,
+          fontWeight: 'bold',
+          paddingBottom: 24,
+        }}>
+        Register
+      </Text>
+      <InputTag
+        placeholder={'Email'}
+        value={email}
+        onValueChange={setEmail}
+        isLightMode={true}
+      />
+      <View style={{padding: 6}}></View>
+
       <InputTag
         placeholder={'User Name'}
         value={userName}
         onValueChange={setUserName}
+        isLightMode={true}
       />
+      <View style={{padding: 6}}></View>
+
       <InputTag
         placeholder={'Full name'}
         value={fullName}
         onValueChange={setFullName}
+        isLightMode={true}
       />
+      <View style={{padding: 6}}></View>
+
       <InputTag
         placeholder={'Password'}
         value={password}
         onValueChange={setPassword}
+        isLightMode={true}
       />
+      <View style={{padding: 6}}></View>
+
       <InputTag
         placeholder={'Retype Password'}
         value={retypePassword}
         onValueChange={setRetypePassword}
+        isLightMode={true}
       />
+      <View style={{padding: 6}}></View>
+
       <WrapContentButton
+        style={{
+          backgroundColor: text_primary,
+          borderRadius: 20,
+          paddingLeft: 20,
+          paddingRight: 20,
+          marginTop: 24,
+          marginBottom: 6,
+        }}
         content={'Register'}
         onClick={() => {
           dispatch(setLoading(true));

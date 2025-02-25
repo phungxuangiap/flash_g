@@ -1,5 +1,7 @@
 import {
   Alert,
+  Animated,
+  Easing,
   Image,
   Pressable,
   Text,
@@ -7,6 +9,7 @@ import {
   Touchable,
   TouchableHighlight,
   TouchableOpacity,
+  useAnimatedValue,
   View,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
@@ -32,6 +35,7 @@ import {cloneDesk} from '../service/cloneDesk';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {fetchImageOfDesk} from '../service/imageService';
 import {
+  back_dark,
   back_desk_dark,
   back_primary,
   icon_secondary,
@@ -52,6 +56,7 @@ import ExitIcon from '../assets/icons/ExitIcon';
 import HeartIcon from '../assets/icons/HeartIcon';
 import CommentIcon from '../assets/icons/CommentIcon';
 import PullIcon from '../assets/icons/PullIcon';
+import Logo from '../assets/icons/Logo';
 
 export function InputTag({placeholder, value, onValueChange, isLightMode}) {
   return (
@@ -62,6 +67,7 @@ export function InputTag({placeholder, value, onValueChange, isLightMode}) {
           backgroundColor: isLightMode ? input_back : input_back_dark,
           color: isLightMode ? text_primary : text_primary_dark,
         }}
+        placeholder={placeholder || ''}
         value={value}
         onChangeText={newValue => {
           onValueChange(newValue);
@@ -71,10 +77,10 @@ export function InputTag({placeholder, value, onValueChange, isLightMode}) {
   );
 }
 
-export function WrapContentButton({content, onClick}) {
+export function WrapContentButton({content, onClick, style}) {
   return (
     <TouchableOpacity
-      style={ComponentStyle.button}
+      style={{...ComponentStyle.button, ...style}}
       onPress={() => {
         onClick();
       }}>
@@ -95,16 +101,47 @@ export function ClickableText({content, onClick}) {
 }
 
 export function LoadingOverlay() {
+  const scale = useAnimatedValue(0.5); // Initial value for opacity: 0
+  const mode = useSelector(modeStateSelector);
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scale, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.back(),
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 0.5,
+          duration: 1000,
+          easing: Easing.bounce,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, [scale]);
   return (
-    <View style={ComponentStyle.loadingOverLay}>
-      <Text
+    <Animated.View
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: mode === LightMode ? 'white' : back_dark,
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+      }}>
+      <Animated.View
         style={{
-          alignSelf: 'center',
-          color: 'white',
+          transform: [{scale: scale}],
         }}>
-        Loading...
-      </Text>
-    </View>
+        <Logo width={102} height={125} />
+      </Animated.View>
+    </Animated.View>
   );
 }
 

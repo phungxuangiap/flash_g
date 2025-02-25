@@ -13,6 +13,9 @@ import {
   useColorScheme,
   View,
   Alert,
+  useAnimatedValue,
+  Animated,
+  Easing,
 } from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -21,6 +24,7 @@ import {store} from './src/redux/store';
 import {AppContainer} from './AppContainer';
 import {databaseInitialization} from './src/LocalDatabase/databaseInitialization';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import Logo from './src/assets/icons/Logo';
 function Section({children, title}) {
   const isDarkMode = useColorScheme() === 'dark';
   return (
