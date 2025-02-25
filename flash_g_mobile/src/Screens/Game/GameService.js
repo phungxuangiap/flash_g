@@ -111,9 +111,15 @@ export const FlashCard = function ({card, setRandomCard}) {
       </View>
       <View style={FlashCardStyle.submit_button}>
         {showAnswer ? (
-          <>
+          <View style={{flexDirection: 'row', marginBottom: 32}}>
             <TouchableOpacity
-              style={ComponentStyle.button}
+              style={{
+                ...ComponentStyle.button,
+                backgroundColor: '#444',
+                marginRight: 12,
+                paddingLeft: 24,
+                paddingRight: 24,
+              }}
               onPress={() => {
                 GameInstance.updateCardLevel(card, 1);
                 let list = listCurrentCard.filter(item => {
@@ -129,7 +135,13 @@ export const FlashCard = function ({card, setRandomCard}) {
               <Text style={ComponentStyle.textWhite16Medium}>Fail</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={ComponentStyle.button}
+              style={{
+                ...ComponentStyle.button,
+                backgroundColor: '#C12450',
+                marginRight: 12,
+                paddingLeft: 24,
+                paddingRight: 24,
+              }}
               onPress={() => {
                 GameInstance.updateCardLevel(card, 2);
                 let list = listCurrentCard.filter(item => {
@@ -147,7 +159,13 @@ export const FlashCard = function ({card, setRandomCard}) {
               <Text style={ComponentStyle.textWhite16Medium}>Hard</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={ComponentStyle.button}
+              style={{
+                ...ComponentStyle.button,
+                backgroundColor: '#273D4B',
+                marginRight: 12,
+                paddingLeft: 24,
+                paddingRight: 24,
+              }}
               onPress={() => {
                 GameInstance.updateCardLevel(card, 3);
                 let list = listCurrentCard.filter(item => {
@@ -162,7 +180,13 @@ export const FlashCard = function ({card, setRandomCard}) {
               <Text style={ComponentStyle.textWhite16Medium}>Okay</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={ComponentStyle.button}
+              style={{
+                ...ComponentStyle.button,
+                backgroundColor: '#6CDDAB',
+                marginRight: 12,
+                paddingLeft: 24,
+                paddingRight: 24,
+              }}
               onPress={() => {
                 GameInstance.updateCardLevel(card, 4);
                 let list = listCurrentCard.filter(item => {
@@ -176,18 +200,9 @@ export const FlashCard = function ({card, setRandomCard}) {
               }}>
               <Text style={ComponentStyle.textWhite16Medium}>Nice</Text>
             </TouchableOpacity>
-          </>
+          </View>
         ) : (
-          <>
-            <TouchableOpacity
-              style={ComponentStyle.button}
-              onPress={() => {
-                setShowAnswer(preState => !preState);
-                setTextShowFlash(card.description);
-              }}>
-              <Text style={ComponentStyle.textWhite16Medium}>Submit</Text>
-            </TouchableOpacity>
-          </>
+          <></>
         )}
       </View>
     </Pressable>

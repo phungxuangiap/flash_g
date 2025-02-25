@@ -3,10 +3,10 @@ import { useDispatch } from "react-redux";
 import { ActiveStatus, Auth, DeletedStatus, Login, RemoteStatus } from "../constants";
 import { setUser } from "../redux/slices/authSlice";
 import { updateCurrentDesks } from "../redux/slices/gameSlice";
-import { setImages, setLoading } from "../redux/slices/stateSlice";
+import { setImages, setLoading, setMode, setRestrictMode } from "../redux/slices/stateSlice";
 import { fetchAllCards, fetchCurrentUser, fetchListDesks } from "../service/fetchRemoteData";
 import { deleteCardInRemote, deleteDeskInRemote, updateCardToRemote, updateDeskToRemote } from "../service/postToRemote";
-import { checkIsCurrent, createNewCard, createNewDesk, createNewImage, createNewUser, deleteCard, deleteDesk, deleteImage, getAllCards, getAllCurrentCardsOfDesk, getAllDesks, getAllLocalImage, getDesk, getDeskOfRemoteDeskId, getImageOfDesk, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, getUser, removeCard, removeCardOfRemoteId, removeDesk, updateCard, updateCardOfRemoteId, updateDesk, updateImage } from "./database";
+import { checkIsCurrent, createNewCard, createNewDesk, createNewImage, createNewUser, deleteCard, deleteDesk, deleteImage, getAllCards, getAllCurrentCardsOfDesk, getAllDesks, getAllLocalImage, getDesk, getDeskOfRemoteDeskId, getImageOfDesk, getListCurrentCards, getListCurrentCardsOfDesk, getListDesks, getUser, getUserPreference, removeCard, removeCardOfRemoteId, removeDesk, updateCard, updateCardOfRemoteId, updateDesk, updateImage } from "./database";
 import { Desk, Card, Image } from "./model";
 import { Dispatch, UnknownAction } from "@reduxjs/toolkit";
 import { addImageToCloudinary, createImage, fetchImageOfDesk, fetchImagesOfDesks, updateImageOfDesk } from "../service/imageService";
@@ -28,6 +28,12 @@ export async function handleLocalAndRemoteData(onlineState:boolean, accessToken:
           .then(async () => {
 
             let user = undefined;
+            getUserPreference('1').then(res=>{
+              console.log('USER PREFERENCE', res)
+              dispatch(setMode(res.modePreference));
+              dispatch(setRestrictMode(res.restrictModePreference));
+            });
+
             if (onlineState){
               // It'll have a responsibility to check current user, available accesstoken and refresh token for next requests below.
               user = await fetchCurrentUser(accessToken);

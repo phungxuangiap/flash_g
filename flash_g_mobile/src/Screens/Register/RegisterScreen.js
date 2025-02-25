@@ -19,8 +19,10 @@ import {useDispatch, useSelector} from 'react-redux';
 import {changeAuth, refreshAccessToken} from '../../redux/slices/authSlice';
 import {setLoading} from '../../redux/slices/stateSlice';
 import {loadingSelector} from '../../redux/selectors';
-import {BottomBar, Login} from '../../constants';
+import {BottomBar, LightMode, Login} from '../../constants';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
+import {updateUserPreference} from '../../LocalDatabase/database';
+import {UserPreference} from '../../LocalDatabase/model';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -58,6 +60,14 @@ export default function RegisterScreen() {
         content={'Register'}
         onClick={() => {
           dispatch(setLoading(true));
+          const userPreference = new UserPreference(
+            1,
+            'blue',
+            'vietnam',
+            LightMode,
+            0,
+          );
+          updateUserPreference(userPreference);
           register(email, password, userName, fullName)
             .then(accessToken => {
               dispatch(refreshAccessToken(accessToken));

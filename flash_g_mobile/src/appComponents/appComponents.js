@@ -197,7 +197,7 @@ export function CardComponent({
   );
 }
 
-export function AvataBaseWordComponent({full_name, isLightMode}) {
+export function AvataBaseWordComponent({full_name, isLightMode, customSize}) {
   const userNameShortHand = (full_name ? full_name : 'Owner')
     .split(' ')
     .map(word => {
@@ -207,14 +207,14 @@ export function AvataBaseWordComponent({full_name, isLightMode}) {
   return (
     <View
       style={{
-        width: 40,
-        height: 40,
+        width: customSize || 40,
+        height: customSize || 40,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 50,
         backgroundColor: isLightMode ? '#444' : '#555',
       }}>
-      <Text style={{fontSize: 12}}>{userNameShortHand}</Text>
+      <Text style={{fontSize: customSize / 3 || 12}}>{userNameShortHand}</Text>
     </View>
   );
 }

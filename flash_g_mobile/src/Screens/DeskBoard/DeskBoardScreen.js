@@ -8,6 +8,7 @@ import {
   loadingSelector,
   modeStateSelector,
   onlineStateSelector,
+  restrictModeSelector,
   userSelector,
 } from '../../redux/selectors';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
@@ -38,9 +39,10 @@ import {
   createNewDesk,
   createNewImage,
   updateDesk,
+  updateUserPreference,
 } from '../../LocalDatabase/database';
 import {handleLocalAndRemoteData} from '../../LocalDatabase/syncDBService';
-import {Desk, Image} from '../../LocalDatabase/model';
+import {Desk, Image, UserPreference} from '../../LocalDatabase/model';
 import {
   AppPadding,
   DarkMode,
@@ -99,6 +101,7 @@ export default function DeskBoardScreen() {
   const auth = useSelector(authStateSelector);
   const images = useSelector(imageStateSelector);
   const mode = useSelector(modeStateSelector);
+  const restrictMode = useSelector(restrictModeSelector);
   useFocusEffect(
     useCallback(() => {
       handleLocalAndRemoteData(online, actk, dispatch, navigation, false);
@@ -140,6 +143,14 @@ export default function DeskBoardScreen() {
           <TouchableOpacity
             onPress={() => {
               dispatch(setMode(mode === LightMode ? DarkMode : LightMode));
+              const userPreference = new UserPreference(
+                1,
+                'blue',
+                'vietnam',
+                mode === LightMode ? DarkMode : LightMode,
+                restrictMode,
+              );
+              updateUserPreference(userPreference);
             }}>
             {mode === LightMode ? (
               <LightIcon width={36} height={36} color={'black'} />

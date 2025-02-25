@@ -14,6 +14,20 @@ export class User {
         this.modified_time = modified_time;
     }
 }
+export class UserPreference{
+    _id: number;
+    colorPreference: string;
+    languagePreference: string;
+    modePreference: number;
+    restrictModePreference: number;
+    constructor(_id: number, colorPreference: string, languagePreference: string, modePreference: number, restrictmodePreference: number){
+        this._id = _id;
+        this.colorPreference = colorPreference;
+        this.languagePreference =  languagePreference;
+        this.modePreference = modePreference;
+        this.restrictModePreference = restrictmodePreference;
+    }
+}
 
 export class Desk {
     _id : string;

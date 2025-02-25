@@ -1,8 +1,10 @@
 const userPreferencesQuery = `
-    CREATE TABLE IF NOT EXISTS UserPreferences (
+    CREATE TABLE IF NOT EXISTS UserPreference (
         _id INTEGER DEFAULT 1,
         colorPreference TEXT,
         languagePreference TEXT,
+        modePreference INTEGER,
+        restrictModePreference INTEGER,
         PRIMARY KEY(_id)
     )
 `;
@@ -66,6 +68,36 @@ const image = `
         modified_time TEXT
     )
 `;
+const getUserPreferenceQuery = `
+    SELECT * FROM UserPreference WHERE _id = ?
+`;
+const createNewUserPreferenceQuery = `
+    INSERT INTO UserPreference (
+        _id,
+        colorPreference,
+        languagePreference,
+        modePreference,
+        restrictModePreference
+    ) VALUES (?, ?, ?, ?, ?)
+`;
+const updateUserPreferenceQuery = `
+    INSERT INTO UserPreference (
+        _id,
+        colorPreference,
+        languagePreference,
+        modePreference,
+        restrictModePreference
+    ) VALUES(?, ?, ?, ?, ?)
+    ON CONFLICT(_id) DO UPDATE SET 
+        _id = excluded._id,
+        colorPreference = excluded.colorPreference,
+        languagePreference = excluded.languagePreference,
+        modePreference = excluded.modePreference,
+        restrictModePreference = excluded.restrictModePreference
+`;
+const deleteUserPreferenceQuery = `
+    DELETE FROM UserPreference
+`;
 const createNewImageQuery = `
     INSERT INTO Image (
         _id,
@@ -76,6 +108,7 @@ const createNewImageQuery = `
         img_url,
         modified_time) VALUES (?, ?, ?, ?, ?, ?, ?)    
 `;
+
 const getImageQuery = `
     SELECT * FROM Image WHERE desk_id = ?
 `;
@@ -360,6 +393,10 @@ export {
     updateCardOfRemoteIdQuery,
     removeCardOfRemoteIdQuery,
     cleanImageQuery,
+    createNewUserPreferenceQuery,
+    updateUserPreferenceQuery,
+    deleteUserPreferenceQuery,
+    getUserPreferenceQuery,
 };
 
 

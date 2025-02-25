@@ -7,6 +7,7 @@ const initialState = {
   online: true,
   images: {},
   mode: LightMode,
+  restrictMode: 0,
 };
 
 const stateSlice = createSlice({
@@ -28,8 +29,17 @@ const stateSlice = createSlice({
     setMode: (state, actions) => {
       state.mode = actions.payload;
     },
+    setRestrictMode: (state, actions) => {
+      state.restrictMode = actions.payload;
+    },
   },
 });
 export default stateSlice;
-export const {setLoading, setDatabase, setOnline, setImages, setMode} =
-  stateSlice.actions;
+export const {
+  setLoading,
+  setDatabase,
+  setOnline,
+  setImages,
+  setMode,
+  setRestrictMode,
+} = stateSlice.actions;

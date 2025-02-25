@@ -19,7 +19,9 @@ import {useDispatch, useSelector} from 'react-redux';
 import {loadingSelector} from '../../redux/selectors';
 import {setLoading} from '../../redux/slices/stateSlice';
 import {changeAuth, refreshAccessToken} from '../../redux/slices/authSlice';
-import {BottomBar, Login, Register} from '../../constants';
+import {BottomBar, LightMode, Login, Register} from '../../constants';
+import {UserPreference} from '../../LocalDatabase/model';
+import {updateUserPreference} from '../../LocalDatabase/database';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,6 +40,14 @@ export default function LoginScreen() {
         content={'Login'}
         onClick={() => {
           dispatch(setLoading(true));
+          const userPreference = new UserPreference(
+            1,
+            'blue',
+            'vietnam',
+            LightMode,
+            0,
+          );
+          updateUserPreference(userPreference);
           login(email, password)
             .then(accessToken => {
               console.log('Login successfully !');

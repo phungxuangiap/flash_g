@@ -1,8 +1,8 @@
 import {enablePromise, openDatabase} from 'react-native-sqlite-storage';
 import SQLite from "react-native-sqlite-storage";
-import { Desk, Card, User, Image } from './model';
+import { Desk, Card, User, Image, UserPreference } from './model';
 import { getLocalDatabase } from './databaseInitialization';
-import { card, cleanAllCardQuery, cleanAllDeskQuery, cleanAllUserQuery, cleanImageQuery, cleanUpQuery, createNewCardQuery, createNewDeskQuery, createNewImageQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, deleteImageQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getAllDesksQuery, getAllImageQuery, getDeskOfRemoteDeskIdQuery, getDeskQuery, getImageQuery, getListCurrentCardsQuery, getListDesksQuery, getUserQuery, removeCardOfRemoteIdQuery, removeCardQuery, removeDeskQuery, updateCardOfRemoteIdQuery, updateCardQuery, updateDeskQuery, updateImageQuery } from './dbQueries';
+import { card, cleanAllCardQuery, cleanAllDeskQuery, cleanAllUserQuery, cleanImageQuery, cleanUpQuery, createNewCardQuery, createNewDeskQuery, createNewImageQuery, createNewUserQuery, deleteCardQuery, deleteDeskQuery, deleteImageQuery, deleteUserPreferenceQuery, getAllCardsOfDeskQuery, getAllCardsQuery, getAllDesksQuery, getAllImageQuery, getDeskOfRemoteDeskIdQuery, getDeskQuery, getImageQuery, getListCurrentCardsQuery, getListDesksQuery, getUserPreferenceQuery, getUserQuery, removeCardOfRemoteIdQuery, removeCardQuery, removeDeskQuery, updateCardOfRemoteIdQuery, updateCardQuery, updateDeskQuery, updateImageQuery, updateUserPreferenceQuery } from './dbQueries';
 import { store } from '../redux/store';
 import { original } from '@reduxjs/toolkit';
 
@@ -32,7 +32,48 @@ export interface Database {
   getAllLocalImage: ()=>Promise<any>;
   getDeskOfRemoteDeskId: (remoteId: string) => Promise<any>;
   removeCardOfRemoteId: (remoteId: string) => Promise<any>;
+  getUserPreference: (user_id: string) => Promise<any>;
+  updateUserPreference: (userPreference: UserPreference) => Promise<any>;
+  deleteUserPreference: (user_id: string) => Promise<any>;
 
+}
+
+export async function getUserPreference(_id: string):Promise<any> {
+  return await getLocalDatabase()
+    .then(async (db: SQLite.SQLiteDatabase) => {
+      return await db.executeSql(getUserPreferenceQuery, [_id]).then((res:any)=>{
+        let listDesk: any[] = [];
+        res?.forEach((result:any) => {
+          for (let index = 0; index < result.rows.length; index++) {
+              listDesk.push(result.rows.item(index));
+          }
+        });
+        return listDesk[0]?listDesk[0]:undefined;
+      });
+    })
+    .catch((error)=>{
+      console.log(error);
+    });
+}
+
+export async function updateUserPreference(userPreference: UserPreference): Promise<any> {
+  return await getLocalDatabase()
+    .then(async (db:SQLite.SQLiteDatabase) => {
+      return await db.executeSql(updateUserPreferenceQuery, [userPreference._id, userPreference.colorPreference, userPreference.languagePreference, userPreference.modePreference, userPreference.restrictModePreference])
+    })
+    .catch(error =>{
+      console.log(error);
+    });
+}
+
+export async function deleteUserPreference(_id: string): Promise<any> {
+  return await getLocalDatabase()
+    .then(async (db:SQLite.SQLiteDatabase) => {
+      return await db.executeSql(deleteUserPreferenceQuery, [_id]);
+    })
+    .catch(error =>{
+      console.log(error);
+    });
 }
 
 export async function createNewDesk(desk: Desk): Promise<any> {
@@ -317,6 +358,7 @@ export function cleanUp():Promise<any>{
           db.executeSql(cleanAllUserQuery),
           db.executeSql(cleanAllCardQuery),
           db.executeSql(cleanImageQuery),
+          db.executeSql(deleteUserPreferenceQuery),
         ]
       );
     })
@@ -441,4 +483,7 @@ export const database: Database = {
   getAllLocalImage,
   getDeskOfRemoteDeskId,
   removeCardOfRemoteId,
+  getUserPreference,
+  updateUserPreference,
+  deleteUserPreference,
 };

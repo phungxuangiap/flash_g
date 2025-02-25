@@ -1,3 +1,4 @@
+import {LightMode} from '../constants';
 import {
   changeAuth,
   refreshAccessToken,
@@ -12,7 +13,9 @@ import {
   setDatabase,
   setImages,
   setLoading,
+  setMode,
   setOnline,
+  setRestrictMode,
 } from '../redux/slices/stateSlice';
 import {store} from '../redux/store';
 
@@ -27,4 +30,6 @@ export function cleanUpStateAfterLoggingOut() {
   store.dispatch(refreshAccessToken(null));
   store.dispatch(setDatabase(null));
   store.dispatch(setImages({}));
+  store.dispatch(setMode(LightMode));
+  store.dispatch(setRestrictMode(0));
 }

@@ -6,14 +6,40 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {LightMode} from '../../constants';
+import {
+  back_dark,
+  back_primary,
+  icon_secondary,
+  text_primary,
+  text_primary_dark,
+} from '../../assets/colors/colors';
+import {useSelector} from 'react-redux';
+import {modeStateSelector} from '../../redux/selectors';
 
 export default function SummaryScreen() {
+  const mode = useSelector(modeStateSelector);
   return (
-    <View style={{padding: 24}}>
-      <Text style={{fontSize: 36, color: 'black', fontWeight: 'bold'}}>
+    <View
+      style={{
+        padding: 24,
+        backgroundColor: mode === LightMode ? back_primary : back_dark,
+        flex: 1,
+      }}>
+      <Text
+        style={{
+          fontSize: 36,
+          color: mode == LightMode ? text_primary : text_primary_dark,
+          fontWeight: 'bold',
+        }}>
         Summary
       </Text>
-      <View
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <Text style={{color: icon_secondary, fontSize: 18, fontWeight: 600}}>
+          No service available.
+        </Text>
+      </View>
+      {/* <View
         style={{
           backgroundColor: 'pink',
           justifyContent: 'center',
@@ -79,7 +105,7 @@ export default function SummaryScreen() {
         Calendar
       </Text>
       <View
-        style={{padding: 24, backgroundColor: 'pink', borderRadius: 20}}></View>
+        style={{padding: 24, backgroundColor: 'pink', borderRadius: 20}}></View> */}
     </View>
   );
 }

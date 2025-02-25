@@ -31,6 +31,9 @@ const imageStateSelector = state => {
 const modeStateSelector = state => {
   return state.state.mode;
 };
+const restrictModeSelector = state => {
+  return state.state.restrictMode;
+};
 export {
   loadingSelector,
   accessTokenSelector,
@@ -43,4 +46,5 @@ export {
   authStateSelector,
   imageStateSelector,
   modeStateSelector,
+  restrictModeSelector,
 };
